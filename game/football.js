@@ -88,7 +88,7 @@
   window.addEventListener("keydown", e => {
     held[e.code] = true;
     if (["ArrowUp", "ArrowDown", "Space"].includes(e.code)) e.preventDefault();
-    if (e.code === "Backspace") { e.preventDefault(); location.href = "index.html"; }
+    if (e.code === "Backspace") { e.preventDefault(); location.href = "gameselect.html"; }
     if (phase === "win" && (e.code === "KeyR" || e.code === "Enter" || e.code === "Space")) {
       score1 = score2 = 0; winner = null; resetBall("p1");
     }
@@ -259,7 +259,7 @@
       ctx.drawImage(s.canvas, W / 2 - s.w * sc / 2, 210, s.w * sc, 220);
       tc(winner.name, W / 2, 450, 4, winner.color);
       tc(score1 + "  -  " + score2, W / 2, 500, 3, "#f4f4ee");
-      tc("ENTER = REMATCH      BACKSPACE = CHARACTER SELECT", W / 2, 560, 2, DIM);
+      tc("ENTER = REMATCH      BACKSPACE = GAME MENU", W / 2, 560, 2, DIM);
     }
     requestAnimationFrame(t => frame(now, t));
   }

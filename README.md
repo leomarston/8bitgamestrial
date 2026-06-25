@@ -7,7 +7,13 @@ This pass delivers the **Mortal-Kombat-style character select screen** with
 ## Play it
 
 Just open **`game/index.html`** in any browser (no server needed — the sprite
-data is inlined). 
+data is inlined).
+
+**Flow:** character select → **game select** → the chosen minigame.
+After both fighters lock in, a **CHOOSE A GAME** hub appears (a 4×2 grid like the
+character select). **Player 1** drives the cursor (`WASD` + `Space`) and picks a
+minigame — **Football** and **Flappy** are live, the other 6 tiles are "coming
+soon". `Backspace` goes back a step.
 
 ### Controls
 
@@ -73,7 +79,9 @@ Defaults to PIXEL vs BYTE; otherwise uses the fighters picked on the select scre
 ```
 game/            the playable screens
   index.html     character select
-  game.js        MK-style select logic (cursors, lock-in, mirror, kick off)
+  game.js        MK-style select logic (cursors, lock-in, mirror) -> game select
+  gameselect.html  the "choose a game" hub
+  gameselect.js  4x2 minigame grid (P1 picks; Football + Flappy live, 6 soon)
   football.html  the football minigame
   football.js    Pong-style football (pitch, nets, ball physics, scoring)
   flappy.html    the flappy duel minigame

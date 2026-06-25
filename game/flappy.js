@@ -96,7 +96,7 @@
   function doFlap(b) { if (b.alive && (phase === "play" || phase === "chase")) { b.vy = FLAP; b.flap = 0.18; } }
   window.addEventListener("keydown", (e) => {
     if (["ArrowUp", "Space", "ArrowDown"].includes(e.code)) e.preventDefault();
-    if (e.code === "Backspace") { e.preventDefault(); location.href = "index.html"; return; }
+    if (e.code === "Backspace") { e.preventDefault(); location.href = "gameselect.html"; return; }
     if (phase === "over" && (e.code === "Enter" || e.code === "KeyR" || e.code === "Space")) { reset(); return; }
     if (e.repeat) return;
     if (e.code === "KeyW" || e.code === "Space") doFlap(p1);

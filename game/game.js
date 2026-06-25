@@ -197,7 +197,7 @@
     ctx.strokeStyle = "#15121f"; ctx.lineWidth = 5; ctx.stroke();
     textCentered("VS", W / 2, cy - 18, 5, "#15121f");
     const left = Math.max(0, Math.ceil((START_DELAY - (elapsed || 0)) / 1000));
-    textCentered("MATCH STARTING IN " + left + "...", W / 2, H - 58, 2, GOLD);
+    textCentered("CHOOSING GAME IN " + left + "...", W / 2, H - 58, 2, GOLD);
     textCentered("BACKSPACE  =  RESELECT", W / 2, H - 30, 2, DIM);
   }
 
@@ -215,7 +215,7 @@
       if (t - readyAt > START_DELAY) {
         localStorage.setItem("partyPicks", JSON.stringify({
           p1: D.roster[state.p1.idx].name, p2: D.roster[state.p2.idx].name }));
-        location.href = "football.html";
+        location.href = "gameselect.html";
         return;
       }
       requestAnimationFrame(frame);
