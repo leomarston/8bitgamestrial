@@ -277,6 +277,132 @@ def _draw_forest(img, bomb=True, players=True):
         blit(img, TREE, tx, ty, pal=FOR)
     if players: _draw_actors(img, bomb)
 
+# --------------------------------------------------------------------------
+def rectf(px, W, H, x0, y0, x1, y1, c):
+    for y in range(max(0, y0), min(H, y1)):
+        for x in range(max(0, x0), min(W, x1)): px[x, y] = c
+def orect(px, W, H, x0, y0, x1, y1, c, t=1):
+    for k in range(t):
+        for x in range(x0, x1): sp(px, W, H, x, y0 + k, c); sp(px, W, H, x, y1 - 1 - k, c)
+        for y in range(y0, y1): sp(px, W, H, x0 + k, y, c); sp(px, W, H, x1 - 1 - k, y, c)
+
+# ===========================================================================
+# MAP 2 — THE STREET (crossroads). Four solid building blocks split the floor
+# into a +-shaped network of roads: a corridor layout, not an open box.
+# ===========================================================================
+STR = {
+    "K": (22, 22, 28), "W": (236, 238, 244), "D": (60, 62, 70), "d": (46, 48, 56),
+    "S": (170, 172, 182), "s": (122, 124, 134), "Y": (245, 206, 70), "R": (184, 80, 64),
+    "r": (122, 50, 42), "T": (202, 174, 122), "t": (150, 118, 72), "U": (98, 130, 198),
+    "u": (54, 74, 140), "G": (140, 208, 234), "M": (40, 40, 48), "C": (232, 184, 96),
+}
+def scol(k): return (*STR[k], 255)
+RW, SW = 26, 5                                            # half road width, sidewalk width
+def _street_rects():
+    vL, vR, hT, hB = CX - RW, CX + RW, CY - RW, CY + RW
+    return [(FX, FY, vL - SW, hT - SW, "R"), (vR + SW, FY, FX + FW, hT - SW, "U"),
+            (FX, hB + SW, vL - SW, FY + FH, "T"), (vR + SW, hB + SW, FX + FW, FY + FH, "U")]
+
+def _bld(px, W, H, x0, y0, x1, y1, ck):
+    rectf(px, W, H, x0, y0, x1, y1, scol(ck))
+    for x in range(x0, x1): sp(px, W, H, x, y1 - 1, scol(ck.lower())); sp(px, W, H, x, y1 - 2, scol(ck.lower()))
+    for y in range(y0, y1): sp(px, W, H, x1 - 1, y, scol(ck.lower())); sp(px, W, H, x1 - 2, y, scol(ck.lower()))
+    orect(px, W, H, x0, y0, x1, y1, scol("K"), 1)
+    cxm, cym = (x0 + x1) // 2, (y0 + y1) // 2             # rooftop details
+    rectf(px, W, H, cxm - 7, cym - 6, cxm - 1, cym, scol("M")); orect(px, W, H, cxm - 7, cym - 6, cxm - 1, cym, scol("K"))
+    rectf(px, W, H, cxm + 2, cym - 4, cxm + 9, cym + 3, scol("G")); orect(px, W, H, cxm + 2, cym - 4, cxm + 9, cym + 3, scol("K"))
+    for gx in range(x0 + 4, x1 - 5, 9):                  # gravel/AC dots
+        sp(px, W, H, gx, y0 + 4, scol("s")); sp(px, W, H, gx + 1, y0 + 5, scol("s"))
+
+def _draw_street(img, bomb=True, players=True):
+    px = img.load(); W, H = img.size
+    vL, vR, hT, hB = CX - RW, CX + RW, CY - RW, CY + RW
+    rectf(px, W, H, FX, FY, FX + FW, FY + FH, scol("S"))  # sidewalk base
+    for y in range(FY, FY + FH, 10):                      # sidewalk seams
+        for x in range(FX, FX + FW): sp(px, W, H, x, y, scol("s"))
+    rectf(px, W, H, vL, FY, vR, FY + FH, scol("D"))       # vertical road
+    rectf(px, W, H, FX, hT, FX + FW, hB, scol("D"))       # horizontal road
+    import random as _r; _r.seed(3)
+    for _ in range(260):
+        x, y = _r.randint(FX, FX + FW - 1), _r.randint(FY, FY + FH - 1)
+        if (vL <= x < vR or hT <= y < hB): sp(px, W, H, x, y, scol("d"))
+    for y in range(FY, FY + FH, 9):                       # dashed centre line (vertical)
+        for k in range(5): sp(px, W, H, CX - 1, y + k, scol("Y")); sp(px, W, H, CX, y + k, scol("Y"))
+    for x in range(FX, FX + FW, 9):                       # dashed centre line (horizontal)
+        for k in range(5): sp(px, W, H, x + k, CY - 1, scol("Y")); sp(px, W, H, x + k, CY, scol("Y"))
+    for y in (hT, hB - 1):                                # crosswalk stripes (horizontal road ends)
+        pass
+    for x in range(vL + 2, vR - 2, 6):                    # crosswalks across the vertical road
+        rectf(px, W, H, x, hT - 4, x + 3, hT - 1, scol("W")); rectf(px, W, H, x, hB + 1, x + 3, hB + 4, scol("W"))
+    for y in range(hT + 2, hB - 2, 6):                    # crosswalks across the horizontal road
+        rectf(px, W, H, vL - 4, y, vL - 1, y + 3, scol("W")); rectf(px, W, H, vR + 1, y, vR + 4, y + 3, scol("W"))
+    for (x0, y0, x1, y1, ck) in _street_rects(): _bld(px, W, H, x0, y0, x1, y1, ck)
+    if players: _draw_actors(img, bomb)
+
+# ===========================================================================
+# MAP 3 — THE HOUSE (interior). A + of walls with doorway gaps makes four rooms;
+# furniture is solid cover. A room-to-room chase, totally unlike the open arena.
+# ===========================================================================
+HOU = {
+    "K": (34, 28, 26), "W": (247, 244, 236), "Fl": (190, 142, 88), "fl": (150, 104, 60),
+    "Wl": (218, 210, 196), "wl": (168, 160, 144), "Tb": (140, 92, 52), "tb": (98, 60, 32),
+    "So": (96, 140, 196), "so": (58, 92, 150), "Rg": (200, 76, 76), "rg": (150, 46, 52),
+    "Pl": (86, 172, 92), "pl": (52, 120, 64), "G": (150, 205, 230), "Y": (240, 206, 90),
+}
+def hcol(k): return (*HOU[k], 255)
+_VW0, _VW1, _HW0, _HW1 = CX - 3, CX + 3, CY - 3, CY + 3
+HOUSE_WALLS = [
+    (_VW0, FY, _VW1, FY + 24), (_VW0, FY + 44, _VW1, FY + FH - 44), (_VW0, FY + FH - 24, _VW1, FY + FH),
+    (FX, _HW0, FX + 24, _HW1), (FX + 44, _HW0, FX + FW - 44, _HW1), (FX + FW - 24, _HW0, FX + FW, _HW1),
+]
+HOUSE_FURN = [(40, 32, 84, 56, "bed"), (156, 36, 200, 58, "sofa"),
+              (46, 100, 96, 124, "table"), (164, 96, 202, 126, "shelf")]
+
+def _furn(px, W, H, x0, y0, x1, y1, k):
+    if k == "bed":
+        rectf(px, W, H, x0, y0, x1, y1, hcol("tb")); rectf(px, W, H, x0 + 1, y0 + 6, x1 - 1, y1 - 1, hcol("So"))
+        rectf(px, W, H, x0 + 2, y0 + 2, x0 + 16, y0 + 11, hcol("W"))
+    elif k == "sofa":
+        rectf(px, W, H, x0, y0, x1, y1, hcol("so")); rectf(px, W, H, x0 + 2, y0 + 5, x1 - 2, y1 - 2, hcol("So"))
+        for cx in range(x0 + 4, x1 - 6, 14): rectf(px, W, H, cx, y0 + 6, cx + 10, y1 - 4, hcol("so"))
+    elif k == "table":
+        rectf(px, W, H, x0, y0, x1, y1, hcol("Tb"))
+        for (lx, ly) in [(x0, y0), (x1 - 3, y0), (x0, y1 - 3), (x1 - 3, y1 - 3)]: rectf(px, W, H, lx, ly, lx + 3, ly + 3, hcol("tb"))
+        rectf(px, W, H, x0 + 6, y0 + 5, x1 - 6, y1 - 5, hcol("tb"))
+    elif k == "shelf":
+        rectf(px, W, H, x0, y0, x1, y1, hcol("tb"))
+        books = ["Rg", "So", "Y", "Pl"]
+        for i, bx in enumerate(range(x0 + 2, x1 - 3, 5)): rectf(px, W, H, bx, y0 + 2, bx + 4, y1 - 2, hcol(books[i % 4]))
+    orect(px, W, H, x0, y0, x1, y1, hcol("K"), 1)
+
+def _draw_house(img, bomb=True, players=True):
+    px = img.load(); W, H = img.size
+    for y in range(FY, FY + FH):                          # wood plank floor
+        band = (y // 9) % 2
+        for x in range(FX, FX + FW):
+            c = "Fl" if band == 0 else "fl"
+            if y % 9 == 0 or (x + band * 18) % 36 == 0: c = "fl"
+            px[x, y] = hcol(c)
+    for t in range(4):                                   # outer house walls
+        for x in range(FX, FX + FW): sp(px, W, H, x, FY + t, hcol("Wl")); sp(px, W, H, x, FY + FH - 1 - t, hcol("Wl"))
+        for y in range(FY, FY + FH): sp(px, W, H, FX + t, y, hcol("Wl")); sp(px, W, H, FX + FW - 1 - t, y, hcol("Wl"))
+    orect(px, W, H, FX, FY, FX + FW, FY + FH, hcol("K"), 1)
+    for (rx0, ry0, rx1, ry1) in [(36, 64, 92, 74), (150, 96, 210, 120)]:  # small rugs (decor)
+        rectf(px, W, H, rx0, ry0, rx1, ry1, hcol("Rg")); orect(px, W, H, rx0, ry0, rx1, ry1, hcol("rg"))
+    for (x0, y0, x1, y1) in HOUSE_WALLS:                  # walls
+        rectf(px, W, H, x0, y0, x1, y1, hcol("Wl"))
+        for x in range(x0, x1): sp(px, W, H, x, y0, hcol("W"))
+        orect(px, W, H, x0, y0, x1, y1, hcol("K"), 1)
+    for (x0, y0, x1, y1, k) in HOUSE_FURN: _furn(px, W, H, x0, y0, x1, y1, k)
+    if players: _draw_actors(img, bomb)
+
+# --------------------------------------------------------------------------
+def yard_obs(): return [{"type": "circle", "x": bx + 7, "y": by + 13, "r": 6} for (bx, by) in BARRELS]
+def street_obs(): return [{"type": "rect", "x": x0, "y": y0, "w": x1 - x0, "h": y1 - y0} for (x0, y0, x1, y1, ck) in _street_rects()]
+def house_obs():
+    return ([{"type": "rect", "x": x0, "y": y0, "w": x1 - x0, "h": y1 - y0} for (x0, y0, x1, y1) in HOUSE_WALLS]
+            + [{"type": "rect", "x": x0, "y": y0, "w": x1 - x0, "h": y1 - y0} for (x0, y0, x1, y1, k) in HOUSE_FURN])
+
 def _hud(img):
     px = img.load(); W, H = img.size
     for yy in range(0, 13):                              # clean top HUD bar
@@ -287,34 +413,35 @@ def _hud(img):
     f = pf.text("FUSE 4.2", 1, (255, 208, 60)); img.alpha_composite(f, (W // 2 - f.width // 2, 4))
     b = pf.text("BYTE", 1, (74, 118, 196)); img.alpha_composite(b, (W - 6 - b.width, 4))
 
-MAPS = [("hotpotato_map1.png", "hotpotato_arena.png", _draw_yard),
-        ("hotpotato_map2.png", "hotpotato_arena2.png", _draw_forest)]
+# three structurally-different arenas: open yard / street crossroads / house rooms
+MAPS = [
+    {"bg": "hotpotato_map1.png", "mock": "hotpotato_arena.png", "draw": _draw_yard, "obs": yard_obs,
+     "spawn": {"p1": [CX - 70, CY], "p2": [CX + 70, CY]}},
+    {"bg": "hotpotato_map2.png", "mock": "hotpotato_arena2.png", "draw": _draw_street, "obs": street_obs,
+     "spawn": {"p1": [FX + 12, CY], "p2": [FX + FW - 12, CY]}},
+    {"bg": "hotpotato_map3.png", "mock": "hotpotato_arena3.png", "draw": _draw_house, "obs": house_obs,
+     "spawn": {"p1": [62, FY + 12], "p2": [150, FY + FH - 14]}},
+]
 
 def arena():
     W, H, SC = 240, 150, 4
-    for _bg, mock, drawer in MAPS:
+    for m in MAPS:
         img = Image.new("RGBA", (W, H), col("D"))
-        drawer(img, bomb=True, players=True); _hud(img)
-        img.resize((W * SC, H * SC), Image.NEAREST).convert("RGB").save(os.path.join(OUT, mock))
-        print("wrote", mock)
+        m["draw"](img, bomb=True, players=True); _hud(img)
+        img.resize((W * SC, H * SC), Image.NEAREST).convert("RGB").save(os.path.join(OUT, m["mock"]))
+        print("wrote", m["mock"])
 
 def hp_meta():
     bounds = {"l": FX + 8, "r": FX + FW - 8, "t": FY + 6, "b": FY + FH - 4}
-    spawn = {"p1": [CX - 70, CY], "p2": [CX + 70, CY]}
-    return [
-        {"bg": "hotpotato_map1.png", "scale": SC_GAME, "bounds": bounds, "spawn": spawn,
-         "obstacles": [{"type": "circle", "x": bx + 7, "y": by + 13, "r": 6} for (bx, by) in BARRELS]},
-        {"bg": "hotpotato_map2.png", "scale": SC_GAME, "bounds": bounds, "spawn": spawn,
-         "obstacles": [{"type": "circle", "x": tx + 8, "y": ty + 16, "r": 6} for (tx, ty) in TREES]},
-    ]
+    return [{"bg": m["bg"], "scale": SC_GAME, "bounds": bounds, "spawn": m["spawn"], "obstacles": m["obs"]()} for m in MAPS]
 
 def export_bg():
     GAMEDIR = os.path.join(os.path.dirname(HERE), "game")
-    for bg, _mock, drawer in MAPS:
+    for m in MAPS:
         img = Image.new("RGBA", (240, 150), col("D"))
-        drawer(img, bomb=False, players=False)
-        img.convert("RGB").save(os.path.join(GAMEDIR, bg))
-        print("wrote game/" + bg)
+        m["draw"](img, bomb=False, players=False)
+        img.convert("RGB").save(os.path.join(GAMEDIR, m["bg"]))
+        print("wrote game/" + m["bg"])
 
 def assets():
     SC = 7
