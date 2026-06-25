@@ -63,18 +63,19 @@ Controls (tap to flip your paddle): **P1 `WASD`/`Space`**, **P2 arrows/`Enter`**
 **P3 `IJKL`/`O`**, **P4 `TGHR`**; `Backspace` = menu, `Enter` = rematch. Player
 count and fighters come from the select screen (defaults if launched directly).
 
-## Minigame: FLAPPY DUEL (2-player)
+## Minigame: FLAPPY DUEL (2–4 player)
 
-`game/flappy.html` — two-player couch Flappy Bird. Both chosen fighters (with
-flapping wings) fly the **same pipes at once**, staggered so one is **in front**.
+`game/flappy.html` — couch Flappy Bird for **2–4 players**. Every chosen fighter
+(with flapping wings) flies the **same pipes at once**, staggered front-to-back.
 
-- Hit a pipe or the ground = you're out.
-- **Most pipes passed wins** — where or when you crash doesn't matter. Both keep
-  flying until they're down, then the higher pipe count wins (equal = draw).
+- Hit a pipe or the ground = that flyer is out.
+- **Most pipes passed wins** — where or when you crash doesn't matter. Everyone
+  keeps flying until they're down, then the highest pipe count wins (tie = draw).
 - Clean 4-bit world: flat sky, simple clouds, green pipes, scrolling ground.
 
-Controls: **P1 `W`/`Space`**, **P2 `↑`**, `Enter`/`R` = rematch, `Backspace` = menu.
-Defaults to PIXEL vs BYTE; otherwise uses the fighters picked on the select screen.
+Controls (tap to flap): **P1 `WASD`/`Space`**, **P2 arrows**, **P3 `IJKL`/`O`**,
+**P4 `TGHR`**; `Enter`/`R` = rematch, `Backspace` = menu. Player count + fighters
+come from the select screen.
 
 ## Minigame: GRAVEYARD (monster in the middle)
 
