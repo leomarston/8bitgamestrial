@@ -132,16 +132,15 @@ Controls: **P1 `WASD`/`Space`**, **P2 arrows/`Enter`**, **P3 `IJKL`/`O`**,
 
 ## Minigame: TILE BLITZ (paint the floor)
 
-`game/tileblitz.html` — top-down territory duel on a tiled floor. **Roam the grid
-and paint every tile you step on your colour**, stealing the rival's tiles by
-walking over them. Same **DASH** as Crown Grab — lunge in your direction, and if
-you hit your rival they **black out for 1 second** (a window to paint over their
-turf). When the timer runs out, whoever **owns the most tiles wins**. A live count
-and a territory bar track the lead. Art lives in `art/tilebangers.py`; the floor
-tile is one template the game recolours per player.
+`game/tileblitz.html` — top-down territory battle for **2–4 players** on a tiled
+floor. **Roam the grid and paint every tile you step on your colour** (red / blue
+/ green / gold), stealing rivals' tiles by walking over them. **DASH** into a
+rival to **black them out 1 second**. When the timer ends, whoever **owns the most
+tiles wins**. Live counts + a territory share bar. Art in `art/tilebangers.py`;
+the floor tile is one template recoloured per player; starts are randomised.
 
-Controls: **P1 `WASD` + `Space` (dash)**, **P2 arrows + `Enter` (dash)**,
-`Enter`/`Space`/`R` = rematch, `Backspace` = menu.
+Controls: **P1 `WASD`/`Space`**, **P2 arrows/`Enter`**, **P3 `IJKL`/`O`**,
+**P4 `TFGH`/`R`**; `Enter`/`Space`/`R` = rematch, `Backspace` = menu.
 
 ## Minigame: HOT POTATO (don't hold the bomb)
 

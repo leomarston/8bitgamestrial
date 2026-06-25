@@ -73,6 +73,8 @@ TILE_COLORS = {
     "N": {"h": "#d6d2ea", "o": "#b9b3cf", "#": "#6b6690", "*": "#ffffff"},
     "R": {"h": "#ff9aa6", "o": "#ff5d6c", "#": "#b3324a", "*": "#ffe2e6"},
     "B": {"h": "#9bd8ff", "o": "#4fb8ff", "#": "#2356a8", "*": "#e2f3ff"},
+    "G": {"h": "#a7f0a0", "o": "#6bd66b", "#": "#2f7a3a", "*": "#e6ffe0"},
+    "Y": {"h": "#ffe6a0", "o": "#ffd54a", "#": "#a8842a", "*": "#fff6d8"},
 }
 BUMPER = [
     ".....KKKKKK.....",
@@ -100,7 +102,7 @@ def tb_meta():
         "scale": SC_GAME, "cell": CELL, "cols": COLS, "rows": ROWS, "ox": OX, "oy": OY,
         "bounds": {"l": OX + 4, "r": OX + COLS * CELL - 4, "t": OY + 4, "b": OY + ROWS * CELL - 4},
         "bumpers": [{"x": cc(c, r)[0], "y": cc(c, r)[1], "cell": [c, r], "r": 7} for (c, r) in BUMPER_CELLS],
-        "spawn": {"p1": cc(1, ROWS - 2), "p2": cc(COLS - 2, 1)},
+        "spawn": {"p": [cc(1, ROWS - 2), cc(COLS - 2, 1), cc(1, 1), cc(COLS - 2, ROWS - 2)]},
         "bg": "tileblitz_bg.png",
     }
 
