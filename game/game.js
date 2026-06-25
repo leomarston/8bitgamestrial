@@ -90,6 +90,15 @@
   };
   window.addEventListener("keydown", (e) => {
     if (e.code === "Backspace") { e.preventDefault(); state.p1.locked = state.p2.locked = false; return; }
+    if (state.p1.locked && state.p2.locked) {
+      if (e.code === "Space" || e.code === "Enter" || e.code === "NumpadEnter") {
+        e.preventDefault();
+        localStorage.setItem("partyPicks", JSON.stringify({
+          p1: D.roster[state.p1.idx].name, p2: D.roster[state.p2.idx].name }));
+        location.href = "football.html";
+      }
+      return;
+    }
     const m = KEYMAP[e.code];
     if (!m) return;
     e.preventDefault();
@@ -193,8 +202,8 @@
     ctx.fillStyle = GOLD; ctx.beginPath(); ctx.arc(W / 2, cy, 42, 0, Math.PI * 2); ctx.fill();
     ctx.strokeStyle = "#15121f"; ctx.lineWidth = 5; ctx.stroke();
     textCentered("VS", W / 2, cy - 18, 5, "#15121f");
-    textCentered("BACKSPACE  TO  RESELECT", W / 2, H - 56, 2, INK);
-    textCentered("FIGHT SCENE COMING NEXT", W / 2, H - 28, 2, "#5a5570");
+    textCentered("SPACE / ENTER  =  KICK OFF", W / 2, H - 58, 2, GOLD);
+    textCentered("BACKSPACE  =  RESELECT", W / 2, H - 30, 2, DIM);
   }
 
   // ---- main loop ----

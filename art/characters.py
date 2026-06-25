@@ -182,6 +182,28 @@ BOLT = "\n".join([
 
 
 # ---------------------------------------------------------------------------
+# Football — a 16x16 soccer ball (white + black patches + grey shading)
+# ---------------------------------------------------------------------------
+BALL = "\n".join([
+    ".....KKKKKK.....",
+    "...KKWWWWWWKK...",
+    "..KWWWWWWWWWLLK.",
+    ".KWWWWWKKWWWWLLK",
+    ".KWWWKKKKKKWWLLK",
+    "KWWWWKKKKKKWWWLK",
+    "KWWWWWKKKKWWWWLK",
+    "KWWWWWWKKWWWWWLK",
+    "KWWWWWWWWWWWWWLK",
+    "KWWKKWWWWWWKKWLK",
+    "KWWKKKWWWWKKKWLK",
+    ".KWWKKWWWWKKWLLK",
+    ".KWWWWWWWWWWLLK.",
+    "..KWWWWWWWWLLK..",
+    "...KKWWWWLLKK...",
+    ".....KKKKKK.....",
+])
+
+# ---------------------------------------------------------------------------
 # Roster (order = grid order, row-major 4x2)
 # ---------------------------------------------------------------------------
 ROSTER = [

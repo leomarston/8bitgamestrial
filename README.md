@@ -36,13 +36,33 @@ data is inlined).
 | **PIXEL** brown mop, red hoodie | **BYTE** beanie + green hoodie | **NOVA** red flame hair | **CHIP** blonde twin-tails |
 | **GLITCH** green mohawk | **ACE** ball cap, varsity | **ZED** masked ninja | **BOLT** visor robot |
 
+## Minigame: FOOTBALL (Pong-style)
+
+After both players lock in, press **Space/Enter** to **kick off** into the
+football match (`game/football.html`). It's Pong with a football skin:
+
+- Each player is a **keeper** that moves **up/down only** (no left/right) in
+  front of their net.
+- A **bigger 4-bit football** bounces off keepers and the touchlines; the
+  bounce angle depends on where it hits the keeper.
+- Get the ball into the opponent's **net** to score. **First to 5 wins.**
+- Real pitch art: mowed-stripe grass, full markings (centre circle, penalty &
+  6-yard boxes, arcs, spots, corners), **goals with crosshatch nets**, and a
+  **pixel crowd** in the stands.
+
+Controls: **P1 `W`/`S`**, **P2 `↑`/`↓`**, `Backspace` = back to select,
+`Enter`/`R` = rematch on the win screen. The keepers are whoever you picked on
+the select screen (defaults to PIXEL vs BYTE if launched directly).
+
 ## Repo layout
 
 ```
-game/            the playable select screen
-  index.html
-  game.js        MK-style select logic (cursors, lock-in, mirror, ready)
-  data.js        AUTO-GENERATED sprites + palette + pixel font (do not edit)
+game/            the playable screens
+  index.html     character select
+  game.js        MK-style select logic (cursors, lock-in, mirror, kick off)
+  football.html  the football minigame
+  football.js    Pong-style football (pitch, nets, ball physics, scoring)
+  data.js        AUTO-GENERATED sprites + palette + pixel font + ball (do not edit)
 art/             the art pipeline (source of truth for all sprites)
   characters.py  hand-authored pixel grids for all 8 fighters
   render.py      the 16-color palette + sprite renderer
