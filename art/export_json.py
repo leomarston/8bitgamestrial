@@ -17,7 +17,7 @@ gy_palette = {k: (None if v is None else "#%02x%02x%02x" % v) for k, v in GY.PAL
 graveyard = {
     "palette": gy_palette,
     "monster": GY.MONSTER, "crypt": GY.CRYPT, "headstone": GY.HEADSTONE,
-    "cross": GY.CROSS, "broken": GY.BROKEN, "tomb": GY.TOMB, "tree": GY.DEAD_TREE,
+    "broken": GY.BROKEN, "tomb": GY.TOMB, "tree": GY.DEAD_TREE,
     "fence": GY.FENCE, "pillar": GY.PILLAR, "lantern": GY.LANTERN,
     "skull": GY.SKULL, "bat": GY.BAT,
 }

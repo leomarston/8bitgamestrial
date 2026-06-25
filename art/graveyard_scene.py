@@ -104,7 +104,7 @@ props.append((70, lambda: blit(img, GY.DEAD_TREE, 8, 50, flip=True)))
 props.append((72, lambda: blit(img, GY.DEAD_TREE, 214, 52)))
 
 # tombstone field (avoid the central path & crypt)
-stones = [GY.HEADSTONE, GY.HEADSTONE, GY.CROSS, GY.CROSS, GY.BROKEN, GY.TOMB]
+stones = [GY.HEADSTONE, GY.HEADSTONE, GY.HEADSTONE, GY.BROKEN, GY.BROKEN, GY.TOMB]
 plots_y = [96, 116, 136]
 for ri, py in enumerate(plots_y):
     for cx in range(18, W - 18, 30):

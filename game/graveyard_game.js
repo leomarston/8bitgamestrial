@@ -25,7 +25,7 @@
     g.translate(s.w, 0); g.scale(-1, 1); g.drawImage(s.canvas, 0, 0); return { canvas: c, w: s.w, h: s.h };
   }
   const GP = GY.palette;
-  const S = {}; for (const k of ["monster", "crypt", "headstone", "cross", "broken", "tomb", "tree", "fence", "pillar", "lantern", "skull", "bat"]) S[k] = build(GY[k], GP);
+  const S = {}; for (const k of ["monster", "crypt", "headstone", "broken", "tomb", "tree", "fence", "pillar", "lantern", "skull", "bat"]) S[k] = build(GY[k], GP);
   const fight = {}; D.roster.forEach(c => { fight[c.name] = build(c.rows, D.palette); fight[c.name + "_f"] = flip(build(c.rows, D.palette)); });
   const FONT = D.font;
 
@@ -59,9 +59,9 @@
   }
 
   const STONES = [
-    ["cross", 150, 250], ["headstone", 300, 232], ["broken", 660, 236], ["headstone", 832, 258],
-    ["tomb", 235, 392], ["headstone", 720, 372], ["cross", 850, 446],
-    ["headstone", 150, 486], ["broken", 372, 520], ["tomb", 560, 522], ["cross", 770, 512],
+    ["broken", 150, 250], ["headstone", 300, 232], ["tomb", 660, 236], ["headstone", 832, 258],
+    ["tomb", 235, 392], ["headstone", 720, 372], ["broken", 850, 446],
+    ["headstone", 150, 486], ["broken", 372, 520], ["tomb", 560, 522], ["headstone", 770, 512],
   ];
   const crypt = { cx: 480, by: 224 };
   const spawn = { mon: { x: 480, y: 350 }, p1: { x: 110, y: 512 }, p2: { x: 850, y: 512 } };

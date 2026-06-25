@@ -26,7 +26,7 @@
   const spr = {}; D.roster.forEach(c => spr[c.name] = buildSprite(c.rows));
   const ballS = buildSprite(D.ball), wUp = buildSprite(D.wingUp), wUpL = flip(wUp);
   const GYP = D.graveyard.palette;
-  const gMon = buildSprite(D.graveyard.monster, GYP), gHead = buildSprite(D.graveyard.headstone, GYP), gCross = buildSprite(D.graveyard.cross, GYP);
+  const gMon = buildSprite(D.graveyard.monster, GYP), gHead = buildSprite(D.graveyard.headstone, GYP), gBroken = buildSprite(D.graveyard.broken, GYP);
   const FONT = D.font;
 
   function tW(s, sc, sp = 1) { return (s.length * (5 + sp) - sp) * sc; }
@@ -115,7 +115,7 @@
     // moon
     ctx.fillStyle = "#cfe6ff"; ctx.beginPath(); ctx.arc(r.x + r.w - 30, r.y + 28, 8, 0, 7); ctx.fill();
     fitDraw(gHead, r.x + 18, r.y + 30, 34, 56);
-    fitDraw(gCross, r.x + r.w - 56, r.y + 30, 34, 56);
+    fitDraw(gBroken, r.x + r.w - 56, r.y + 30, 34, 56);
     fitDraw(gMon, r.x + r.w / 2 - 28, r.y + 22, 56, 64);
   }
   function tile(i, t) {
