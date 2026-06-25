@@ -15,7 +15,7 @@
 
   // per-player config: colour, controls, and a short control hint
   const PCONF = [
-    { tag: "P1", color: "#ff5d5d", keys: { up: "KeyW", down: "KeyS", left: "KeyA", right: "KeyD" }, ok: ["Space", "KeyF"], ctl: "WASD / SPACE", def: 0 },
+    { tag: "P1", color: "#ff5d5d", keys: { up: "KeyW", down: "KeyS", left: "KeyA", right: "KeyD" }, ok: ["Space"], ctl: "WASD / SPACE", def: 0 },
     { tag: "P2", color: "#5db4ff", keys: { up: "ArrowUp", down: "ArrowDown", left: "ArrowLeft", right: "ArrowRight" }, ok: ["Enter", "Numpad0"], ctl: "ARROWS / ENTER", def: 3 },
     { tag: "P3", color: "#6bd66b", keys: { up: "KeyI", down: "KeyK", left: "KeyJ", right: "KeyL" }, ok: ["KeyO", "KeyU"], ctl: "IJKL / O", def: 4 },
     { tag: "P4", color: "#ffd54a", keys: { up: "KeyT", down: "KeyG", left: "KeyF", right: "KeyH" }, ok: ["KeyR", "KeyY"], ctl: "TFGH / R", def: 7 },
@@ -153,6 +153,7 @@
     const n = count, pw = (W - 40 - (n - 1) * 12) / n;
     for (let i = 0; i < n; i++) drawPanel(players[i], 20 + i * (pw + 12), H - 132, pw, 110);
 
+    window.__cs = { count, idx: players.map(p => p.idx), locked: players.map(p => p.locked) };
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
