@@ -73,6 +73,55 @@ KSsssssK
 .KKKKKK.
 """)
 
+# --- hand-drawn stone tiles for MAP 2 (stamped into the raised platform) ---
+# walkable flagstone for the deck surface (corner highlight + grout on R/B edges)
+TOPTILE = spr("""
+SWWSSSSs
+SWSSSSSs
+SSSSSSSs
+SSSSSSSs
+SSSSSSSs
+SSSSSSSs
+SSSSSSSs
+ssssssss
+""")
+# beveled stone block for the platform / staircase front (running-bond when tiled)
+FACETILE = spr("""
+SSSSSSSu
+Sssssssu
+Sssssssu
+Sssssssu
+Sssssssu
+Sssssssu
+Sssssssu
+uuuuuuuu
+""")
+# gold step cap (nosing + bright tread) overlaid on each stair tread
+STEPCAP = spr("""
+YYYYYYYY
+yCSSSSSy
+SWSSSSSs
+""")
+# royal banner with a crown crest, hung on the platform face (swallowtail base)
+BANNER = spr("""
+yYYYYYYYYYYYYYYy
+RRRRRRRRRRRRRRRR
+RRRRRKKKKKKRRRRR
+RRRRKYKYKYKYKRRR
+RRRRKYYYYYYKRRRR
+RRRRKYRYRYRYKRRR
+RRRRKYYYYYYKRRRR
+RRRRKyyyyyyKRRRR
+RRRRRKKKKKKRRRRR
+RRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRR
+rrRRRRRRRRRRRRrr
+rrrRRRRRRRRRRrrr
+rKrrRRRRRRRRrrKr
+KK.rrRRRRRRrr.KK
+..K..rRRRRr..K..
+""")
+
 def fighter(img, name, cx, feetY, flip=False):
     rows = fgrid(getattr(C, name)); rw = len(rows[0]); rh = len(rows)
     px = img.load()
@@ -206,15 +255,18 @@ def _scoreboard(img):
         px[x, by] = col("R") if (x - bx) < bw * 0.62 else col("U")
         px[x, by + 1] = col("R") if (x - bx) < bw * 0.62 else col("U")
 
-def stairs(px, w, h, topX, topY, dirn, n=4, sw=12, sh=4):
-    """3/4 staircase descending from (topX,topY) at the platform edge out to ground."""
-    for i in range(n):
-        x0 = topX + dirn * i * 7 + (0 if dirn > 0 else -sw)
-        yt = topY + i * sh
-        for yy in range(yt, yt + sh):
-            for xx in range(x0, x0 + sw):
-                sp(px, w, h, xx, yy, col("S") if yy == yt else col("s"))
-        for xx in range(x0, x0 + sw): sp(px, w, h, xx, yt, col("Y"))
+def tile_rect(img, tile, x0, y0, x1, y1, bond=False):
+    """Stamp a hand-drawn tile to fill [x0,x1) x [y0,y1), clipped to the rect.
+    bond=True offsets alternate courses by half a tile (masonry running bond)."""
+    px = img.load(); tw = len(tile[0]); th = len(tile)
+    for gy in range(y0, y1):
+        ty = (gy - y0) % th
+        course = (gy - y0) // th
+        off = (tw // 2) if (bond and course % 2) else 0
+        for gx in range(x0, x1):
+            ch = tile[ty][(gx - x0 + off) % tw]
+            c = PAL.get(ch)
+            if c: sp(px, img.width, img.height, gx, gy, (*c, 255))
 
 def _stage(img, seed):
     W, H = img.size; px = img.load()
@@ -235,37 +287,52 @@ def _stage(img, seed):
     return fx, fy, fw, fh
 
 def arena2():
-    """MAP 2 — blocked middle: a solid raised platform you can only mount via a
-    staircase on each side; the crown sits on top, so the chase funnels up the stairs."""
+    """MAP 2 — blocked middle: a hand-drawn stone keep with a raised deck you can
+    only mount via a staircase on each side; the crown waits on top, so the chase
+    funnels up the stairs. Every block is a hand-authored tile, stamped into place."""
     W, H, SC = 240, 150, 4
     img = Image.new("RGBA", (W, H), col("u")); px = img.load()
     fx, fy, fw, fh = _stage(img, 11)
     cxc = W // 2
-    deckTop, halfW, deckH, faceH = fy + 24, 44, 28, 16
-    deckBot = deckTop + deckH
-    # solid front face (the height / the blocked middle)
-    for y in range(deckBot, deckBot + faceH):
-        for x in range(cxc - halfW, cxc + halfW):
-            base = "K" if (x % 12 == 0 or y == deckBot + faceH - 1) else "s"
-            sp(px, W, H, x, y, col(base))
-    for x in range(cxc - halfW, cxc + halfW): sp(px, W, H, x, deckBot + faceH, col("u"))  # base shadow
-    # top deck surface (walkable, reached only by the stairs)
-    for y in range(deckTop, deckBot):
-        for x in range(cxc - halfW, cxc + halfW):
-            sp(px, W, H, x, y, col("S") if (x // 8 + y // 8) % 2 == 0 else col("s"))
-    for x in range(cxc - halfW, cxc + halfW): sp(px, W, H, x, deckTop, col("Y"))
-    for y in range(deckTop, deckBot): sp(px, W, H, cxc - halfW, y, col("y")); sp(px, W, H, cxc + halfW - 1, y, col("y"))
-    # the two staircases (only ways up)
-    stairs(px, W, H, cxc - halfW, deckBot, -1)
-    stairs(px, W, H, cxc + halfW, deckBot, +1)
-    # crown on top centre
-    blit(img, CROWN, cxc - len(CROWN[0]) // 2, deckTop + 3); star(img, cxc + 10, deckTop + 3, "W")
-    # fighters: KING on the deck, chaser climbing the right stairs
-    fighter(img, "PIXEL", cxc - 14, deckBot - 1)
-    crown_small(img, cxc - 14, deckBot - 1 - len(fgrid(C.PIXEL)) - 1)
-    img.alpha_composite(pf.text("KING", 1, (255, 233, 160)), (cxc - 22, deckBot - len(fgrid(C.PIXEL)) - 11))
-    fighter(img, "BYTE", cxc + halfW + 16, deckBot + 12, flip=True)
-    star(img, cxc + halfW + 6, deckBot + 2, "Y")
+    # --- geometry (all multiples of the 8px tile) ---
+    deckL, deckR = cxc - 40, cxc + 40          # 80px-wide deck, x 80..160
+    surfY = 96                                  # top walking surface starts here
+    surfH = 8
+    floorBot = 136                              # platform base sits on the floor
+    steps = 5
+    # ground shadow the whole keep casts on the floor
+    for x in range(deckL - 44, deckR + 44):
+        for t in range(3): sp(px, W, H, x, floorBot + t, col("u"))
+
+    # --- staircases (the only ways up): stepped stone columns + gold caps ---
+    for i in range(steps):                      # LEFT flight, climbing rightward
+        x0 = deckL - (i + 1) * 8
+        ty = surfY + i * 8
+        tile_rect(img, FACETILE, x0, ty, x0 + 8, floorBot)
+        blit(img, STEPCAP, x0, ty)
+    for j in range(steps):                       # RIGHT flight, climbing leftward
+        x0 = deckR + j * 8
+        ty = surfY + j * 8
+        tile_rect(img, FACETILE, x0, ty, x0 + 8, floorBot)
+        blit(img, STEPCAP, x0, ty)
+
+    # --- the central keep: front face (masonry) then the deck surface on top ---
+    tile_rect(img, FACETILE, deckL, surfY + surfH, deckR, floorBot, bond=True)
+    tile_rect(img, TOPTILE, deckL, surfY, deckR, surfY + surfH)
+    for x in range(deckL, deckR):               # gold trim capping the deck edge
+        sp(px, W, H, x, surfY, col("Y")); sp(px, W, H, x, surfY + 1, col("y"))
+
+    # --- royal banner hung on the face, crown waiting on the deck ---
+    blit(img, BANNER, cxc - len(BANNER[0]) // 2, surfY + surfH + 4)
+    blit(img, CROWN, cxc - len(CROWN[0]) // 2, surfY - len(CROWN) - 1)
+    star(img, cxc + 11, surfY - len(CROWN) - 1, "W")
+
+    # --- fighters: KING up top, chaser climbing the right stairs ---
+    fighter(img, "PIXEL", cxc - 13, surfY)
+    crown_small(img, cxc - 13, surfY - len(fgrid(C.PIXEL)) - 1)
+    img.alpha_composite(pf.text("KING", 1, (255, 233, 160)), (cxc - 21, surfY - len(fgrid(C.PIXEL)) - 11))
+    fighter(img, "BYTE", deckR + 20, surfY + 16, flip=True)
+    star(img, deckR + 11, surfY + 8, "Y")
     _scoreboard(img)
     img.resize((W * SC, H * SC), Image.NEAREST).convert("RGB").save(os.path.join(OUT, "crown_arena2.png"))
     print("wrote crown_arena2.png")
