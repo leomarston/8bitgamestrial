@@ -46,13 +46,11 @@
   const ts = (s, x, y, sc, c, sp = 1) => { text(s, x + sc, y + sc, sc, "#0a1020", sp); text(s, x, y, sc, c, sp); };
 
   // ---------- colors ----------
-  const SKY_TOP = "#bfe9ff", SKY1 = "#8fd0ff", HILL = "#3f9e63", CLOUD = "#f4f4ee";
+  const SKY1 = "#8fd0ff", CLOUD = "#f4f4ee";
   const PIPE = "#6bd66b", PIPE_D = "#2f8c50", PIPE_L = "#a7eea0", OUT = "#1d3a23";
   const GRASS = "#6bd66b", DIRT = "#8a5a32", DIRT_D = "#683a1e";
   const GOLD = "#ffd54a", DIM = "#cfe6f5", INK = "#0c1320";
   const P1C = "#ff5d5d", P2C = "#5db4ff";
-  const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
-  skyGrad.addColorStop(0, SKY_TOP); skyGrad.addColorStop(1, SKY1);
 
   // ---------- picks ----------
   let p1name = "PIXEL", p2name = "BYTE";
@@ -224,51 +222,16 @@
     tc("P1 W / SPACE      P2 UP      BACKSPACE MENU", W / 2, 32, 1, DIM);
   }
 
-  // deterministic per-index pseudo-random so scenery tiles without flicker
-  function rnd(i) { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
-
-  function drawBuildings() {
-    const par = 0.22, bw = 66, base = groundY - 16;
-    const startWX = scroll * par;
-    const i0 = Math.floor(startWX / bw) - 1;
-    for (let i = i0; i < i0 + Math.ceil(W / bw) + 2; i++) {
-      const sx = Math.round(i * bw - startWX);
-      const h = 80 + rnd(i) * 150, top = base - h;
-      ctx.fillStyle = "#7fa8c6"; ctx.fillRect(sx, top, bw - 8, h);
-      ctx.fillStyle = "#6e96b6"; ctx.fillRect(sx + bw - 8 - 7, top, 7, h);
-      ctx.fillStyle = "#9fc3dc"; ctx.fillRect(sx, top, bw - 8, 4); // roof rim
-      ctx.fillStyle = "#ffe49a";
-      for (let wy = top + 12; wy < base - 12; wy += 18)
-        for (let wx = sx + 8; wx < sx + bw - 18; wx += 16)
-          if (rnd(i * 53.1 + wy * 1.7 + wx) > 0.42) ctx.fillRect(wx, wy, 7, 9);
-    }
-  }
-
-  function drawTrees() {
-    const par = 0.5, sp = 104;
-    const startWX = scroll * par;
-    const i0 = Math.floor(startWX / sp) - 1;
-    for (let i = i0; i < i0 + Math.ceil(W / sp) + 2; i++) {
-      const sx = Math.round(i * sp - startWX) + 50, r = 26 + rnd(i * 7.3) * 12;
-      ctx.fillStyle = "#5a3418"; ctx.fillRect(sx - 5, groundY - r + 4, 10, r + 8);
-      ctx.fillStyle = "#2f8c50"; ctx.beginPath(); ctx.arc(sx, groundY - r, r, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "#3fae66"; ctx.beginPath(); ctx.arc(sx - r * 0.3, groundY - r - r * 0.25, r * 0.62, 0, Math.PI * 2); ctx.fill();
-    }
-  }
-
   function frame(prev, now) {
     const dt = Math.min((now - prev) / 1000, 0.033);
     update(dt);
 
-    // sky (smooth gradient — no waterline)
-    ctx.fillStyle = skyGrad; ctx.fillRect(0, 0, W, H);
+    // sky — flat single colour (clean 4-bit, no waterline)
+    ctx.fillStyle = SKY1; ctx.fillRect(0, 0, W, H);
     clouds.forEach(c => { ctx.fillStyle = CLOUD;
       const s = Math.round(6 * c.s);
       ctx.fillRect(c.x, c.y, s * 5, s * 2); ctx.fillRect(c.x + s, c.y - s, s * 3, s * 2);
-      ctx.fillRect(c.x + s * 2, c.y + s, s * 2, s);
     });
-    drawBuildings();
-    drawTrees();
     // pipes
     pipes.forEach(drawPipe);
     drawMarker();
