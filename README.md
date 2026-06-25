@@ -77,21 +77,21 @@ Controls (tap to flap): **P1 `WASD`/`Space`**, **P2 arrows**, **P3 `IJKL`/`O`**,
 **P4 `TGHR`**; `Enter`/`R` = rematch, `Backspace` = menu. Player count + fighters
 come from the select screen.
 
-## Minigame: GRAVEYARD (monster in the middle)
+## Minigame: GRAVEYARD (turn-into-a-zombie tag, 2–4 players)
 
-`game/graveyard.html` — top-down cemetery chase. A **zombie** starts in the middle
-and hunts the **nearest living player**. It is **slower than the players** but
-relentless, and it **can't pass through graves** (the crypt and tombstones are
-solid). Get touched = you're out. **Last one standing wins.**
+`game/graveyard.html` — top-down cemetery chase. An **AI zombie** starts in the
+middle and hunts the **nearest human**. It's slower than the players but relentless
+and **can't pass through graves**. **Get caught — by the AI zombie OR by a
+player-zombie — and you TURN INTO A ZOMBIE that you keep controlling**, then hunt
+the survivors. **Last human standing wins.**
 
-Players (and the zombie) have a **walk animation**. You can **punch your rival** —
-that plays a punch and knocks them **down for 0.7s** (they can't move, easy zombie
-bait), then they get back up. Sound effects: punch, footsteps on grass, and a
-zombie groan (footstep/zombie kept quiet).
+Humans can **punch a rival** (knocks them **down for 0.7s** — easy zombie bait);
+player-zombies can **lunge** to grab. Player-zombies are tinted green. Sound
+effects: punch, footsteps, zombie groan.
 
-Controls: **P1 `WASD` + `Space` (punch)**, **P2 arrows + `Enter` (punch)**,
-`Enter`/`R` = rematch, `Backspace` = menu. The cemetery uses its own moody
-16-colour palette; art lives in `art/graveyard.py`, sounds in `game/sfx/`.
+Controls: **P1 `WASD`/`Space`**, **P2 arrows/`Enter`**, **P3 `IJKL`/`O`**,
+**P4 `TFGH`/`R`**; `Enter`/`R` = rematch, `Backspace` = menu. Art in
+`art/graveyard.py`, sounds in `game/sfx/`.
 
 ## Minigame: RUNNER (auto-scroll platformer)
 
