@@ -44,24 +44,16 @@ TILE_B = tile(PAL["B"], PAL["b"])
 TILES = {0: TILE_N, 1: TILE_R, 2: TILE_B}
 
 # ---------------------------------------------------------------------------
-# glossy bubble ring (drawn over a fighter); light/dark = owner colour
+# colored ground pad under a fighter (marks who they are / their paint colour)
 # ---------------------------------------------------------------------------
-def bubble(img, cx, cy, r, light, dark):
+def pad(img, cx, feetY, light, dark):
     px = img.load(); w, h = img.size
-    for y in range(cy - r - 1, cy + r + 2):
-        for x in range(cx - r - 1, cx + r + 2):
-            d = math.hypot(x - cx, y - cy)
-            if r - 0.4 <= d <= r + 0.5: setpx(px, w, h, x, y, col("K"))
-            elif r - 2.6 <= d < r - 0.4:
-                c = light if (x - cx) + (y - cy) < -1 else (dark if (x - cx) + (y - cy) > 2 else light)
-                setpx(px, w, h, x, y, (*c, 255))
-    # shine: white arc top-left + a glint
-    for t in range(20, 70, 6):
-        a = math.radians(t)
-        setpx(px, w, h, int(cx + (r - 4) * -math.cos(a)), int(cy + (r - 4) * -math.sin(a)), col("W"))
-    setpx(px, w, h, cx - r // 2, cy - r // 2 - 1, col("W")); setpx(px, w, h, cx - r // 2 + 1, cy - r // 2 - 1, col("W"))
-    # faint cyan reflection bottom-right
-    setpx(px, w, h, cx + r // 2, cy + r // 3, col("C"))
+    rw, rh = 11, 5
+    for y in range(-rh, rh + 1):
+        for x in range(-rw, rw + 1):
+            d = (x / rw) ** 2 + (y / rh) ** 2
+            if d <= 1.0:
+                setpx(px, w, h, cx + x, feetY + y, (*(dark if d > 0.5 else light), 255))
 
 def bumper(img, cx, cy, r):
     px = img.load(); w, h = img.size
@@ -101,9 +93,9 @@ def assets_sheet():
     cell(lambda im: im.alpha_composite(TILE_N, (9, 9)), "TILE")
     cell(lambda im: im.alpha_composite(TILE_R, (9, 9)), "P1 TILE")
     cell(lambda im: im.alpha_composite(TILE_B, (9, 9)), "P2 TILE")
-    def b1(im): fighter(im, "PIXEL", 17, 26); bubble(im, 17, 17, 15, PAL["R"], PAL["r"])
-    def b2(im): fighter(im, "BYTE", 17, 26); bubble(im, 17, 17, 15, PAL["B"], PAL["b"])
-    cell(b1, "P1 BUBBLE"); cell(b2, "P2 BUBBLE")
+    def b1(im): pad(im, 17, 29, PAL["R"], PAL["r"]); fighter(im, "PIXEL", 17, 31)
+    def b2(im): pad(im, 17, 29, PAL["B"], PAL["b"]); fighter(im, "BYTE", 17, 31)
+    cell(b1, "P1"); cell(b2, "P2")
     cell(lambda im: bumper(im, 17, 17, 13), "BUMPER")
     cell(lambda im: star(im, 17, 17, "Y"), "PUNCH")
     SCcanvas = Image.new("RGBA", (len(cells) * 60, 84), (*PAL["D"], 255))
@@ -144,32 +136,34 @@ def arena():
                 px[x, y] = col("P") if (x + y) % 2 == 0 else col("p")
     for x in range(fx - 4, fx + fw + 4): px[x, fy - 4] = col("K"); px[x, fy + fh + 3] = col("K")
     for y in range(fy - 4, fy + fh + 4): px[fx - 4, y] = col("K"); px[fx + fw + 3, y] = col("K")
-    # ---- tile floor (paint pattern: red bottom-left, blue top-right, neutral middle) ----
+    # ---- tile floor: every painted tile snaps to the grid ----
     cols, rows = fw // 16, fh // 16
     ox = fx + (fw - cols * 16) // 2; oy = fy + (fh - rows * 16) // 2
+    def cellxy(c, r): return (ox + c * 16, oy + r * 16)
     def state(c, r):
-        import random as _r
         v = (c / cols) - (r / rows)
-        if v < -0.28: return 2
-        if v > 0.30: return 1
+        if v < -0.30: return 2
+        if v > 0.32: return 1
         return (1 if ((c * 7 + r * 5) % 5 == 0) else (2 if ((c * 3 + r) % 6 == 0) else 0))
+    grid = [[state(c, r) for c in range(cols)] for r in range(rows)]
+    # players sit on grid cells; their cell + a short trail are painted (grid-aligned)
+    p1c, p1r = 2, rows - 2
+    p2c, p2r = cols - 3, 1
+    for dc in range(-2, 1): grid[p1r][max(0, p1c + dc)] = 1
+    for dc in range(0, 3): grid[p2r][min(cols - 1, p2c + dc)] = 2
     for r in range(rows):
         for c in range(cols):
-            img.alpha_composite(TILES[state(c, r)], (ox + c * 16, oy + r * 16))
-    # ---- bumpers ----
-    bumper(img, ox + cols * 16 // 2, oy + rows * 16 // 2, 11)
-    bumper(img, ox + 16 * 2 + 8, oy + 16 + 8, 8); bumper(img, ox + fw - 40, oy + fh - 36, 8)
-    # ---- a paint trail + the two bubbles mid-roll, bumping ----
-    p1x, p1y = ox + 16 * 3, oy + rows * 16 - 30
-    p2x, p2y = ox + cols * 16 - 56, oy + 40
-    for (tx, ty) in [(p1x - 30, p1y + 8), (p1x - 16, p1y + 6)]:
-        img.alpha_composite(TILE_R, ((tx // 16) * 16, (ty // 16) * 16))
-    fighter(img, "PIXEL", p1x, p1y + 14); bubble(img, p1x, p1y, 16, PAL["R"], PAL["r"])
-    fighter(img, "BYTE", p2x, p2y + 14, flip=True); bubble(img, p2x, p2y, 16, PAL["B"], PAL["b"])
-    star(img, (p1x + p2x) // 2, (p1y + p2y) // 2, "Y")  # bump spark
-    # ---- player name tags ----
-    t1 = pf.text("P1", 1, (255, 255, 255)); img.alpha_composite(t1, (p1x - 4, p1y - 24))
-    t2 = pf.text("P2", 1, (255, 255, 255)); img.alpha_composite(t2, (p2x - 4, p2y - 24))
+            img.alpha_composite(TILES[grid[r][c]], cellxy(c, r))
+    # ---- bumpers (centred on tile cells so nothing looks off-grid) ----
+    for (bc, br) in [(cols // 2, rows // 2), (3, 1), (cols - 3, rows - 2)]:
+        x, y = cellxy(bc, br); bumper(img, x + 8, y + 8, 9)
+    # ---- the two fighters standing on their cells, with coloured pads ----
+    x1, y1 = cellxy(p1c, p1r); cx1, fy1 = x1 + 8, y1 + 16
+    x2, y2 = cellxy(p2c, p2r); cx2, fy2 = x2 + 8, y2 + 16
+    pad(img, cx1, fy1 - 2, PAL["R"], PAL["r"]); fighter(img, "PIXEL", cx1, fy1)
+    pad(img, cx2, fy2 - 2, PAL["B"], PAL["b"]); fighter(img, "BYTE", cx2, fy2, flip=True)
+    t1 = pf.text("P1", 1, (255, 255, 255)); img.alpha_composite(t1, (cx1 - 4, fy1 - 36))
+    t2 = pf.text("P2", 1, (255, 255, 255)); img.alpha_composite(t2, (cx2 - 4, fy2 - 36))
 
     up = img.resize((W * SC, H * SC), Image.NEAREST)
     up.convert("RGB").save(os.path.join(OUT, "tilebangers_arena.png"))
