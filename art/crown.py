@@ -193,6 +193,83 @@ def arena():
     img.resize((W * SC, H * SC), Image.NEAREST).convert("RGB").save(os.path.join(OUT, "crown_arena.png"))
     print("wrote crown_arena.png")
 
+def _scoreboard(img):
+    px = img.load(); W, H = img.size
+    panel(img, 6, 4, 96, 16, "D"); panel(img, W - 102, 4, 96, 16, "D")
+    crown_small(img, 14, 7)
+    img.alpha_composite(pf.text("PIXEL", 1, (255, 93, 108)), (22, 6))
+    img.alpha_composite(pf.text("8.420", 2, (255, 255, 255)), (52, 6))
+    img.alpha_composite(pf.text("BYTE", 1, (79, 184, 255)), (W - 96, 6))
+    img.alpha_composite(pf.text("5.130", 2, (255, 255, 255)), (W - 66, 6))
+    bx, by, bw = 104, 8, W - 210
+    for x in range(bx, bx + bw):
+        px[x, by] = col("R") if (x - bx) < bw * 0.62 else col("U")
+        px[x, by + 1] = col("R") if (x - bx) < bw * 0.62 else col("U")
+
+def stairs(px, w, h, topX, topY, dirn, n=4, sw=12, sh=4):
+    """3/4 staircase descending from (topX,topY) at the platform edge out to ground."""
+    for i in range(n):
+        x0 = topX + dirn * i * 7 + (0 if dirn > 0 else -sw)
+        yt = topY + i * sh
+        for yy in range(yt, yt + sh):
+            for xx in range(x0, x0 + sw):
+                sp(px, w, h, xx, yy, col("S") if yy == yt else col("s"))
+        for xx in range(x0, x0 + sw): sp(px, w, h, xx, yt, col("Y"))
+
+def _stage(img, seed):
+    W, H = img.size; px = img.load()
+    spotlight(px, W, H, 50, 22, 150, 70); spotlight(px, W, H, 190, 22, 150, 70)
+    random.seed(seed)
+    for _ in range(90):
+        x, y = random.randint(0, W - 1), random.randint(28, H - 1)
+        px[x, y] = col(random.choice(["G", "M", "Y", "R", "U", "W"]))
+    bunting(px, W, H, 22)
+    fx, fy, fw, fh = 18, 40, W - 36, H - 50
+    for yy in range(fy, fy + fh):
+        for xx in range(fx, fx + fw):
+            px[xx, yy] = col("F") if ((xx // 12) + (yy // 12)) % 2 == 0 else col("f")
+    for xx in range(fx - 2, fx + fw + 2):
+        for t in range(2): px[xx, fy - 1 - t] = col("Y" if t == 0 else "y"); px[xx, fy + fh + t] = col("y")
+    for yy in range(fy - 2, fy + fh + 2):
+        for t in range(2): px[fx - 1 - t, yy] = col("Y" if t == 0 else "y"); px[fx + fw + t, yy] = col("y")
+    return fx, fy, fw, fh
+
+def arena2():
+    """MAP 2 — blocked middle: a solid raised platform you can only mount via a
+    staircase on each side; the crown sits on top, so the chase funnels up the stairs."""
+    W, H, SC = 240, 150, 4
+    img = Image.new("RGBA", (W, H), col("u")); px = img.load()
+    fx, fy, fw, fh = _stage(img, 11)
+    cxc = W // 2
+    deckTop, halfW, deckH, faceH = fy + 24, 44, 28, 16
+    deckBot = deckTop + deckH
+    # solid front face (the height / the blocked middle)
+    for y in range(deckBot, deckBot + faceH):
+        for x in range(cxc - halfW, cxc + halfW):
+            base = "K" if (x % 12 == 0 or y == deckBot + faceH - 1) else "s"
+            sp(px, W, H, x, y, col(base))
+    for x in range(cxc - halfW, cxc + halfW): sp(px, W, H, x, deckBot + faceH, col("u"))  # base shadow
+    # top deck surface (walkable, reached only by the stairs)
+    for y in range(deckTop, deckBot):
+        for x in range(cxc - halfW, cxc + halfW):
+            sp(px, W, H, x, y, col("S") if (x // 8 + y // 8) % 2 == 0 else col("s"))
+    for x in range(cxc - halfW, cxc + halfW): sp(px, W, H, x, deckTop, col("Y"))
+    for y in range(deckTop, deckBot): sp(px, W, H, cxc - halfW, y, col("y")); sp(px, W, H, cxc + halfW - 1, y, col("y"))
+    # the two staircases (only ways up)
+    stairs(px, W, H, cxc - halfW, deckBot, -1)
+    stairs(px, W, H, cxc + halfW, deckBot, +1)
+    # crown on top centre
+    blit(img, CROWN, cxc - len(CROWN[0]) // 2, deckTop + 3); star(img, cxc + 10, deckTop + 3, "W")
+    # fighters: KING on the deck, chaser climbing the right stairs
+    fighter(img, "PIXEL", cxc - 14, deckBot - 1)
+    crown_small(img, cxc - 14, deckBot - 1 - len(fgrid(C.PIXEL)) - 1)
+    img.alpha_composite(pf.text("KING", 1, (255, 233, 160)), (cxc - 22, deckBot - len(fgrid(C.PIXEL)) - 11))
+    fighter(img, "BYTE", cxc + halfW + 16, deckBot + 12, flip=True)
+    star(img, cxc + halfW + 6, deckBot + 2, "Y")
+    _scoreboard(img)
+    img.resize((W * SC, H * SC), Image.NEAREST).convert("RGB").save(os.path.join(OUT, "crown_arena2.png"))
+    print("wrote crown_arena2.png")
+
 def assets():
     SC = 7
     items = []
@@ -218,4 +295,4 @@ def assets():
     print("wrote crown_assets.png")
 
 if __name__ == "__main__":
-    assets(); arena(); print("done")
+    assets(); arena(); arena2(); print("done")
