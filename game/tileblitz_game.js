@@ -52,6 +52,7 @@
   const sndWalk = (() => { const a = new Audio("sfx/walk.mp3"); a.volume = 0.18; a.loop = true; return a; })();
   let audioReady = false;
   function setWalking(on) { if (on && audioReady) { if (sndWalk.paused) sndWalk.play().catch(() => {}); } else if (!sndWalk.paused) sndWalk.pause(); }
+  function playHit() { const a = new Audio("sfx/punch.mp3"); a.volume = 0.5; a.play().catch(() => {}); }
 
   // ---------- picks ----------
   let p1name = "PIXEL", p2name = "BYTE";
@@ -67,15 +68,16 @@
 
   // ---------- entities ----------
   const PSC = 1.9, R = 13, PSPD = 188, MATCH = 30;
-  function ent(name, color, c) { return { name, color, x: 0, y: 0, face: 1, walkT: 0, moving: false, r: R, paint: c }; }
-  let p1, p2, players, grid, phase, ready, timeLeft, winner, c1, c2;
+  const DASH_TIME = 0.16, DASH_COOL = 0.55, DASH_SPEED = 500, BLACKOUT = 1.0;
+  function ent(name, color, c) { return { name, color, x: 0, y: 0, face: 1, walkT: 0, moving: false, r: R, paint: c, dash: 0, dashDir: [1, 0], dashCool: 0, black: 0 }; }
+  let p1, p2, players, grid, phase, ready, timeLeft, winner, c1, c2, sparks;
 
   function reset() {
     p1 = ent(p1name, P1C, 1); p2 = ent(p2name, P2C, 2); players = [p1, p2];
     p1.x = M.spawn.p1[0] * S; p1.y = M.spawn.p1[1] * S; p1.face = 1;
     p2.x = M.spawn.p2[0] * S; p2.y = M.spawn.p2[1] * S; p2.face = -1;
     grid = []; for (let r = 0; r < ROWS; r++) { const row = []; for (let c = 0; c < COLS; c++) row.push(BUMP_CELL.has(c + "," + r) ? -1 : 0); grid.push(row); }
-    phase = "ready"; ready = 2.4; timeLeft = MATCH; winner = null; c1 = 0; c2 = 0;
+    phase = "ready"; ready = 2.4; timeLeft = MATCH; winner = null; c1 = 0; c2 = 0; sparks = [];
     paintAt(p1); paintAt(p2);
   }
 
@@ -86,9 +88,24 @@
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(e.code)) e.preventDefault();
     if (e.code === "Backspace") { location.href = "gameselect.html"; return; }
     if (phase === "over" && (e.code === "Enter" || e.code === "KeyR" || e.code === "Space")) { if (window.GameMusic) window.GameMusic.next(); reset(); return; }
+    if (phase === "play" && !e.repeat) {
+      if (e.code === "Space" || e.code === "KeyF") doDash(p1);
+      if (e.code === "Enter" || e.code === "NumpadEnter") doDash(p2);
+    }
     held[e.code] = true;
   });
   window.addEventListener("keyup", e => { held[e.code] = false; });
+
+  function dirFor(p) {
+    const k = p === p1 ? ["KeyD", "KeyA", "KeyS", "KeyW"] : ["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp"];
+    return [(held[k[0]] ? 1 : 0) - (held[k[1]] ? 1 : 0), (held[k[2]] ? 1 : 0) - (held[k[3]] ? 1 : 0)];
+  }
+  function doDash(p) {
+    if (phase !== "play" || p.black > 0 || p.dashCool > 0 || p.dash > 0) return;
+    let [dx, dy] = dirFor(p); if (dx === 0 && dy === 0) { dx = p.face; dy = 0; }
+    const m = Math.hypot(dx, dy) || 1; p.dashDir = [dx / m, dy / m];
+    p.dash = DASH_TIME; p.dashCool = DASH_COOL; p.face = dx > 0 ? 1 : (dx < 0 ? -1 : p.face);
+  }
 
   // ---------- collision + paint ----------
   function blocked(x, y, r) {
@@ -112,13 +129,31 @@
     if (phase === "over") { setWalking(false); return; }
     timeLeft = Math.max(0, timeLeft - dt);
     let anyMoving = false;
-    const ctrl = [[p1, "KeyW", "KeyS", "KeyA", "KeyD"], [p2, "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]];
-    for (const [p, U, Dn, L, Rt] of ctrl) {
+    for (const p of players) {
+      p.black = Math.max(0, p.black - dt); p.dash = Math.max(0, p.dash - dt); p.dashCool = Math.max(0, p.dashCool - dt);
       p.moving = false;
-      const dx = (held[Rt] ? 1 : 0) - (held[L] ? 1 : 0), dy = (held[Dn] ? 1 : 0) - (held[U] ? 1 : 0);
-      if (dx || dy) { const m = Math.hypot(dx, dy); moveEnt(p, dx / m * PSPD * dt, dy / m * PSPD * dt);
-        if (dx) p.face = dx > 0 ? 1 : -1; p.moving = true; anyMoving = true; p.walkT += dt * 12; paintAt(p); }
+      if (p.black > 0) continue;
+      if (p.dash > 0) {
+        moveEnt(p, p.dashDir[0] * DASH_SPEED * dt, p.dashDir[1] * DASH_SPEED * dt);
+        p.moving = true; p.walkT += dt * 20; paintAt(p);
+      } else {
+        const [dx, dy] = dirFor(p);
+        if (dx || dy) { const m = Math.hypot(dx, dy); moveEnt(p, dx / m * PSPD * dt, dy / m * PSPD * dt);
+          if (dx) p.face = dx > 0 ? 1 : -1; p.moving = true; anyMoving = true; p.walkT += dt * 12; paintAt(p); }
+      }
     }
+    // dash impacts: a dasher who touches the rival blacks them out for 1s
+    for (const [att, vic] of [[p1, p2], [p2, p1]]) {
+      if (att.dash > 0 && att.black <= 0 && vic.black <= 0 && (att.x - vic.x) ** 2 + (att.y - vic.y) ** 2 < (att.r + vic.r + 6) ** 2) {
+        vic.black = BLACKOUT; att.dash = 0; att.dashCool = Math.min(att.dashCool, 0.25);
+        const mx = (att.x + vic.x) / 2, my = (att.y + vic.y) / 2;
+        for (let i = 0; i < 10; i++) { const a = i / 10 * 7, sp = 80 + (i % 3) * 60; sparks.push({ x: mx, y: my, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, t: 0.4, c: i % 2 ? GOLD : "#ffffff" }); }
+        moveEnt(vic, att.dashDir[0] * 20, att.dashDir[1] * 20);
+        playHit();
+      }
+    }
+    for (const s of sparks) { s.t -= dt; s.x += s.vx * dt; s.y += s.vy * dt; }
+    sparks = sparks.filter(s => s.t > 0);
     setWalking(anyMoving);
     counts();
     if (timeLeft <= 0) { phase = "over"; winner = c1 > c2 ? p1 : (c2 > c1 ? p2 : null); }
@@ -126,6 +161,9 @@
 
   // ---------- draw ----------
   function shadow(x, y, rw) { ctx.fillStyle = "rgba(8,10,20,.4)"; ctx.beginPath(); ctx.ellipse(x, y, rw, rw * 0.35, 0, 0, 7); ctx.fill(); }
+  function drawSprRaw(s, cx, feetY, scale, alpha) { const w = Math.round(s.w * scale), h = Math.round(s.h * scale); ctx.globalAlpha = alpha == null ? 1 : alpha; ctx.drawImage(s.canvas, Math.round(cx - w / 2), feetY - h, w, h); ctx.globalAlpha = 1; }
+  function drawDown(s, cx, feetY, scale, alpha) { const w = Math.round(s.w * scale), h = Math.round(s.h * scale); ctx.save(); ctx.globalAlpha = alpha == null ? 1 : alpha; ctx.translate(cx, feetY - h * 0.38); ctx.rotate(Math.PI * 0.46); ctx.drawImage(s.canvas, (-w / 2) | 0, (-h / 2) | 0, w, h); ctx.restore(); ctx.globalAlpha = 1; }
+  function drawStars(p, cy) { for (let i = 0; i < 3; i++) { const a = p.black * 9 + i * 2.1; ctx.fillStyle = i % 2 ? GOLD : "#f4f4ee"; ctx.fillRect((p.x + Math.cos(a) * 13) | 0, (cy + Math.sin(a) * 4) | 0, 3, 3); } }
   function drawAnim(s, cx, feetY, scale, walkT, moving) {
     const w = Math.round(s.w * scale), h = Math.round(s.h * scale);
     const left = Math.round(cx - w / 2), top = feetY - h;
@@ -141,6 +179,8 @@
     const s = p.face < 0 ? fight[p.name + "_f"] : fight[p.name];
     const h = Math.round(s.h * PSC), feetY = p.y + 8;
     shadow(p.x, p.y + 6, Math.round(s.w * PSC) * 0.42);
+    if (p.black > 0) { drawDown(s, p.x, feetY, PSC, 0.7); drawStars(p, p.y - 30); return; }
+    if (p.dash > 0) for (let i = 1; i <= 3; i++) drawSprRaw(s, p.x - p.dashDir[0] * i * 7, feetY - p.dashDir[1] * i * 7, PSC, 0.12 * (4 - i));
     drawAnim(s, p.x, feetY, PSC, p.walkT, p.moving);
     ctx.fillStyle = p.color; const tx = (p.x - 9) | 0; ctx.fillRect(tx, (feetY - h - 7) | 0, 20, 7);
     text(p === p1 ? "P1" : "P2", tx + 3, (feetY - h - 6) | 0, 1, INK);
@@ -174,14 +214,15 @@
     ctx.drawImage(bg, 0, 0, W, H);
     drawGrid();
     [{ y: p1.y, f: () => drawPlayer(p1) }, { y: p2.y, f: () => drawPlayer(p2) }].sort((a, b) => a.y - b.y).forEach(e => e.f());
+    for (const s of sparks) { ctx.fillStyle = s.c; ctx.fillRect(s.x | 0, s.y | 0, 3, 3); }
     hud();
-    if (phase === "play") tc("P1 WASD    P2 ARROWS    PAINT THE MOST TILES    BACKSPACE MENU", W / 2, H - 16, 1, DIM);
+    if (phase === "play") tc("P1 WASD +SPACE DASH    P2 ARROWS +ENTER DASH    PAINT THE MOST    BACKSPACE MENU", W / 2, H - 16, 1, DIM);
 
     if (phase === "ready") {
       ctx.fillStyle = "rgba(11,10,20,.55)"; ctx.fillRect(0, 0, W, H);
       tc("TILE BLITZ", W / 2, H / 2 - 96, 4, CREAM);
       tc(ready > 0.4 ? String(Math.ceil(ready - 0.4)) : "GO!", W / 2, H / 2 - 40, 8, GOLD);
-      tc("ROAM AND PAINT THE FLOOR  -  MOST TILES WHEN TIME ENDS WINS", W / 2, H / 2 + 44, 2, "#cfe6ff");
+      tc("PAINT THE FLOOR  -  DASH TO STUN YOUR RIVAL  -  MOST TILES WINS", W / 2, H / 2 + 44, 2, "#cfe6ff");
     }
     if (phase === "over") {
       ctx.fillStyle = "rgba(11,10,20,.85)"; ctx.fillRect(0, 0, W, H);
@@ -195,10 +236,12 @@
       tc("ENTER / SPACE = REMATCH     BACKSPACE = MENU", W / 2, 520, 2, DIM);
     }
 
-    window.__tb = { phase, c1, c2, t: +timeLeft.toFixed(1), winner: winner ? (winner === p1 ? "p1" : "p2") : null };
+    window.__tb = { phase, c1, c2, t: +timeLeft.toFixed(1), winner: winner ? (winner === p1 ? "p1" : "p2") : null,
+      b1: +p1.black.toFixed(2), b2: +p2.black.toFixed(2) };
     window.__tbhook = {
       tp: (ax, ay, bx, by) => { p1.x = ax; p1.y = ay; p2.x = bx; p2.y = by; },
       pos: () => ({ p1: [Math.round(p1.x), Math.round(p1.y)], p2: [Math.round(p2.x), Math.round(p2.y)] }),
+      dash1: () => doDash(p1), dash2: () => doDash(p2),
       end: () => { timeLeft = 0; },
       grid: () => grid,
     };

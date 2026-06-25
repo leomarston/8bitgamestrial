@@ -131,12 +131,14 @@ Controls: **P1 `WASD` + `Space` (dash)**, **P2 arrows + `Enter` (dash)**,
 
 `game/tileblitz.html` — top-down territory duel on a tiled floor. **Roam the grid
 and paint every tile you step on your colour**, stealing the rival's tiles by
-walking over them. When the timer runs out, whoever **owns the most tiles wins**.
-A live count and a territory bar track the lead. Art lives in `art/tilebangers.py`;
-the floor tile is one template the game recolours per player.
+walking over them. Same **DASH** as Crown Grab — lunge in your direction, and if
+you hit your rival they **black out for 1 second** (a window to paint over their
+turf). When the timer runs out, whoever **owns the most tiles wins**. A live count
+and a territory bar track the lead. Art lives in `art/tilebangers.py`; the floor
+tile is one template the game recolours per player.
 
-Controls: **P1 `WASD`**, **P2 arrows**, `Enter`/`Space`/`R` = rematch,
-`Backspace` = menu.
+Controls: **P1 `WASD` + `Space` (dash)**, **P2 arrows + `Enter` (dash)**,
+`Enter`/`Space`/`R` = rematch, `Backspace` = menu.
 
 ## Music & sound
 
