@@ -63,7 +63,7 @@
   let mapsLoaded = 0; MAPS.forEach(m => { m.img.onload = () => mapsLoaded++; });
 
   // ---------- entities ----------
-  const PSC = 2.4, R = 14, PSPD = 196, DASH_TIME = 0.16, DASH_COOL = 0.55, DASH_SPEED = 500, PASS_COOL = 0.6, FUSE_MIN = 7, FUSE_MAX = 13;
+  const PSC = 2.4, R = 14, PSPD = 196, DASH_TIME = 0.16, DASH_COOL = 0.55, DASH_SPEED = 500, PASS_COOL = 0.6, FUSE_MIN = 7, FUSE_MAX = 13, HOLDER_BOOST = 1.05;
   function ent(name, color, tag) { return { name, color, tag, alive: true, x: 0, y: 0, face: 1, dash: 0, dashDir: [1, 0], dashCool: 0, walkT: 0, moving: false, r: R }; }
   function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
   let players, map, mapIdx, bomb, fuse, fuseMax, passCool, phase, ready, boomT, loser, winner, flick, msg, msgT, sparks;
@@ -135,13 +135,15 @@
     for (let i = 0; i < count; i++) {
       const p = players[i]; if (!p.alive) continue;
       p.dash = Math.max(0, p.dash - dt); p.dashCool = Math.max(0, p.dashCool - dt); p.moving = false;
+      const boost = bomb.holder === p ? HOLDER_BOOST : 1;   // whoever holds the bomb scrambles a bit faster
       if (p.dash > 0) { moveEnt(p, p.dashDir[0] * DASH_SPEED * dt, p.dashDir[1] * DASH_SPEED * dt); p.moving = true; p.walkT += dt * 20; }
-      else { const [dx, dy] = dirFor(i); if (dx || dy) { const m = Math.hypot(dx, dy); moveEnt(p, dx / m * PSPD * dt, dy / m * PSPD * dt); if (dx) p.face = dx > 0 ? 1 : -1; p.moving = true; anyMoving = true; p.walkT += dt * 12; } }
+      else { const [dx, dy] = dirFor(i); if (dx || dy) { const m = Math.hypot(dx, dy); moveEnt(p, dx / m * PSPD * boost * dt, dy / m * PSPD * boost * dt); if (dx) p.face = dx > 0 ? 1 : -1; p.moving = true; anyMoving = true; p.walkT += dt * 12; } }
     }
     setWalking(anyMoving);
 
-    // pass: the holder touching any other alive player hands the bomb over
-    if (passCool <= 0 && bomb.holder && bomb.holder.alive) {
+    // pass: the holder touching any other alive player hands the bomb over.
+    // Guard on fuse>0 so a pass on the exact tick the fuse hits 0 can't dump the blast on the receiver.
+    if (passCool <= 0 && fuse > 0 && bomb.holder && bomb.holder.alive) {
       for (const o of players) {
         if (o === bomb.holder || !o.alive) continue;
         if ((bomb.holder.x - o.x) ** 2 + (bomb.holder.y - o.y) ** 2 < (bomb.holder.r + o.r + 4) ** 2) { bomb.holder = o; passCool = PASS_COOL; playTag(); break; }
