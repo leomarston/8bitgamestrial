@@ -97,7 +97,7 @@
   window.addEventListener("keydown", (e) => {
     if (["ArrowUp", "Space", "ArrowDown"].includes(e.code)) e.preventDefault();
     if (e.code === "Backspace") { e.preventDefault(); location.href = "gameselect.html"; return; }
-    if (phase === "over" && (e.code === "Enter" || e.code === "KeyR" || e.code === "Space")) { reset(); return; }
+    if (phase === "over" && (e.code === "Enter" || e.code === "KeyR" || e.code === "Space")) { if (window.GameMusic) window.GameMusic.next(); reset(); return; }
     if (e.repeat) return;
     if (e.code === "KeyW" || e.code === "Space") doFlap(p1);
     if (e.code === "ArrowUp") doFlap(p2);

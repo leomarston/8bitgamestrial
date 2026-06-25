@@ -89,6 +89,17 @@ Controls: **P1 `WASD` + `Space` (punch)**, **P2 arrows + `Enter` (punch)**,
 `Enter`/`R` = rematch, `Backspace` = menu. The cemetery uses its own moody
 16-colour palette; art lives in `art/graveyard.py`, sounds in `game/sfx/`.
 
+## Music & sound
+
+`game/music.js` (loaded by every page) handles background music:
+- **Menu** (character select + game select) loops the **menu track**, kept
+  seamless across the two menu screens via `sessionStorage`.
+- **Each game** picks a **random track from `music1`–`music4`** when it starts and
+  loops it; starting another game (or a rematch) **re-rolls** a fresh random track.
+
+Per-game SFX (footsteps, zombie, punch) live alongside in `game/sfx/`. Audio
+unlocks on the first key/pointer input (browser autoplay policy).
+
 ## Repo layout
 
 ```

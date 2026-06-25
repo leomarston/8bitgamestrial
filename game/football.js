@@ -90,6 +90,7 @@
     if (["ArrowUp", "ArrowDown", "Space"].includes(e.code)) e.preventDefault();
     if (e.code === "Backspace") { e.preventDefault(); location.href = "gameselect.html"; }
     if (phase === "win" && (e.code === "KeyR" || e.code === "Enter" || e.code === "Space")) {
+      if (window.GameMusic) window.GameMusic.next();
       score1 = score2 = 0; winner = null; resetBall("p1");
     }
   });

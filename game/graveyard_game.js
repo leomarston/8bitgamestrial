@@ -150,7 +150,7 @@
     unlockAudio();
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(e.code)) e.preventDefault();
     if (e.code === "Backspace") { location.href = "gameselect.html"; return; }
-    if (phase === "over" && (e.code === "Enter" || e.code === "KeyR" || e.code === "Space")) { reset(); return; }
+    if (phase === "over" && (e.code === "Enter" || e.code === "KeyR" || e.code === "Space")) { if (window.GameMusic) window.GameMusic.next(); reset(); return; }
     if (phase === "play" && !e.repeat) {
       if (e.code === "Space" || e.code === "KeyF") doPunch(p1, p2);
       if (e.code === "Enter" || e.code === "NumpadEnter" || e.code === "Slash") doPunch(p2, p1);
