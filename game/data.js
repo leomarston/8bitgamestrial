@@ -1321,5 +1321,375 @@ window.GAME_DATA = {
 },
 "bg": "tileblitz_bg.png"
 }
+},
+"hotpotato": {
+"palette": {
+"K": "#1a1620",
+"W": "#f5f5fa",
+"S": "#b0b8c6",
+"s": "#6c7484",
+"M": "#302c3c",
+"F": "#606878",
+"f": "#485060",
+"Y": "#ffd03c",
+"y": "#c6961e",
+"R": "#eb483c",
+"r": "#9c2826",
+"O": "#ff8e34",
+"o": "#ca621a",
+"C": "#fff0b4",
+"D": "#14121c",
+"U": "#4a76c4"
+},
+"bomb": [
+".......C..",
+"......CYC.",
+".......YO.",
+".......o..",
+"......so..",
+".....ss...",
+"...KKKKK..",
+"..KMMMMMK.",
+".KMMMMMMMK",
+".KMSWMMMMK",
+"KMMMMMMMMK",
+"KMMMMMMMMK",
+"KMMMMMMMMK",
+".KMMMMMMK.",
+".KMMMMMMK.",
+"..KKMMKK..",
+"...KKKK..."
+],
+"bombSmall": [
+"....C..",
+"...CYC.",
+"....YO.",
+"....o..",
+"..KKKK.",
+".KMMMMK",
+"KMSWMMK",
+"KMMMMMK",
+".KMMMK.",
+"..KKK.."
+],
+"boom": [
+"....K...K....K..",
+".K..KYK.KYK.K...",
+"..K.YOYKYOY.K.K.",
+"...KYOOYOOYK....",
+".KKYOORRROOYKK..",
+"..KYORRWRRROYK..",
+".KYOORWWWROOYK.K",
+"KKYORRWWWRRROYKK",
+".KYOORWWWROOYK.K",
+"..KYORRWRRROYK..",
+".KKYOORRROOYKK..",
+"...KYOOYOOYK....",
+"..K.YOYKYOY.K.K.",
+".K..KYK.KYK.K...",
+"....K...K....K.."
+],
+"maps": [
+{
+"bg": "hotpotato_map1.png",
+"scale": 4,
+"bounds": {
+"l": 12,
+"r": 228,
+"t": 22,
+"b": 140
+},
+"spawn": {
+"p1": [
+50,
+80
+],
+"p2": [
+190,
+80
+]
+},
+"obstacles": [
+{
+"type": "circle",
+"x": 45,
+"y": 55,
+"r": 6
+},
+{
+"type": "circle",
+"x": 195,
+"y": 55,
+"r": 6
+},
+{
+"type": "circle",
+"x": 45,
+"y": 107,
+"r": 6
+},
+{
+"type": "circle",
+"x": 195,
+"y": 107,
+"r": 6
+}
+]
+},
+{
+"bg": "hotpotato_map2.png",
+"scale": 4,
+"bounds": {
+"l": 12,
+"r": 228,
+"t": 22,
+"b": 140
+},
+"spawn": {
+"p1": [
+16,
+80
+],
+"p2": [
+224,
+80
+]
+},
+"obstacles": [
+{
+"type": "rect",
+"x": 4,
+"y": 16,
+"w": 85,
+"h": 4
+},
+{
+"type": "rect",
+"x": 4,
+"y": 45,
+"w": 32,
+"h": 4
+},
+{
+"type": "rect",
+"x": 56,
+"y": 45,
+"w": 33,
+"h": 4
+},
+{
+"type": "rect",
+"x": 4,
+"y": 16,
+"w": 4,
+"h": 33
+},
+{
+"type": "rect",
+"x": 85,
+"y": 16,
+"w": 4,
+"h": 6
+},
+{
+"type": "rect",
+"x": 85,
+"y": 42,
+"w": 4,
+"h": 7
+},
+{
+"type": "rect",
+"x": 151,
+"y": 16,
+"w": 85,
+"h": 4
+},
+{
+"type": "rect",
+"x": 151,
+"y": 45,
+"w": 32,
+"h": 4
+},
+{
+"type": "rect",
+"x": 203,
+"y": 45,
+"w": 33,
+"h": 4
+},
+{
+"type": "rect",
+"x": 151,
+"y": 16,
+"w": 4,
+"h": 6
+},
+{
+"type": "rect",
+"x": 151,
+"y": 42,
+"w": 4,
+"h": 7
+},
+{
+"type": "rect",
+"x": 232,
+"y": 16,
+"w": 4,
+"h": 33
+},
+{
+"type": "rect",
+"x": 4,
+"y": 111,
+"w": 32,
+"h": 4
+},
+{
+"type": "rect",
+"x": 56,
+"y": 111,
+"w": 33,
+"h": 4
+},
+{
+"type": "rect",
+"x": 4,
+"y": 140,
+"w": 85,
+"h": 4
+},
+{
+"type": "rect",
+"x": 4,
+"y": 111,
+"w": 4,
+"h": 33
+},
+{
+"type": "rect",
+"x": 85,
+"y": 111,
+"w": 4,
+"h": 6
+},
+{
+"type": "rect",
+"x": 85,
+"y": 137,
+"w": 4,
+"h": 7
+},
+{
+"type": "rect",
+"x": 151,
+"y": 111,
+"w": 32,
+"h": 4
+},
+{
+"type": "rect",
+"x": 203,
+"y": 111,
+"w": 33,
+"h": 4
+},
+{
+"type": "rect",
+"x": 151,
+"y": 140,
+"w": 85,
+"h": 4
+},
+{
+"type": "rect",
+"x": 151,
+"y": 111,
+"w": 4,
+"h": 6
+},
+{
+"type": "rect",
+"x": 151,
+"y": 137,
+"w": 4,
+"h": 7
+},
+{
+"type": "rect",
+"x": 232,
+"y": 111,
+"w": 4,
+"h": 33
+}
+]
+},
+{
+"bg": "hotpotato_map3.png",
+"scale": 4,
+"bounds": {
+"l": 12,
+"r": 228,
+"t": 22,
+"b": 140
+},
+"spawn": {
+"p1": [
+62,
+28
+],
+"p2": [
+150,
+130
+]
+},
+"obstacles": [
+{
+"type": "rect",
+"x": 117,
+"y": 16,
+"w": 6,
+"h": 24
+},
+{
+"type": "rect",
+"x": 117,
+"y": 60,
+"w": 6,
+"h": 40
+},
+{
+"type": "rect",
+"x": 117,
+"y": 120,
+"w": 6,
+"h": 24
+},
+{
+"type": "rect",
+"x": 4,
+"y": 77,
+"w": 24,
+"h": 6
+},
+{
+"type": "rect",
+"x": 48,
+"y": 77,
+"w": 144,
+"h": 6
+},
+{
+"type": "rect",
+"x": 212,
+"y": 77,
+"w": 24,
+"h": 6
+}
+]
+}
+]
 }
 };

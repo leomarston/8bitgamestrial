@@ -35,6 +35,7 @@
   function buildTile(colors) { const w = TBT[0].length, h = TBT.length, c = document.createElement("canvas"); c.width = w; c.height = h; const g = c.getContext("2d");
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const col = colors[TBT[y][x]]; if (col) { g.fillStyle = col; g.fillRect(x, y, 1, 1); } } return { canvas: c, w, h }; }
   const tbR = buildTile(TBC.R), tbB = buildTile(TBC.B), tbN = buildTile(TBC.N);
+  const hpBomb = buildSprite(D.hotpotato.bomb, D.hotpotato.palette);
   const FONT = D.font;
 
   function tW(s, sc, sp = 1) { return (s.length * (5 + sp) - sp) * sc; }
@@ -64,7 +65,8 @@
     { name: "RUNNER", file: "platformer.html", accent: "#5cc24c", icon: "runner" },
     { name: "CROWN GRAB", file: "crown.html", accent: "#ffd54a", icon: "crown" },
     { name: "TILE BLITZ", file: "tileblitz.html", accent: "#ff7ad0", icon: "tileblitz" },
-    null, null,
+    { name: "HOT POTATO", file: "hotpotato.html", accent: "#ff8e34", icon: "hotpotato" },
+    null,
   ];
 
   // ---- grid ----
@@ -164,11 +166,21 @@
     ctx.restore();
     ctx.strokeStyle = "#ff7ad0"; ctx.lineWidth = 3; ctx.strokeRect(ix, iy, iw, ih);
   }
+  function iconHotPotato(r) {
+    const ix = r.x + 12, iy = r.y + 12, iw = r.w - 24, ih = r.h - 56;
+    ctx.save(); ctx.beginPath(); ctx.rect(ix, iy, iw, ih); ctx.clip();
+    ctx.fillStyle = "#4a5060"; ctx.fillRect(ix, iy, iw, ih);
+    for (let yy = 0; yy < ih; yy += 16) for (let xx = 0; xx < iw; xx += 16) if ((((xx / 16) | 0) + ((yy / 16) | 0)) % 2) { ctx.fillStyle = "#3f4556"; ctx.fillRect(ix + xx, iy + yy, 16, 16); }
+    for (let xx = 0; xx < iw; xx += 14) { ctx.fillStyle = (((xx / 14) | 0) % 2) ? "#1c1a22" : "#ffce3c"; ctx.fillRect(ix + xx, iy, 14, 7); ctx.fillRect(ix + xx, iy + ih - 7, 14, 7); }
+    fitDraw(hpBomb, r.x + r.w / 2 - 28, iy + ih * 0.22, 56, 56);
+    ctx.restore();
+    ctx.strokeStyle = "#ffce3c"; ctx.lineWidth = 3; ctx.strokeRect(ix, iy, iw, ih);
+  }
   function tile(i, t) {
     const r = cell(i), g = GAMES[i];
     if (g) {
       ctx.fillStyle = "#272138"; rr(r.x, r.y, r.w, r.h, 12); ctx.fill();
-      const ic = { football: iconFootball, flappy: iconFlappy, graveyard: iconGraveyard, runner: iconRunner, crown: iconCrown, tileblitz: iconTileBlitz }[g.icon] || iconGraveyard;
+      const ic = { football: iconFootball, flappy: iconFlappy, graveyard: iconGraveyard, runner: iconRunner, crown: iconCrown, tileblitz: iconTileBlitz, hotpotato: iconHotPotato }[g.icon] || iconGraveyard;
       ic(r);
       ctx.fillStyle = "#15121f"; rr(r.x + 10, r.y + r.h - 36, r.w - 20, 26, 7); ctx.fill();
       tc(g.name, r.x + r.w / 2, r.y + r.h - 31, 3, g.accent);

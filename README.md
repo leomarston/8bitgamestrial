@@ -12,8 +12,8 @@ data is inlined).
 **Flow:** character select → **game select** → the chosen minigame.
 After both fighters lock in, a **CHOOSE A GAME** hub appears (a 4×2 grid like the
 character select). **Player 1** drives the cursor (`WASD` + `Space`) and picks a
-minigame — **Football, Flappy, Graveyard, Runner, Crown Grab** and **Tile Blitz**
-are live, the other 2 tiles are "coming soon". `Backspace` goes back a step.
+minigame — **Football, Flappy, Graveyard, Runner, Crown Grab, Tile Blitz** and
+**Hot Potato** are live, the last tile is "coming soon". `Backspace` goes back a step.
 
 ### Controls
 
@@ -140,6 +140,24 @@ tile is one template the game recolours per player.
 Controls: **P1 `WASD` + `Space` (dash)**, **P2 arrows + `Enter` (dash)**,
 `Enter`/`Space`/`R` = rematch, `Backspace` = menu.
 
+## Minigame: HOT POTATO (don't hold the bomb)
+
+`game/hotpotato.html` — top-down couch duel. One player is stuck holding a lit
+bomb; a **fuse counts down** (shown centre). **Pass the bomb by touching — or
+dashing into — your rival** (a short cooldown stops instant ping-pong). Whoever is
+**holding it when the fuse runs out gets BLOWN UP and loses**; the other survives.
+Use the **DASH** to catch the runner or to escape (careful — dashing into the
+carrier means *you* catch it).
+
+The arena is **picked at random each round** from three hand-drawn stages: the
+**Yard** (open + TNT barrels), the **Street** (a crossroads with four houses you
+can cut through — each has two doorways), and the **House** (four rooms linked by
+doorway gaps). Art lives in `art/hotpotato.py`; stages export to
+`game/hotpotato_map{1,2,3}.png`.
+
+Controls: **P1 `WASD` + `Space` (dash)**, **P2 arrows + `Enter` (dash)**,
+`Enter`/`Space`/`R` = rematch, `Backspace` = menu.
+
 ## Music & sound
 
 `game/music.js` (loaded by every page) handles background music:
@@ -158,11 +176,13 @@ game/            the playable screens
   index.html     character select
   game.js        MK-style select logic (cursors, lock-in, mirror) -> game select
   gameselect.html  the "choose a game" hub
-  gameselect.js  4x2 minigame grid (P1 picks; 6 games live, 2 soon)
+  gameselect.js  4x2 minigame grid (P1 picks; 7 games live, 1 soon)
   crown.html / crown_game.js        CROWN GRAB (carry the crown, dash to steal)
   crown_map1.png / crown_map2.png   the two CROWN GRAB stage backgrounds
   tileblitz.html / tileblitz_game.js  TILE BLITZ (paint the most tiles)
   tileblitz_bg.png                  the TILE BLITZ arena background
+  hotpotato.html / hotpotato_game.js  HOT POTATO (pass the bomb, dash)
+  hotpotato_map1.png .. _map3.png   the three HOT POTATO stage backgrounds
   platformer.html / platformer.js   the RUNNER auto-scroll platformer
   football.html  the football minigame
   football.js    Pong-style football (pitch, nets, ball physics, scoring)
