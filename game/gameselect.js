@@ -1,6 +1,6 @@
-/* 8-BIT PARTY — Game select hub. 4x2 grid of minigames (2 live, 6 coming soon).
- * One shared cursor; either player moves it (WASD / arrows) and confirms
- * (Space / Enter). Backspace returns to the character select. */
+/* 8-BIT PARTY — Game select hub. 4x2 grid of 8 live minigames, each playable by
+ * 2-4 players. P1 moves the shared cursor (WASD) and confirms (Space / F); the
+ * player strip shows everyone in the party. Backspace returns to character select. */
 (() => {
   const D = window.GAME_DATA;
   const cv = document.getElementById("stage");
@@ -62,11 +62,15 @@
 
   const BG = "#1a1626", DIM = "#9a9cb2", GOLD = "#ffd54a", INK = "#15121f";
   const P1C = "#ff5d5d", P2C = "#5db4ff";
+  const PCOL = ["#ff5d5d", "#5db4ff", "#6bd66b", "#ffd54a"];
 
-  // ---- picks (from character select) ----
-  let p1name = "PIXEL", p2name = "BYTE";
-  try { const s = JSON.parse(localStorage.getItem("partyPicks")); if (s && s.p1 && s.p2) { p1name = s.p1; p2name = s.p2; } } catch (e) {}
-  if (!spr[p1name]) p1name = "PIXEL"; if (!spr[p2name]) p2name = "BYTE";
+  // ---- party count + picks (from character select) ----
+  let count = 2;
+  try { const c = +localStorage.getItem("partyCount"); if (c >= 2 && c <= 4) count = c; } catch (e) {}
+  let names = ["PIXEL", "BYTE", "NOVA", "CHIP"];
+  try { const s = JSON.parse(localStorage.getItem("partyPicks")); if (s) names = [s.p1, s.p2, s.p3, s.p4].map((n, i) => n || names[i]); } catch (e) {}
+  names = names.map(n => (spr[n] ? n : "PIXEL"));
+  const p1name = names[0];   // used by the icon previews (flappy / runner / space pod)
 
   // ---- the roster of minigames ----
   const GAMES = [
@@ -228,14 +232,18 @@
   function playerStrip() {
     const y = GY0 + ROWS * (CH + GY) + 6;
     ctx.fillStyle = "#221d34"; rr(40, y, W - 80, 96, 12); ctx.fill();
-    // P1
-    fitDraw(spr[p1name], 70, y + 6, 60, 84);
-    text("P1", 140, y + 20, 2, P1C); text(p1name, 140, y + 42, 3, "#f4f4ee");
-    // P2
-    fitDraw(spr[p2name], W - 130, y + 6, 60, 84);
-    const nw = tW(p2name, 3);
-    text("P2", W - 200 - 10, y + 20, 2, P2C); text(p2name, W - 150 - nw, y + 42, 3, "#f4f4ee");
-    tc("P1 CHOOSES  -  MOVE  WASD      PICK  SPACE      BACK  BACKSPACE", W / 2, y + 74, 1.6 | 0, DIM);
+    const cellW = (W - 80) / count;                 // one slot per active player
+    for (let i = 0; i < count; i++) {
+      const cx = 40 + i * cellW;
+      const tagW = tW("P" + (i + 1), 2), nameW = tW(names[i], 2), textW = Math.max(tagW, nameW);
+      const blockW = 46 + 8 + textW, sx = cx + (cellW - blockW) / 2;   // centre the portrait+text block
+      fitDraw(spr[names[i]], sx, y + 8, 46, 58);
+      const tx = sx + 54;
+      text("P" + (i + 1), tx, y + 16, 2, PCOL[i]);
+      text(names[i], tx, y + 38, 2, "#f4f4ee");
+      if (i) { ctx.fillStyle = "#332b48"; ctx.fillRect(cx, y + 14, 2, 60); }  // divider
+    }
+    tc("P1 CHOOSES  -  MOVE  WASD      PICK  SPACE      BACK  BACKSPACE", W / 2, y + 80, 1.6 | 0, DIM);
   }
 
   function frame(t) {
