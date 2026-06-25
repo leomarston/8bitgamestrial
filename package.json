@@ -1,0 +1,12 @@
+{
+  "name": "8bit-party",
+  "version": "1.0.0",
+  "private": true,
+  "description": "8-bit couch party: character select + football minigame",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
