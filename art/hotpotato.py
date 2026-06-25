@@ -163,19 +163,119 @@ def _stage(img, seed=7):
         sp(px, W, H, fx - 5, yy, col("K")); sp(px, W, H, fx + fw + 4, yy, col("K"))
     return fx, fy, fw, fh
 
-def _draw_map(img, bomb=True, players=True):
+def _draw_actors(img, bomb=True):
+    p1x, p1y = CX - 70, CY
+    p2x, p2y = CX + 70, CY
+    fighter(img, "PIXEL", p1x, p1y)
+    fighter(img, "BYTE", p2x, p2y, flip=True)
+    if bomb:                                            # bomb on P1's head (the carrier)
+        blit(img, BOMB_SMALL, p1x - len(BOMB_SMALL[0]) // 2, p1y - len(fgrid(C.PIXEL)) - len(BOMB_SMALL))
+        star(img, p1x + 6, p1y - len(fgrid(C.PIXEL)) - len(BOMB_SMALL) + 1, "C")
+
+def _draw_yard(img, bomb=True, players=True):
     _stage(img); px = img.load(); W, H = img.size
     for (bx, by) in BARRELS:
         disc(px, W, H, bx + 7, by + len(BARREL) - 1, 7, 3, col("D"))   # ground shadow
         blit(img, BARREL, bx, by)
-    if players:
-        p1x, p1y = CX - 70, CY
-        p2x, p2y = CX + 70, CY
-        fighter(img, "PIXEL", p1x, p1y)
-        fighter(img, "BYTE", p2x, p2y, flip=True)
-        if bomb:                                        # bomb on P1's head (the carrier)
-            blit(img, BOMB_SMALL, p1x - len(BOMB_SMALL[0]) // 2, p1y - len(fgrid(C.PIXEL)) - len(BOMB_SMALL))
-            star(img, p1x + 6, p1y - len(fgrid(C.PIXEL)) - len(BOMB_SMALL) + 1, "C")
+    if players: _draw_actors(img, bomb)
+
+# ===========================================================================
+# MAP 2 — a lush forest clearing (own palette). Hand-drawn leafy trees as cover,
+# a hedge treeline frame, dappled grass, flowers, mushrooms, stones, grass tufts.
+# ===========================================================================
+FOR = {
+    "K": (26, 30, 24), "W": (245, 248, 238), "G": (118, 194, 92), "g": (84, 156, 70),
+    "d": (58, 116, 56), "T": (104, 182, 86), "t": (60, 130, 64), "H": (150, 98, 52),
+    "h": (104, 64, 32), "U": (160, 216, 112), "u": (28, 66, 40), "R": (235, 86, 92),
+    "Y": (255, 214, 84), "M": (240, 130, 196), "C": (214, 240, 150), "S": (150, 150, 160),
+}
+def fcol(k): return (*FOR[k], 255)
+
+# big leafy tree with a deep-green outline so it pops off the grass
+TREE = spr("""
+.....uuuuuu.....
+...uuTTTTTTuu...
+..uTTTTTTTTTTu..
+.uTTTTTCCTTTTTu.
+.uTTTTTTTTTTTTu.
+uTTTTTTTTTTTTTTu
+uTTTCCTTTTTTtTTu
+uTTTTTTTTTTtTTTu
+uTTTTTTTTCCTTTTu
+uTTtTTTTTTTTTTTu
+.uTTTTTTTTTTTTu.
+.uTTTtTTTTTTTu..
+..uTTTTTTTTTTu..
+...uuTTTTTTuu...
+.....uuuuuu.....
+......HHHH......
+......HhhH......
+......HhhH......
+.....HHhhHH.....
+....hHH..HHh....
+""")
+BUSH = spr("""
+..uuuu..
+.uTTTTu.
+uTTCCTTu
+uTTTtTTu
+.uTTTTu.
+..uuuu..
+""")
+MUSHROOM = spr("""
+.uRRu.
+uRWRWu
+uRRRRu
+.uHHu.
+..hh..
+""")
+STONE = spr("""
+.uSSu.
+uSSSSu
+.uKKu.
+""")
+TUFT = spr("""
+U...U
+UGgGU
+..g..
+""")
+FLOWERS = [spr(".R.\nRYR\n.R."), spr(".M.\nMYM\n.M."), spr(".Y.\nYRY\n.Y."), spr(".W.\nWYW\n.W.")]
+TREES = [(FX + 26, FY + 14), (FX + FW - 44, FY + 14), (FX + 26, FY + FH - 38), (FX + FW - 44, FY + FH - 38)]
+
+def _forest_stage(img, seed=21):
+    W, H = img.size; px = img.load()
+    fx, fy, fw, fh = FX, FY, FW, FH
+    random.seed(seed)
+    for yy in range(fy, fy + fh):                        # flat base grass (calm, not static)
+        for xx in range(fx, fx + fw): px[xx, yy] = fcol("G")
+    for _ in range(16): disc(px, W, H, random.randint(fx, fx + fw), random.randint(fy, fy + fh), random.randint(10, 22), random.randint(6, 12), fcol("g"))
+    for _ in range(10): disc(px, W, H, random.randint(fx, fx + fw), random.randint(fy, fy + fh), random.randint(6, 15), random.randint(4, 9), fcol("d"))
+    for _ in range(7):  disc(px, W, H, random.randint(fx, fx + fw), random.randint(fy, fy + fh), random.randint(6, 14), random.randint(4, 8), fcol("U"))
+    HB = 11                                              # deep-green treeline frame (scalloped, leafy)
+    for yy in range(fy, fy + fh):
+        for xx in range(fx, fx + fw):
+            edge = min(xx - fx, fx + fw - 1 - xx, yy - fy, fy + fh - 1 - yy)
+            if edge < HB - random.choice([0, 0, 1, 2, 3, 4]):
+                px[xx, yy] = fcol("u" if edge < 3 else ("T" if random.random() < 0.5 else "t"))
+    for xx in range(fx - 1, fx + fw + 1):               # outline
+        sp(px, W, H, xx, fy - 1, fcol("K")); sp(px, W, H, xx, fy + fh, fcol("K"))
+    for yy in range(fy - 1, fy + fh + 1):
+        sp(px, W, H, fx - 1, yy, fcol("K")); sp(px, W, H, fx + fw, yy, fcol("K"))
+    def place(rows, n):                                  # scatter clear decorations on the grass
+        for _ in range(n):
+            x = random.randint(fx + HB + 2, fx + fw - HB - 2 - len(rows[0]))
+            y = random.randint(fy + HB + 2, fy + fh - HB - 2 - len(rows))
+            blit(img, rows, x, y, pal=FOR)
+    for fl in FLOWERS: place(fl, 7)
+    place(MUSHROOM, 6); place(STONE, 5); place(TUFT, 24); place(BUSH, 4)
+    return fx, fy, fw, fh
+
+def _draw_forest(img, bomb=True, players=True):
+    _forest_stage(img); px = img.load(); W, H = img.size
+    for (tx, ty) in TREES:
+        disc(px, W, H, tx + len(TREE[0]) // 2, ty + len(TREE), 9, 3, fcol("u"))   # shadow
+        blit(img, TREE, tx, ty, pal=FOR)
+    if players: _draw_actors(img, bomb)
 
 def _hud(img):
     px = img.load(); W, H = img.size
@@ -187,28 +287,34 @@ def _hud(img):
     f = pf.text("FUSE 4.2", 1, (255, 208, 60)); img.alpha_composite(f, (W // 2 - f.width // 2, 4))
     b = pf.text("BYTE", 1, (74, 118, 196)); img.alpha_composite(b, (W - 6 - b.width, 4))
 
+MAPS = [("hotpotato_map1.png", "hotpotato_arena.png", _draw_yard),
+        ("hotpotato_map2.png", "hotpotato_arena2.png", _draw_forest)]
+
 def arena():
     W, H, SC = 240, 150, 4
-    img = Image.new("RGBA", (W, H), col("D"))
-    _draw_map(img, bomb=True, players=True)
-    _hud(img)
-    img.resize((W * SC, H * SC), Image.NEAREST).convert("RGB").save(os.path.join(OUT, "hotpotato_arena.png"))
-    print("wrote hotpotato_arena.png")
+    for _bg, mock, drawer in MAPS:
+        img = Image.new("RGBA", (W, H), col("D"))
+        drawer(img, bomb=True, players=True); _hud(img)
+        img.resize((W * SC, H * SC), Image.NEAREST).convert("RGB").save(os.path.join(OUT, mock))
+        print("wrote", mock)
 
 def hp_meta():
-    return {
-        "scale": SC_GAME, "bg": "hotpotato_bg.png",
-        "bounds": {"l": FX + 8, "r": FX + FW - 8, "t": FY + 6, "b": FY + FH - 4},
-        "obstacles": [{"type": "circle", "x": bx + 7, "y": by + 13, "r": 6} for (bx, by) in BARRELS],
-        "spawn": {"p1": [CX - 70, CY], "p2": [CX + 70, CY]},
-    }
+    bounds = {"l": FX + 8, "r": FX + FW - 8, "t": FY + 6, "b": FY + FH - 4}
+    spawn = {"p1": [CX - 70, CY], "p2": [CX + 70, CY]}
+    return [
+        {"bg": "hotpotato_map1.png", "scale": SC_GAME, "bounds": bounds, "spawn": spawn,
+         "obstacles": [{"type": "circle", "x": bx + 7, "y": by + 13, "r": 6} for (bx, by) in BARRELS]},
+        {"bg": "hotpotato_map2.png", "scale": SC_GAME, "bounds": bounds, "spawn": spawn,
+         "obstacles": [{"type": "circle", "x": tx + 8, "y": ty + 16, "r": 6} for (tx, ty) in TREES]},
+    ]
 
 def export_bg():
-    img = Image.new("RGBA", (240, 150), col("D"))
-    _draw_map(img, bomb=False, players=False)
     GAMEDIR = os.path.join(os.path.dirname(HERE), "game")
-    img.convert("RGB").save(os.path.join(GAMEDIR, "hotpotato_bg.png"))
-    print("wrote game/hotpotato_bg.png")
+    for bg, _mock, drawer in MAPS:
+        img = Image.new("RGBA", (240, 150), col("D"))
+        drawer(img, bomb=False, players=False)
+        img.convert("RGB").save(os.path.join(GAMEDIR, bg))
+        print("wrote game/" + bg)
 
 def assets():
     SC = 7
