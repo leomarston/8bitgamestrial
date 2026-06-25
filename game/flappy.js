@@ -67,7 +67,7 @@
   function mkBird(name, color, x) {
     const s = spr[name];
     return { name, color, x, y: H * 0.42, vy: 0, alive: true, score: 0,
-      flap: 0, angle: 0, dead: false, deathScroll: 0, dist: 0,
+      flap: 0, angle: 0, dead: false,
       bw: Math.round(s.w * BSCALE), bh: Math.round(s.h * BSCALE), s };
   }
   // P1 flies in front (further right), P2 trails behind
@@ -78,14 +78,14 @@
   let pipes = [], scroll = 0, clouds = [];
   for (let i = 0; i < 7; i++) clouds.push({ x: Math.random() * W, y: 30 + Math.random() * 180, s: 1 + Math.random() });
 
-  let phase = "ready", timer = 2.2, winner = null, deadFirst = null;
+  let phase = "ready", timer = 2.2, winner = null;
 
   function spawnPipe(x) {
     const gy = ceil + GAP / 2 + 30 + Math.random() * (groundY - ceil - GAP - 70);
     pipes.push({ x, gapY: gy, p1: false, p2: false });
   }
   function reset() {
-    pipes = []; scroll = 0; winner = null; deadFirst = null;
+    pipes = []; scroll = 0; winner = null;
     let x = W + 140; for (let i = 0; i < 5; i++) { spawnPipe(x); x += SPACING; }
     [p1, p2].forEach(b => { b.y = H * 0.42; b.vy = 0; b.alive = true; b.dead = false; b.score = 0; b.flap = 0; b.angle = 0; });
     phase = "ready"; timer = 2.2;
@@ -93,7 +93,7 @@
   reset();
 
   // ---------- input ----------
-  function doFlap(b) { if (b.alive && (phase === "play" || phase === "chase")) { b.vy = FLAP; b.flap = 0.18; } }
+  function doFlap(b) { if (b.alive && phase === "play") { b.vy = FLAP; b.flap = 0.18; } }
   window.addEventListener("keydown", (e) => {
     if (["ArrowUp", "Space", "ArrowDown"].includes(e.code)) e.preventDefault();
     if (e.code === "Backspace") { e.preventDefault(); location.href = "gameselect.html"; return; }
@@ -113,14 +113,12 @@
   }
   function kill(b) {
     if (!b.alive) return;
-    b.alive = false; b.dead = true; b.deathScroll = scroll; b.dist = scroll + b.x;
-    const other = b === p1 ? p2 : p1;
-    if (!other.alive) {                       // both down -> compare
-      winner = (p1.dist >= p2.dist) ? p1 : p2; phase = "over"; return;
+    b.alive = false; b.dead = true;
+    // winner is purely who passed MORE pipes; resolved once BOTH are down
+    if (!p1.alive && !p2.alive) {
+      winner = p1.score > p2.score ? p1 : (p2.score > p1.score ? p2 : null); // null = tie
+      phase = "over";
     }
-    deadFirst = b;                            // start the chase
-    phase = "chase";
-    if (scroll + other.x >= b.dist) { winner = other; phase = "over"; }  // other already past
   }
 
   function update(dt) {
@@ -155,11 +153,6 @@
         if (b.y > groundY - b.bh * 0.3) b.y = groundY - b.bh * 0.3;
       }
     });
-
-    if (phase === "chase" && deadFirst) {
-      const alive = deadFirst === p1 ? p2 : p1;
-      if (alive.alive && scroll + alive.x >= deadFirst.dist) { winner = alive; phase = "over"; }
-    }
   }
 
   // ---------- draw ----------
@@ -197,16 +190,6 @@
     pipeCap(p.x, gapBot);
   }
 
-  function drawMarker() {
-    if (!deadFirst) return;
-    const mx = deadFirst.x - (scroll - deadFirst.deathScroll);
-    if (mx < -10 || mx > W) return;
-    ctx.strokeStyle = deadFirst.color; ctx.lineWidth = 4; ctx.setLineDash([10, 8]);
-    ctx.beginPath(); ctx.moveTo(mx, ceil); ctx.lineTo(mx, groundY); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle = deadFirst.color; rectTag(mx - 26, ceil + 6, 52, 18);
-    text("PASS!", mx - 22, ceil + 10, 1.6 | 0, INK);
-  }
   function rectTag(x, y, w, h) { ctx.beginPath(); ctx.roundRect(x, y, w, h, 5); ctx.fill(); }
 
   function drawHUD() {
@@ -234,7 +217,6 @@
     });
     // pipes
     pipes.forEach(drawPipe);
-    drawMarker();
     // ground
     ctx.fillStyle = DIRT; ctx.fillRect(0, groundY, W, H - groundY);
     ctx.fillStyle = GRASS; ctx.fillRect(0, groundY, W, 12);
@@ -250,18 +232,22 @@
     if (phase === "ready") {
       const n = Math.max(1, Math.ceil(timer - 0.2));
       tc(timer > 0.25 ? String(n) : "GO!", W / 2, H / 2 - 120, 7, GOLD);
-      tc("FLAP TO STAY UP - FURTHEST FLYER WINS", W / 2, H / 2 - 150, 2, "#eef6ff");
+      tc("FLAP TO STAY UP - MOST PIPES WINS", W / 2, H / 2 - 150, 2, "#eef6ff");
     }
-    if (phase === "chase" && deadFirst) {
-      const downName = deadFirst.name, chaser = (deadFirst === p1 ? p2 : p1);
-      tc(downName + " DOWN!  " + chaser.name + " - PASS THE LINE!", W / 2, 70, 2, GOLD);
-    }
-    if (phase === "over" && winner) {
+    if (phase === "over") {
       ctx.fillStyle = "rgba(8,14,24,.84)"; ctx.fillRect(0, 0, W, H);
-      tc((winner === p1 ? "P1" : "P2") + " WINS!", W / 2, 120, 6, GOLD);
-      const s = winner.s, scl = 210 / s.h;
-      ctx.drawImage(s.canvas, W / 2 - s.w * scl / 2, 205, s.w * scl, 210);
-      tc(winner.name, W / 2, 440, 4, winner.color);
+      if (winner) {
+        tc((winner === p1 ? "P1" : "P2") + " WINS!", W / 2, 120, 6, GOLD);
+        const s = winner.s, scl = 210 / s.h;
+        ctx.drawImage(s.canvas, W / 2 - s.w * scl / 2, 205, s.w * scl, 210);
+        tc(winner.name, W / 2, 440, 4, winner.color);
+      } else {
+        tc("DRAW!", W / 2, 150, 6, GOLD);
+        const a = spr[p1name], b = spr[p2name];
+        ctx.drawImage(a.canvas, W / 2 - 200, 230, a.w * (180 / a.h), 180);
+        ctx.drawImage(b.canvas, W / 2 + 40, 230, b.w * (180 / b.h), 180);
+        tc("VS", W / 2, 300, 5, "#eef6ff");
+      }
       tc("PIPES   " + p1.name + " " + p1.score + "   -   " + p2.name + " " + p2.score, W / 2, 495, 2, "#eef6ff");
       tc("ENTER = REMATCH     BACKSPACE = MENU", W / 2, 545, 2, DIM);
     }

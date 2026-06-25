@@ -8,12 +8,12 @@
   ctx.imageSmoothingEnabled = false;
   const W = cv.width, H = cv.height;
 
-  function buildSprite(rows) {
+  function buildSprite(rows, pal = D.palette) {
     const w = Math.max(...rows.map(r => r.length)), h = rows.length;
     const c = document.createElement("canvas"); c.width = w; c.height = h;
     const g = c.getContext("2d");
     for (let y = 0; y < h; y++) for (let x = 0; x < rows[y].length; x++) {
-      const col = D.palette[rows[y][x]]; if (!col) continue;
+      const col = pal[rows[y][x]]; if (!col) continue;
       g.fillStyle = col; g.fillRect(x, y, 1, 1);
     }
     return { canvas: c, w, h };
@@ -25,6 +25,8 @@
   }
   const spr = {}; D.roster.forEach(c => spr[c.name] = buildSprite(c.rows));
   const ballS = buildSprite(D.ball), wUp = buildSprite(D.wingUp), wUpL = flip(wUp);
+  const GYP = D.graveyard.palette;
+  const gMon = buildSprite(D.graveyard.monster, GYP), gHead = buildSprite(D.graveyard.headstone, GYP), gCross = buildSprite(D.graveyard.cross, GYP);
   const FONT = D.font;
 
   function tW(s, sc, sp = 1) { return (s.length * (5 + sp) - sp) * sc; }
@@ -50,7 +52,8 @@
   const GAMES = [
     { name: "FOOTBALL", file: "football.html", accent: "#6bd66b", icon: "football" },
     { name: "FLAPPY", file: "flappy.html", accent: "#5db4ff", icon: "flappy" },
-    null, null, null, null, null, null,
+    { name: "GRAVEYARD", file: "graveyard.html", accent: "#79d36a", icon: "graveyard" },
+    null, null, null, null, null,
   ];
 
   // ---- grid ----
@@ -106,11 +109,20 @@
     fitDraw(fb, r.x + 36, r.y + 14, 50, r.h - 64);
   }
 
+  function iconGraveyard(r) {
+    ctx.fillStyle = "#1b1730"; ctx.fillRect(r.x + 12, r.y + 12, r.w - 24, r.h - 56);
+    ctx.fillStyle = "#234a2e"; ctx.fillRect(r.x + 12, r.y + r.h - 60, r.w - 24, 14);
+    // moon
+    ctx.fillStyle = "#cfe6ff"; ctx.beginPath(); ctx.arc(r.x + r.w - 30, r.y + 28, 8, 0, 7); ctx.fill();
+    fitDraw(gHead, r.x + 18, r.y + 30, 34, 56);
+    fitDraw(gCross, r.x + r.w - 56, r.y + 30, 34, 56);
+    fitDraw(gMon, r.x + r.w / 2 - 28, r.y + 22, 56, 64);
+  }
   function tile(i, t) {
     const r = cell(i), g = GAMES[i];
     if (g) {
       ctx.fillStyle = "#272138"; rr(r.x, r.y, r.w, r.h, 12); ctx.fill();
-      if (g.icon === "football") iconFootball(r); else iconFlappy(r);
+      if (g.icon === "football") iconFootball(r); else if (g.icon === "flappy") iconFlappy(r); else iconGraveyard(r);
       ctx.fillStyle = "#15121f"; rr(r.x + 10, r.y + r.h - 36, r.w - 20, 26, 7); ctx.fill();
       tc(g.name, r.x + r.w / 2, r.y + r.h - 31, 3, g.accent);
     } else {

@@ -66,13 +66,23 @@ the select screen (defaults to PIXEL vs BYTE if launched directly).
 flapping wings) fly the **same pipes at once**, staggered so one is **in front**.
 
 - Hit a pipe or the ground = you're out.
-- When a flyer goes down, a coloured **"PASS!" line** drops at the crash spot; the
-  other player must fly **past that line to win** — otherwise whoever got further
-  wins. (Furthest distance wins.)
+- **Most pipes passed wins** — where or when you crash doesn't matter. Both keep
+  flying until they're down, then the higher pipe count wins (equal = draw).
 - Clean 4-bit world: flat sky, simple clouds, green pipes, scrolling ground.
 
 Controls: **P1 `W`/`Space`**, **P2 `↑`**, `Enter`/`R` = rematch, `Backspace` = menu.
 Defaults to PIXEL vs BYTE; otherwise uses the fighters picked on the select screen.
+
+## Minigame: GRAVEYARD (monster in the middle)
+
+`game/graveyard.html` — top-down cemetery chase. A hooded monster starts in the
+middle and hunts the **nearest living player**, speeding up over time so it always
+catches up eventually. Weave around the crypt and tombstones (solid obstacles).
+Get touched = you're out. **Last one standing wins.**
+
+Controls: **P1 `WASD`**, **P2 arrow keys**, `Enter`/`R` = rematch, `Backspace` = menu.
+The cemetery uses its own moody 16-colour palette (an 8-bit-style palette swap);
+art lives in `art/graveyard.py`.
 
 ## Repo layout
 
@@ -81,11 +91,13 @@ game/            the playable screens
   index.html     character select
   game.js        MK-style select logic (cursors, lock-in, mirror) -> game select
   gameselect.html  the "choose a game" hub
-  gameselect.js  4x2 minigame grid (P1 picks; Football + Flappy live, 6 soon)
+  gameselect.js  4x2 minigame grid (P1 picks; Football/Flappy/Graveyard live, 5 soon)
   football.html  the football minigame
   football.js    Pong-style football (pitch, nets, ball physics, scoring)
   flappy.html    the flappy duel minigame
-  flappy.js      2-player flappy (clean 4-bit sky, wings, furthest-flyer duel)
+  flappy.js      2-player flappy (clean 4-bit sky, wings, most-pipes-wins)
+  graveyard.html      the graveyard chase minigame
+  graveyard_game.js   top-down monster chase (last one standing)
   data.js        AUTO-GENERATED sprites + palette + pixel font + ball (do not edit)
 art/             the art pipeline (source of truth for all sprites)
   characters.py  hand-authored pixel grids for all 8 fighters
