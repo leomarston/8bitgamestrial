@@ -71,7 +71,9 @@
   const laneY = M.laneY * S;                 // pod-centre y
   const podTop = laneY - 14 * S;             // sprite top so the body sits on the lane
   const POD_R = 25, POD_MIN = 58;            // hit radius, min centre distance (no overlap)
-  const ACCEL = 1500, DRAG = 3.2, MAXV = 340, BOUNCE = 0.92, INV = 1.1, MAXHP = 3;
+  const DRAG = 1.8, MAXV = 340, ACCEL = MAXV * DRAG;   // thrust tops out near MAXV
+  const BOUNCE = 1.5, KICK = 110, HARDMAX = 1000;       // bumps add energy + a flat shove
+  const INV = 1.1, MAXHP = 3;
   function wdelta(a) { a = ((a % W) + W) % W; return a > W / 2 ? a - W : a; }
   function wrapx(x) { return ((x % W) + W) % W; }
 
@@ -125,7 +127,7 @@
     for (const p of players) {
       p.vx += moveInput(p) * ACCEL * dt;
       p.vx *= Math.max(0, 1 - DRAG * dt);
-      p.vx = Math.max(-MAXV, Math.min(MAXV, p.vx));
+      p.vx = Math.max(-HARDMAX, Math.min(HARDMAX, p.vx));   // bumps may exceed MAXV
       p.x = wrapx(p.x + p.vx * dt);
     }
     // BALL BUMP: pods are solid and elastic. Separate any overlap (never go into
@@ -138,8 +140,9 @@
       p1.x = wrapx(p1.x - side * overlap / 2);
       p2.x = wrapx(p2.x + side * overlap / 2);
       if ((p2.vx - p1.vx) * side < 0) {                // only when closing in
-        const a = p1.vx, b = p2.vx;
-        p1.vx = b * BOUNCE; p2.vx = a * BOUNCE;        // swap velocities (equal mass)
+        const a = p1.vx, b = p2.vx;                    // swap velocities (equal mass)...
+        p1.vx = b * BOUNCE - side * KICK;              // ...plus extra energy + a flat
+        p2.vx = a * BOUNCE + side * KICK;              //    shove so it flies hard & far
       }
     }
 
