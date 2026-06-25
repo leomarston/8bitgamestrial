@@ -67,7 +67,7 @@
   const BUMP_CELL = new Set(bumpers.map(b => b.cell[0] + "," + b.cell[1]));
 
   // ---------- entities ----------
-  const PSC = 1.9, R = 13, PSPD = 188, MATCH = 30;
+  const PSC = 2.4, R = 14, PSPD = 188, MATCH = 30;
   const DASH_TIME = 0.16, DASH_COOL = 0.55, DASH_SPEED = 500, BLACKOUT = 1.0;
   function ent(name, color, c) { return { name, color, x: 0, y: 0, face: 1, walkT: 0, moving: false, r: R, paint: c, dash: 0, dashDir: [1, 0], dashCool: 0, black: 0 }; }
   let p1, p2, players, grid, phase, ready, timeLeft, winner, c1, c2, sparks;

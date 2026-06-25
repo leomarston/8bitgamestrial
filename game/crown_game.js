@@ -75,7 +75,7 @@
   MAPS.forEach(m => { m.img.onload = () => mapsLoaded++; });
 
   // ---------- entities ----------
-  const PSC = 1.9, R = 13;
+  const PSC = 2.4, R = 14;
   function ent(name, color) { return { name, color, x: 0, y: 0, face: 1, holdMs: 0, dash: 0, dashDir: [1, 0], dashCool: 0, black: 0, walkT: 0, moving: false, r: R }; }
   let p1, p2, players, crown, map, mapIdx, phase, ready, timeLeft, winner, msg, msgT, sparks;
   const MATCH = 30;                                  // seconds per round
