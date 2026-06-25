@@ -372,8 +372,7 @@ HOUSE_WALLS = [
     (_VW0, FY, _VW1, FY + 24), (_VW0, FY + 44, _VW1, FY + FH - 44), (_VW0, FY + FH - 24, _VW1, FY + FH),
     (FX, _HW0, FX + 24, _HW1), (FX + 44, _HW0, FX + FW - 44, _HW1), (FX + FW - 24, _HW0, FX + FW, _HW1),
 ]
-HOUSE_FURN = [(40, 32, 84, 56, "bed"), (156, 36, 200, 58, "sofa"),
-              (46, 100, 96, 124, "table"), (164, 96, 202, 126, "shelf")]
+HOUSE_FURN = []          # empty rooms — no furniture
 
 def _furn(px, W, H, x0, y0, x1, y1, k):
     if k == "bed":
@@ -404,8 +403,6 @@ def _draw_house(img, bomb=True, players=True):
         for x in range(FX, FX + FW): sp(px, W, H, x, FY + t, hcol("Wl")); sp(px, W, H, x, FY + FH - 1 - t, hcol("Wl"))
         for y in range(FY, FY + FH): sp(px, W, H, FX + t, y, hcol("Wl")); sp(px, W, H, FX + FW - 1 - t, y, hcol("Wl"))
     orect(px, W, H, FX, FY, FX + FW, FY + FH, hcol("K"), 1)
-    for (rx0, ry0, rx1, ry1) in [(36, 64, 92, 74), (150, 96, 210, 120)]:  # small rugs (decor)
-        rectf(px, W, H, rx0, ry0, rx1, ry1, hcol("Rg")); orect(px, W, H, rx0, ry0, rx1, ry1, hcol("rg"))
     for (x0, y0, x1, y1) in HOUSE_WALLS:                  # walls
         rectf(px, W, H, x0, y0, x1, y1, hcol("Wl"))
         for x in range(x0, x1): sp(px, W, H, x, y0, hcol("W"))
