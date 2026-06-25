@@ -162,16 +162,18 @@ Controls: **P1 `WASD`/`Space`**, **P2 arrows/`Enter`**, **P3 `IJKL`/`O`**,
 
 ## Minigame: METEOR DERBY (space dodge)
 
-`game/space.html` — two pilot pods **share one lane** in deep space. Each moves
-**left/right only** and **wraps** around the screen edges. The pods are **solid**
-— ram your rival to **shove them sideways** (they can never overlap) so a falling
-meteor lands on *them*. Each hit wrecks your pod a little (cracked → wrecked);
-**3 hits and you're destroyed**, the other pilot wins. Brief invincibility flash
-after each hit; **3 health pips** per player. Art lives in `art/space.py`; the
-starfield exports to `game/space_bg.png`.
+`game/space.html` — **2–4** pilot pods **share one lane** in deep space. Each
+moves **left/right only** and **wraps** around the screen edges. The pods are
+**solid** — ram a rival to **shove them sideways** (pods can never overlap, even
+in a 3–4 way pile-up) so a falling meteor lands on *them*. Each hit wrecks your
+pod a little (cracked → wrecked); **3 hits and you're space dust**, your pod
+leaves the lane. **Last pod flying wins.** Brief invincibility flash after each
+hit; **3 health pips** per player. Pods **and meteors shrink** as more players
+join, so 4 pods aren't cramped in the lane. Starting sides are **randomised every
+round**. Art lives in `art/space.py`; the starfield exports to `game/space_bg.png`.
 
-Controls: **P1 `A`/`D`**, **P2 `←`/`→`**, `Enter`/`Space`/`R` = rematch,
-`Backspace` = menu.
+Controls: **P1 `A`/`D`**, **P2 `←`/`→`**, **P3 `J`/`L`**, **P4 `F`/`H`**,
+`Enter`/`Space`/`R` = rematch, `Backspace` = menu.
 
 ## Music & sound
 
