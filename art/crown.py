@@ -305,11 +305,13 @@ def maps_meta():
     return [
         {"bg": "crown_map1.png", "scale": SC_GAME, "bounds": bounds,
          "obstacles": pill,
-         "spawn": {"p1": [CX - 76, CY + 18], "p2": [CX + 76, CY + 18], "crown": [CX, CY + 1]}},
+         # four spawns clear of the centre dais and the four pillars
+         "spawn": {"p": [[CX - 76, CY], [CX + 76, CY], [CX, CY - 44], [CX, CY + 44]], "crown": [CX, CY + 1]}},
         {"bg": "crown_map2.png", "scale": SC_GAME, "bounds": bounds,
          # one solid wall down the middle; run around the open top/bottom ends
          "obstacles": [{"type": "rect", "x": M2_WL, "y": M2_WT, "w": M2_WR - M2_WL, "h": M2_WB - M2_WT}],
-         "spawn": {"p1": [CX - 76, CY], "p2": [CX + 76, CY], "crown": [CX, FY + 22]}},
+         # four corner spawns clear of the central wall
+         "spawn": {"p": [[CX - 76, CY - 30], [CX + 76, CY - 30], [CX - 76, CY + 40], [CX + 76, CY + 40]], "crown": [CX, FY + 22]}},
     ]
 
 def export_backgrounds():

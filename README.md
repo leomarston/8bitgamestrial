@@ -114,22 +114,21 @@ Controls: **P1 `A`/`D`+`W`**, **P2 arrows+`Up`**, **P3 `J`/`L`+`I`**, **P4 `F`/`
 Controls: **P1 `A`/`D` + `W` (jump)**, **P2 arrows + `Up` (jump)**, `Enter`/`R`
 = rematch, `Backspace` = menu.
 
-## Minigame: CROWN GRAB (king of the crown)
+## Minigame: CROWN GRAB (king of the crown, 2–4 players)
 
-`game/crown.html` — top-down couch duel over a golden crown. **Grab the crown,
-carry it on your head, and HOLD IT LONGEST.** There's **no punching** — each
-player has a **DASH**. Dash into your rival and you **steal the crown** (if they
-had it) and **black them out for 1 second** (they can't move). The scoreboard
-shows each player's **cumulative hold time in milliseconds, live**; when the
-clock runs out, **most cumulative hold time wins.**
+`game/crown.html` — top-down couch free-for-all over a golden crown. **Grab it,
+carry it on your head, and HOLD IT LONGEST.** No punching — each player has a
+**DASH**: dash into anyone to **black them out for 1 second**, and if they were
+holding the crown you **steal it**. The scoreboard shows every player's
+**cumulative hold time in milliseconds, live** (plus a territory share bar); when
+the 30s clock ends, **most cumulative hold time wins.**
 
-The arena is **picked at random each round** from two hand-drawn stages: the
-**Royal Court** (open floor with four pillars for cover) and the **Stone Dais**
-(a raised middle you reach via short side steps). Solid collision for the pillars
-and the dais. Art lives in `art/crown.py`; stages export to `game/crown_map*.png`.
+The arena is **picked at random each round** (the **Court** with four pillars, or
+the **Wall** down the middle), and **starting spots are randomised** for fairness.
+Art lives in `art/crown.py`; stages export to `game/crown_map*.png`.
 
-Controls: **P1 `WASD` + `Space` (dash)**, **P2 arrows + `Enter` (dash)**,
-`Enter`/`Space`/`R` = rematch, `Backspace` = menu.
+Controls: **P1 `WASD`/`Space`**, **P2 arrows/`Enter`**, **P3 `IJKL`/`O`**,
+**P4 `TFGH`/`R`**; `Enter`/`Space`/`R` = rematch, `Backspace` = menu.
 
 ## Minigame: TILE BLITZ (paint the floor)
 
