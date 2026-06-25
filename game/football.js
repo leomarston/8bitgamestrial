@@ -1,7 +1,9 @@
-/* 8-BIT PARTY — Football (Pong-style).
- * Two keepers move UP/DOWN only and defend their net. Bigger football, real
- * pitch lines, goals with nets, and a pixel crowd. First to 5 wins.
- */
+/* 8-BIT PARTY — FOOTBALL, now 2–4 player "defend your wall" pong.
+ * A square pitch; each player guards one side (P1 bottom, P2 top, P3 left,
+ * P4 right). Unused sides are solid walls. Each paddle slides on its own and
+ * bounces corner-to-corner; tap your button to REVERSE it and block the ball.
+ * Miss and you lose a life; 3 lives gone = your side walls up and you're out.
+ * Last player standing wins.  P1 WASD/Space · P2 Arrows/Enter · P3 IJKL/O · P4 TFGH/R */
 (() => {
   const D = window.GAME_DATA;
   const cv = document.getElementById("stage");
@@ -9,262 +11,202 @@
   ctx.imageSmoothingEnabled = false;
   const W = cv.width, H = cv.height;
 
-  // ---------- assets ----------
   function buildSprite(rows) {
     const w = Math.max(...rows.map(r => r.length)), h = rows.length;
-    const c = document.createElement("canvas"); c.width = w; c.height = h;
-    const g = c.getContext("2d");
-    for (let y = 0; y < h; y++) for (let x = 0; x < rows[y].length; x++) {
-      const col = D.palette[rows[y][x]]; if (!col) continue;
-      g.fillStyle = col; g.fillRect(x, y, 1, 1);
-    }
+    const c = document.createElement("canvas"); c.width = w; c.height = h; const g = c.getContext("2d");
+    for (let y = 0; y < h; y++) for (let x = 0; x < rows[y].length; x++) { const col = D.palette[rows[y][x]]; if (col) { g.fillStyle = col; g.fillRect(x, y, 1, 1); } }
     return { canvas: c, w, h };
   }
   const spr = {}; D.roster.forEach(c => spr[c.name] = buildSprite(c.rows));
   const ballSpr = buildSprite(D.ball);
   const FONT = D.font;
-
-  // ---------- pixel text ----------
-  function tW(s, sc, sp = 1) { return (s.length * (5 + sp) - sp) * sc; }
+  function tW(s, sc, sp = 1) { return (String(s).length * (5 + sp) - sp) * sc; }
   function text(s, x, y, sc, color, sp = 1) {
     s = String(s).toUpperCase(); ctx.fillStyle = color; let cx = x;
     for (const ch of s) { const g = FONT[ch] || FONT[" "];
-      for (let ry = 0; ry < g.length; ry++) for (let rx = 0; rx < g[ry].length; rx++)
-        if (g[ry][rx] === "1") ctx.fillRect(cx + rx * sc, y + ry * sc, sc, sc);
+      for (let ry = 0; ry < g.length; ry++) for (let rx = 0; rx < g[ry].length; rx++) if (g[ry][rx] === "1") ctx.fillRect(cx + rx * sc, y + ry * sc, sc, sc);
       cx += (5 + sp) * sc; }
   }
   const tc = (s, cx, y, sc, c, sp = 1) => text(s, Math.round(cx - tW(s, sc, sp) / 2), y, sc, c, sp);
-  const ts = (s, x, y, sc, c, sp = 1) => { text(s, x + sc, y + sc, sc, "#0c1a0e", sp); text(s, x, y, sc, c, sp); };
+  const LINE = "#f4f4ee", GRASS = "#2f8c50", GRASS2 = "#6bd66b", GOLD = "#ffd54a", DIM = "#9aa6ad", WALLC = "#8a8f9e", WALLD = "#4b4f60";
 
-  // ---------- colors ----------
-  const LINE = "#f4f4ee", NET = "#c2c7d0", GRASS = "#2f8c50", GRASS2 = "#6bd66b";
-  const P1C = "#ff5d5d", P2C = "#5db4ff", GOLD = "#ffd54a", DIM = "#9aa6ad";
+  // ---- count + picks ----
+  let count = 2; try { const c = +localStorage.getItem("partyCount"); if (c >= 2 && c <= 4) count = c; } catch (e) {}
+  let picks = { p1: "PIXEL", p2: "BYTE", p3: "NOVA", p4: "CHIP" };
+  try { const s = JSON.parse(localStorage.getItem("partyPicks")); if (s) picks = Object.assign(picks, s); } catch (e) {}
+  const NAMES = [picks.p1, picks.p2, picks.p3, picks.p4].map(n => spr[n] ? n : "PIXEL");
 
-  // ---------- picks ----------
-  let p1name = "PIXEL", p2name = "BYTE";
-  try { const s = JSON.parse(localStorage.getItem("partyPicks")); if (s && s.p1 && s.p2) { p1name = s.p1; p2name = s.p2; } } catch (e) {}
-  if (!spr[p1name]) p1name = "PIXEL";
-  if (!spr[p2name]) p2name = "BYTE";
-  const ch1 = D.roster.find(c => c.name === p1name), ch2 = D.roster.find(c => c.name === p2name);
+  // ---- arena (square) ----
+  const A = 520, ax = (W - A) / 2, ay = 50, L = ax, R = ax + A, T = ay, B = ay + A;
+  const CXc = (L + R) / 2, CYc = (T + B) / 2;
+  const CORNER = 36, OFF = 26, PADLEN = 116, PADTH = 18, PADSPD = 0.82, BR = 14;
+  const lerp = (a, b, t) => a + (b - a) * t;
 
-  // ---------- layout ----------
-  const HUD = 54, STAND = 46;
-  const FX = 14, FY = HUD + STAND, FW = W - 28, FH = H - HUD - STAND - STAND;
-  const fieldTop = FY, fieldBot = FY + FH, cxC = FX + FW / 2, cyC = FY + FH / 2;
-  const GOAL_H = 290, goalTop = cyC - GOAL_H / 2, goalBot = cyC + GOAL_H / 2;
-  const NET_DEPTH = 34;
-  const leftLine = FX + NET_DEPTH, rightLine = FX + FW - NET_DEPTH;
+  // sides: 0 bottom, 1 top, 2 left, 3 right
+  const SIDES = ["bottom", "top", "left", "right"];
+  const PCOL = ["#ff5d5d", "#5db4ff", "#6bd66b", "#ffd54a"];
+  const PKEYS = [
+    ["KeyW", "KeyA", "KeyS", "KeyD", "Space", "KeyF"],
+    ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Enter", "Numpad0"],
+    ["KeyI", "KeyJ", "KeyK", "KeyL", "KeyO", "KeyU"],
+    ["KeyT", "KeyF2", "KeyG", "KeyH", "KeyR", "KeyY"],
+  ];
+  // (KeyF is P1's; give P4 its own cluster T/F/G/H but avoid the F clash by using G/H/T and R)
+  PKEYS[3] = ["KeyT", "KeyG", "KeyH", "KeyR", "KeyY", "KeyV"];
+  const CTL = ["WASD/SPACE", "ARROWS/ENTER", "IJKL/O", "TGHR"];
 
-  const PADW = 40, PADH = 96, PADVIS = 100;
-  const p1 = { x: leftLine + 46, y: cyC, color: P1C, name: p1name, ch: ch1 };
-  const p2 = { x: rightLine - 46, y: cyC, color: P2C, name: p2name, ch: ch2 };
-  const ball = { x: cxC, y: cyC, r: 16, vx: 0, vy: 0, spin: 0 };
-
-  let score1 = 0, score2 = 0, target = 3;
-  let phase = "kickoff", timer = 1.4, msg = "GET READY", flash = 0, winner = null, lastConceded = "p1";
-
-  function resetBall(toward) {
-    ball.x = cxC; ball.y = cyC; ball.vx = 0; ball.vy = 0; ball.spin = 0;
-    phase = "kickoff"; timer = 1.2; msg = "GET READY"; ball.toward = toward;
+  let players, ball, phase, timer, msg, winner, t0;
+  function mkPlayer(i) {
+    return { name: NAMES[i], color: PCOL[i], side: SIDES[i], lives: 3, alive: true, active: i < count, t: 0.5, dir: i % 2 ? 1 : -1 };
   }
+  function reset(full) {
+    players = [0, 1, 2, 3].map(mkPlayer);
+    ball = { x: CXc, y: CYc, vx: 0, vy: 0, r: BR };
+    phase = "kickoff"; timer = 1.3; msg = "GET READY"; winner = null; t0 = 0;
+  }
+  reset(true);
+
+  function activeAlive() { return players.filter(p => p.active && p.alive); }
   function launch() {
-    const dir = ball.toward === "p1" ? -1 : 1;
-    const ang = (Math.random() * 0.7 - 0.35);
-    const sp = 360;
-    ball.vx = dir * sp * Math.cos(ang);
-    ball.vy = sp * Math.sin(ang);
-    phase = "play";
+    const a = Math.random() * Math.PI * 2, sp = 330;
+    ball.vx = Math.cos(a) * sp; ball.vy = Math.sin(a) * sp; phase = "play";
   }
-  function scoreGoal(who) {
-    if (who === "p1") { score1++; lastConceded = "p2"; } else { score2++; lastConceded = "p1"; }
-    flash = 0.0; msg = "GOAL!"; phase = "goal"; timer = 1.3;
-    if (score1 >= target || score2 >= target) { winner = score1 > score2 ? p1 : p2; phase = "win"; }
-    window.__score = [score1, score2];
-  }
-  window.__score = [0, 0];
 
-  // ---------- input ----------
-  const held = {};
+  // paddle geometry for a side at param t
+  function padRect(p) {
+    if (p.side === "bottom") { const cx = lerp(L + CORNER + PADLEN / 2, R - CORNER - PADLEN / 2, p.t); return { x: cx - PADLEN / 2, y: B - OFF - PADTH / 2, w: PADLEN, h: PADTH, cx, cy: B - OFF, horiz: true }; }
+    if (p.side === "top") { const cx = lerp(L + CORNER + PADLEN / 2, R - CORNER - PADLEN / 2, p.t); return { x: cx - PADLEN / 2, y: T + OFF - PADTH / 2, w: PADLEN, h: PADTH, cx, cy: T + OFF, horiz: true }; }
+    if (p.side === "left") { const cy = lerp(T + CORNER + PADLEN / 2, B - CORNER - PADLEN / 2, p.t); return { x: L + OFF - PADTH / 2, y: cy - PADLEN / 2, w: PADTH, h: PADLEN, cx: L + OFF, cy, horiz: false }; }
+    const cy = lerp(T + CORNER + PADLEN / 2, B - CORNER - PADLEN / 2, p.t); return { x: R - OFF - PADTH / 2, y: cy - PADLEN / 2, w: PADTH, h: PADLEN, cx: R - OFF, cy, horiz: false };
+  }
+
+  // ---- input: any of a player's keys flips that paddle ----
   window.addEventListener("keydown", e => {
-    held[e.code] = true;
-    if (["ArrowUp", "ArrowDown", "Space"].includes(e.code)) e.preventDefault();
-    if (e.code === "Backspace") { e.preventDefault(); location.href = "gameselect.html"; }
-    if (phase === "win" && (e.code === "KeyR" || e.code === "Enter" || e.code === "Space")) {
-      if (window.GameMusic) window.GameMusic.next();
-      score1 = score2 = 0; winner = null; resetBall("p1");
+    if (e.code === "Backspace") { e.preventDefault(); location.href = "gameselect.html"; return; }
+    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(e.code)) e.preventDefault();
+    if (phase === "win" && (e.code === "KeyR" || e.code === "Enter" || e.code === "Space")) { if (window.GameMusic) window.GameMusic.next(); reset(true); return; }
+    if (e.repeat) return;
+    for (let i = 0; i < count; i++) {
+      const p = players[i];
+      if (p.alive && PKEYS[i].includes(e.code)) { p.dir = -p.dir || 1; break; }
     }
   });
-  window.addEventListener("keyup", e => { held[e.code] = false; });
 
-  // ---------- update ----------
-  function clampPad(p) { const half = PADH / 2; p.y = Math.max(fieldTop + half, Math.min(fieldBot - half, p.y)); }
+  // ---- update ----
+  function concede(p) {
+    p.lives--; if (p.lives <= 0) { p.lives = 0; p.alive = false; }
+    const aa = activeAlive();
+    if (aa.length <= 1) { winner = aa[0] || null; phase = "win"; return; }
+    ball.x = CXc; ball.y = CYc; ball.vx = ball.vy = 0; phase = "kickoff"; timer = 1.0; msg = "";
+  }
+  function reflectPaddle(p) {
+    const r = padRect(p);
+    if (!(ball.x + ball.r > r.x && ball.x - ball.r < r.x + r.w && ball.y + ball.r > r.y && ball.y - ball.r < r.y + r.h)) return;
+    const sp = Math.min(Math.hypot(ball.vx, ball.vy) * 1.05, 880);
+    if (p.side === "bottom" && ball.vy > 0) { const o = (ball.x - r.cx) / (PADLEN / 2); ball.vy = -Math.abs(sp * Math.cos(o * 0.9)); ball.vx = sp * Math.sin(o * 0.9); ball.y = r.y - ball.r; }
+    else if (p.side === "top" && ball.vy < 0) { const o = (ball.x - r.cx) / (PADLEN / 2); ball.vy = Math.abs(sp * Math.cos(o * 0.9)); ball.vx = sp * Math.sin(o * 0.9); ball.y = r.y + r.h + ball.r; }
+    else if (p.side === "left" && ball.vx < 0) { const o = (ball.y - r.cy) / (PADLEN / 2); ball.vx = Math.abs(sp * Math.cos(o * 0.9)); ball.vy = sp * Math.sin(o * 0.9); ball.x = r.x + r.w + ball.r; }
+    else if (p.side === "right" && ball.vx > 0) { const o = (ball.y - r.cy) / (PADLEN / 2); ball.vx = -Math.abs(sp * Math.cos(o * 0.9)); ball.vy = sp * Math.sin(o * 0.9); ball.x = r.x - ball.r; }
+  }
+  function wall(side) { // is this side solid (inactive or eliminated)?
+    const p = players[SIDES.indexOf(side)]; return !(p.active && p.alive);
+  }
   function update(dt) {
-    const spd = 380 * dt;
-    if (phase === "play" || phase === "kickoff" || phase === "goal") {
-      if (held.KeyW) p1.y -= spd; if (held.KeyS) p1.y += spd;
-      if (held.ArrowUp) p2.y -= spd; if (held.ArrowDown) p2.y += spd;
-      clampPad(p1); clampPad(p2);
-    }
+    // paddles always slide + bounce off corners
+    for (let i = 0; i < count; i++) { const p = players[i]; if (!p.alive) continue;
+      p.t += p.dir * PADSPD * dt; if (p.t < 0) { p.t = 0; p.dir = 1; } if (p.t > 1) { p.t = 1; p.dir = -1; } }
     if (phase === "kickoff") { timer -= dt; if (timer <= 0) launch(); return; }
-    if (phase === "goal") { timer -= dt; flash += dt; if (timer <= 0) resetBall(lastConceded); return; }
     if (phase === "win") return;
+    t0 += dt;
+    const bsp = Math.hypot(ball.vx, ball.vy); if (bsp > 1 && bsp < 880) { const k = 1 + 0.04 * dt; ball.vx *= k; ball.vy *= k; }
+    ball.x += ball.vx * dt; ball.y += ball.vy * dt;
+    for (let i = 0; i < count; i++) if (players[i].alive) reflectPaddle(players[i]);
 
-    // move ball
-    // ball gradually speeds up over the course of the match
-    const bsp = Math.hypot(ball.vx, ball.vy);
-    if (bsp > 1 && bsp < 820) { const k = 1 + 0.05 * dt; ball.vx *= k; ball.vy *= k; }
-    ball.x += ball.vx * dt; ball.y += ball.vy * dt; ball.spin += ball.vx * dt * 0.05;
-    // walls (touchlines)
-    if (ball.y - ball.r < fieldTop) { ball.y = fieldTop + ball.r; ball.vy = Math.abs(ball.vy); }
-    if (ball.y + ball.r > fieldBot) { ball.y = fieldBot - ball.r; ball.vy = -Math.abs(ball.vy); }
-
-    // paddle collisions
-    const hit = (p, dir) => {
-      const hx = p.x - PADW / 2, hy = p.y - PADH / 2;
-      if (ball.x + ball.r > hx && ball.x - ball.r < hx + PADW &&
-          ball.y + ball.r > hy && ball.y - ball.r < hy + PADH) {
-        if ((dir < 0 && ball.vx < 0) || (dir > 0 && ball.vx > 0)) {
-          const off = (ball.y - p.y) / (PADH / 2);
-          const sp = Math.min(Math.hypot(ball.vx, ball.vy) * 1.06, 820);
-          const ang = off * 0.9;
-          ball.vx = -dir * Math.abs(sp * Math.cos(ang));
-          ball.vy = sp * Math.sin(ang);
-          ball.x = dir < 0 ? hx + PADW + ball.r : hx - ball.r;
-        }
-      }
-    };
-    hit(p1, -1); hit(p2, 1);
-
-    // goal lines
-    if (ball.x - ball.r < leftLine) {
-      if (ball.y > goalTop && ball.y < goalBot) { if (ball.x < FX + ball.r + 6) scoreGoal("p2"); }
-      else { ball.x = leftLine + ball.r; ball.vx = Math.abs(ball.vx); }
-    }
-    if (ball.x + ball.r > rightLine) {
-      if (ball.y > goalTop && ball.y < goalBot) { if (ball.x > FX + FW - ball.r - 6) scoreGoal("p1"); }
-      else { ball.x = rightLine - ball.r; ball.vx = -Math.abs(ball.vx); }
-    }
+    // edges: concede on an active side's goal span, else wall-bounce
+    const inX = ball.x > L + CORNER && ball.x < R - CORNER, inY = ball.y > T + CORNER && ball.y < B - CORNER;
+    if (ball.y + ball.r > B) { if (!wall("bottom") && inX) return concede(players[0]); ball.y = B - ball.r; ball.vy = -Math.abs(ball.vy); }
+    if (ball.y - ball.r < T) { if (!wall("top") && inX) return concede(players[1]); ball.y = T + ball.r; ball.vy = Math.abs(ball.vy); }
+    if (ball.x - ball.r < L) { if (!wall("left") && inY) return concede(players[2]); ball.x = L + ball.r; ball.vx = Math.abs(ball.vx); }
+    if (ball.x + ball.r > R) { if (!wall("right") && inY) return concede(players[3]); ball.x = R - ball.r; ball.vx = -Math.abs(ball.vx); }
   }
 
-  // ---------- draw ----------
-  function rrect(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
-  function drawChar(p) {
-    const s = spr[p.name], scale = PADVIS / s.h, dw = Math.round(s.w * scale), dh = PADVIS;
-    // shadow
-    ctx.fillStyle = "rgba(10,20,12,.35)";
-    ctx.beginPath(); ctx.ellipse(p.x, p.y + PADH / 2 - 2, dw * 0.4, 7, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.drawImage(s.canvas, Math.round(p.x - dw / 2), Math.round(p.y - PADH / 2), dw, dh);
+  // ---- draw ----
+  function rr(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
+  function drawWall(side) {
+    ctx.fillStyle = WALLC; ctx.strokeStyle = WALLD; ctx.lineWidth = 2; const TH = 16;
+    if (side === "bottom") { ctx.fillRect(L, B - TH, A, TH); for (let x = L; x < R; x += 22) { ctx.strokeStyle = WALLD; ctx.beginPath(); ctx.moveTo(x, B - TH); ctx.lineTo(x, B); ctx.stroke(); } }
+    if (side === "top") { ctx.fillRect(L, T, A, TH); for (let x = L; x < R; x += 22) { ctx.beginPath(); ctx.moveTo(x, T); ctx.lineTo(x, T + TH); ctx.stroke(); } }
+    if (side === "left") { ctx.fillRect(L, T, TH, A); for (let y = T; y < B; y += 22) { ctx.beginPath(); ctx.moveTo(L, y); ctx.lineTo(L + TH, y); ctx.stroke(); } }
+    if (side === "right") { ctx.fillRect(R - TH, T, TH, A); for (let y = T; y < B; y += 22) { ctx.beginPath(); ctx.moveTo(R - TH, y); ctx.lineTo(R, y); ctx.stroke(); } }
   }
-
-  function drawStands(y0, h) {
-    ctx.fillStyle = "#241f33"; ctx.fillRect(0, y0, W, h);
-    const rows = 3;
-    for (let r = 0; r < rows; r++) {
-      const yy = y0 + 7 + r * Math.floor((h - 10) / rows);
-      for (let x = 6; x < W - 6; x += 11) {
-        const k = (x * 7 + r * 13) % 9;
-        const pal = ["#ff5d5d", "#5db4ff", "#ffd54a", "#6bd66b", "#f4f4ee", "#ffce9e", "#c2c7d0", "#be3238", "#2f64af"][k];
-        ctx.fillStyle = pal; ctx.fillRect(x, yy, 6, 6);
-      }
-    }
-    ctx.fillStyle = "#15121f"; ctx.fillRect(0, y0 + h - 4, W, 4);
-  }
-
-  function drawNet(side) {
-    const x0 = side < 0 ? FX : rightLine, x1 = side < 0 ? leftLine : FX + FW;
-    ctx.save();
-    ctx.beginPath(); ctx.rect(x0, goalTop, x1 - x0, goalBot - goalTop); ctx.clip();
-    ctx.fillStyle = "rgba(20,30,22,.55)"; ctx.fillRect(x0, goalTop, x1 - x0, goalBot - goalTop);
-    ctx.strokeStyle = NET; ctx.lineWidth = 1; ctx.globalAlpha = 0.8;
-    for (let gx = x0; gx <= x1; gx += 8) { ctx.beginPath(); ctx.moveTo(gx, goalTop); ctx.lineTo(gx, goalBot); ctx.stroke(); }
-    for (let gy = goalTop; gy <= goalBot; gy += 8) { ctx.beginPath(); ctx.moveTo(x0, gy); ctx.lineTo(x1, gy); ctx.stroke(); }
+  function drawGoal(side, color) {
+    ctx.save(); ctx.globalAlpha = 0.5; ctx.fillStyle = color; const TH = 6;
+    if (side === "bottom") ctx.fillRect(L + CORNER, B - TH, A - CORNER * 2, TH);
+    if (side === "top") ctx.fillRect(L + CORNER, T, A - CORNER * 2, TH);
+    if (side === "left") ctx.fillRect(L, T + CORNER, TH, A - CORNER * 2);
+    if (side === "right") ctx.fillRect(R - TH, T + CORNER, TH, A - CORNER * 2);
     ctx.restore();
-    // posts (crossbar lines + goal-line uprights)
-    ctx.strokeStyle = LINE; ctx.lineWidth = 5; ctx.lineCap = "round";
-    const gl = side < 0 ? leftLine : rightLine;
-    ctx.beginPath(); ctx.moveTo(gl, goalTop); ctx.lineTo(gl, goalBot); ctx.stroke();   // upright on goal line
-    ctx.beginPath(); ctx.moveTo(x0, goalTop); ctx.lineTo(gl, goalTop); ctx.stroke();    // top bar
-    ctx.beginPath(); ctx.moveTo(x0, goalBot); ctx.lineTo(gl, goalBot); ctx.stroke();    // bottom bar
   }
-
-  function box(x, y, w, h) { ctx.strokeRect(x, y, w, h); }
   function drawPitch() {
-    // grass stripes
-    ctx.fillStyle = GRASS; ctx.fillRect(FX, FY, FW, FH);
-    ctx.globalAlpha = 0.18; ctx.fillStyle = GRASS2;
-    for (let x = FX; x < FX + FW; x += 64 * 2) ctx.fillRect(x, FY, 64, FH);
-    ctx.globalAlpha = 1;
-    // lines
-    ctx.strokeStyle = LINE; ctx.lineWidth = 3;
-    box(leftLine, fieldTop + 6, rightLine - leftLine, FH - 12);                 // touchlines
-    ctx.beginPath(); ctx.moveTo(cxC, fieldTop + 6); ctx.lineTo(cxC, fieldBot - 6); ctx.stroke(); // halfway
-    ctx.beginPath(); ctx.arc(cxC, cyC, 70, 0, Math.PI * 2); ctx.stroke();        // centre circle
-    ctx.fillStyle = LINE; ctx.beginPath(); ctx.arc(cxC, cyC, 4, 0, Math.PI * 2); ctx.fill();
-    // penalty + 6yd boxes
-    box(leftLine, cyC - 150, 116, 300); box(leftLine, cyC - 84, 54, 168);
-    box(rightLine - 116, cyC - 150, 116, 300); box(rightLine - 54, cyC - 84, 54, 168);
-    // penalty arcs
-    ctx.beginPath(); ctx.arc(leftLine + 78, cyC, 40, -0.9, 0.9); ctx.stroke();
-    ctx.beginPath(); ctx.arc(rightLine - 78, cyC, 40, Math.PI - 0.9, Math.PI + 0.9); ctx.stroke();
-    // penalty spots
-    ctx.fillStyle = LINE;
-    ctx.beginPath(); ctx.arc(leftLine + 78, cyC, 3, 0, 7); ctx.fill();
-    ctx.beginPath(); ctx.arc(rightLine - 78, cyC, 3, 0, 7); ctx.fill();
-    // corner arcs
-    [[leftLine, fieldTop + 6, 0, 0.5], [rightLine, fieldTop + 6, 0.5, 1], [leftLine, fieldBot - 6, 1.5, 2], [rightLine, fieldBot - 6, 1, 1.5]]
-      .forEach(c => { ctx.beginPath(); ctx.arc(c[0], c[1], 12, c[2] * Math.PI, c[3] * Math.PI); ctx.stroke(); });
-    // nets
-    drawNet(-1); drawNet(1);
+    ctx.fillStyle = GRASS; ctx.fillRect(L, T, A, A);
+    ctx.globalAlpha = 0.16; ctx.fillStyle = GRASS2; for (let x = L; x < R; x += 96) ctx.fillRect(x, T, 48, A); ctx.globalAlpha = 1;
+    ctx.strokeStyle = LINE; ctx.lineWidth = 3; ctx.strokeRect(L + 4, T + 4, A - 8, A - 8);
+    ctx.beginPath(); ctx.arc(CXc, CYc, 64, 0, 7); ctx.stroke();
+    ctx.fillStyle = LINE; ctx.beginPath(); ctx.arc(CXc, CYc, 4, 0, 7); ctx.fill();
+    // corner blocks (always solid)
+    ctx.fillStyle = WALLC;
+    for (const [cx, cy] of [[L, T], [R - CORNER, T], [L, B - CORNER], [R - CORNER, B - CORNER]]) { /* visual hint */ }
+    for (let i = 0; i < 4; i++) { const p = players[i]; if (p.active && p.alive) drawGoal(p.side, p.color); else drawWall(p.side); }
   }
-
+  function drawPaddle(p) {
+    const r = padRect(p), s = spr[p.name];
+    ctx.fillStyle = "rgba(8,16,10,.32)"; ctx.beginPath(); ctx.ellipse(r.cx, r.cy + 4, r.w / 2, r.h / 2, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = p.color; rr(r.x, r.y, r.w, r.h, 6); ctx.fill();
+    ctx.strokeStyle = "#15121f"; ctx.lineWidth = 2; rr(r.x, r.y, r.w, r.h, 6); ctx.stroke();
+    const sc = 70 / s.h, dw = s.w * sc, dh = 70; ctx.drawImage(s.canvas, Math.round(r.cx - dw / 2), Math.round(r.cy - dh / 2), dw, dh);
+  }
   function drawBall() {
-    const d = ball.r * 2;
-    ctx.fillStyle = "rgba(8,18,10,.30)";
-    ctx.beginPath(); ctx.ellipse(ball.x + 2, ball.y + ball.r * 0.7, ball.r * 0.85, ball.r * 0.34, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.drawImage(ballSpr.canvas, Math.round(ball.x - ball.r), Math.round(ball.y - ball.r), d, d);
+    ctx.fillStyle = "rgba(8,18,10,.30)"; ctx.beginPath(); ctx.ellipse(ball.x + 2, ball.y + ball.r * 0.7, ball.r * 0.85, ball.r * 0.34, 0, 0, 7); ctx.fill();
+    ctx.drawImage(ballSpr.canvas, Math.round(ball.x - ball.r), Math.round(ball.y - ball.r), ball.r * 2, ball.r * 2);
   }
-
+  function pips(p, cx, cy) {
+    for (let i = 0; i < 3; i++) { ctx.fillStyle = i < p.lives ? p.color : "#3a3f4c"; ctx.fillRect(cx - 22 + i * 16, cy, 12, 12); }
+  }
   function drawHUD() {
-    ctx.fillStyle = "#13100f"; ctx.fillRect(0, 0, W, HUD);
-    ctx.fillStyle = GRASS2; ctx.globalAlpha = .25; ctx.fillRect(0, HUD - 3, W, 3); ctx.globalAlpha = 1;
-    // P1
-    ctx.fillStyle = P1C; rrect(14, 12, 10, 30, 3); ctx.fill();
-    text(p1.name, 32, 12, 2, P1C); text(String(score1), 32, 30, 3, "#f4f4ee");
-    // P2
-    const rx = W - 14;
-    ctx.fillStyle = P2C; rrect(rx - 10, 12, 10, 30, 3); ctx.fill();
-    const n2w = tW(p2.name, 2); text(p2.name, rx - 18 - n2w, 12, 2, P2C);
-    const s2 = String(score2); text(s2, rx - 18 - tW(s2, 3), 30, 3, "#f4f4ee");
-    tc("FOOTBALL  -  FIRST TO " + target, W / 2, 10, 2, GOLD);
-    tc("P1  W / S      P2  UP / DOWN      BACKSPACE  MENU", W / 2, 34, 1, DIM);
+    // P1 bottom-centre, P2 top-centre, P3 left, P4 right
+    const slots = [[CXc, B + 8, "h"], [CXc, T - 26, "h"], [L / 2, CYc - 30, "v"], [(R + W) / 2, CYc - 30, "v"]];
+    for (let i = 0; i < count; i++) { const p = players[i], [x, y] = slots[i];
+      tc(p.name, x, y, 2, p.alive ? p.color : "#6a6a78");
+      if (p.alive) pips(p, x, y + 18); else tc("OUT", x, y + 18, 2, "#6a6a78");
+    }
+    tc(count + "-PLAYER PONG  -  LAST WALL STANDING", CXc, 6, 2, GOLD);
   }
 
   function frame(prev, now) {
     const dt = Math.min((now - prev) / 1000, 0.033);
     update(dt);
-
     ctx.fillStyle = "#0e1410"; ctx.fillRect(0, 0, W, H);
-    drawStands(HUD, STAND);
-    drawStands(H - STAND, STAND);
     drawPitch();
-    drawChar(p1); drawChar(p2);
+    for (let i = 0; i < count; i++) if (players[i].alive) drawPaddle(players[i]);
     if (phase !== "win") drawBall();
     drawHUD();
-
-    if (phase === "kickoff") tc(msg, W / 2, cyC - 130, 4, GOLD);
-    if (phase === "goal") {
-      const big = 4 + Math.sin(flash * 12) * 0.6;
-      tc("GOAL!", W / 2, cyC - 140, Math.round(big * 1.4), GOLD);
-    }
+    if (phase === "kickoff" && msg) tc(msg, CXc, CYc - 90, 4, GOLD);
     if (phase === "win") {
       ctx.fillStyle = "rgba(8,14,9,.84)"; ctx.fillRect(0, 0, W, H);
-      tc((winner === p1 ? "P1" : "P2") + "  WINS!", W / 2, 120, 6, GOLD);
-      const s = spr[winner.name], sc = 220 / s.h;
-      ctx.drawImage(s.canvas, W / 2 - s.w * sc / 2, 210, s.w * sc, 220);
-      tc(winner.name, W / 2, 450, 4, winner.color);
-      tc(score1 + "  -  " + score2, W / 2, 500, 3, "#f4f4ee");
-      tc("ENTER = REMATCH      BACKSPACE = GAME MENU", W / 2, 560, 2, DIM);
+      if (winner) {
+        tc(winner.name + " WINS!", W / 2, 120, 6, GOLD);
+        const s = spr[winner.name], sc = 210 / s.h; ctx.drawImage(s.canvas, W / 2 - s.w * sc / 2, 200, s.w * sc, 210);
+        tc("LAST WALL STANDING", W / 2, 440, 3, winner.color);
+      } else tc("DRAW!", W / 2, 240, 6, GOLD);
+      tc("ENTER = REMATCH      BACKSPACE = MENU", W / 2, 520, 2, DIM);
     }
+    window.__pong = { phase, count, lives: players.slice(0, count).map(p => p.lives), alive: players.slice(0, count).map(p => p.alive), dir: players.slice(0, count).map(p => p.dir), winner: winner ? winner.name : null };
+    window.__pghook = {
+      flip: i => { if (players[i] && players[i].alive) players[i].dir = -players[i].dir; },
+      setBall: (x, y, vx, vy) => { ball.x = x; ball.y = y; ball.vx = vx; ball.vy = vy; phase = "play"; },
+      ball: () => ({ x: Math.round(ball.x), y: Math.round(ball.y) }),
+      arena: () => ({ L, R, T, B, CXc, CYc, CORNER }),
+    };
     requestAnimationFrame(t => frame(now, t));
   }
   requestAnimationFrame(t => frame(t, t));

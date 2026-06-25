@@ -43,24 +43,25 @@ goes back a step.
 | **PIXEL** brown mop, red hoodie | **BYTE** beanie + green hoodie | **NOVA** red flame hair | **CHIP** blonde twin-tails |
 | **GLITCH** green mohawk | **ACE** ball cap, varsity | **ZED** masked ninja | **BOLT** visor robot |
 
-## Minigame: FOOTBALL (Pong-style)
+## Minigame: FOOTBALL — 2–4 player "defend your wall" pong
 
-After both players lock in, the football match (`game/football.html`) **starts
-automatically** (a short VS countdown, then play). It's Pong with a football skin:
+`game/football.html` — a **square pitch** where each player guards one side:
+**P1 bottom, P2 top, P3 left, P4 right**. With 2 players the unused sides are
+**solid walls**; 3 players leaves one wall; 4 fills every side.
 
-- Each player is a **keeper** that moves **up/down only** (no left/right) in
-  front of their net.
-- A **bigger 4-bit football** bounces off keepers and the touchlines; the
-  bounce angle depends on where it hits the keeper.
-- Get the ball into the opponent's **net** to score. The ball **speeds up over
-  time**. **First to 3 wins.**
-- Real pitch art: mowed-stripe grass, full markings (centre circle, penalty &
-  6-yard boxes, arcs, spots, corners), **goals with crosshatch nets**, and a
-  **pixel crowd** in the stands.
+- **New paddle control:** each keeper-paddle **slides on its own** and bounces
+  corner-to-corner. **Tap your button to instantly reverse it** and line up with
+  the ball — so every player needs only **one button**, which is how it scales to
+  four on one keyboard.
+- The **football** bounces off paddles (angle depends where it hits) and walls,
+  and **speeds up over time**.
+- **Lives:** each player has **3**. The ball getting past your side costs a life
+  and re-centres the ball. At 0 lives your side **walls up and you're out**.
+  **Last player standing wins.** (Two players = classic first-to-3-against.)
 
-Controls: **P1 `W`/`S`**, **P2 `↑`/`↓`**, `Backspace` = back to select,
-`Enter`/`R` = rematch on the win screen. The keepers are whoever you picked on
-the select screen (defaults to PIXEL vs BYTE if launched directly).
+Controls (tap to flip your paddle): **P1 `WASD`/`Space`**, **P2 arrows/`Enter`**,
+**P3 `IJKL`/`O`**, **P4 `TGHR`**; `Backspace` = menu, `Enter` = rematch. Player
+count and fighters come from the select screen (defaults if launched directly).
 
 ## Minigame: FLAPPY DUEL (2-player)
 

@@ -1,6 +1,7 @@
-/* 8-BIT PARTY — Mortal-Kombat-style couch character select.
- * Two players, two flashing cursors over a 4x2 grid, lock-in to ready up.
- * Mirror picks allowed (both players may choose the same fighter).
+/* 8-BIT PARTY — couch character select for 2–4 players.
+ * Pick the player count with number keys 2/3/4, then each player drives their own
+ * cursor over the 4x2 roster and locks in. Mirror picks allowed. Saves the count
+ * and every pick to localStorage, then heads to the game select.
  */
 (() => {
   const D = window.GAME_DATA;
@@ -9,235 +10,148 @@
   ctx.imageSmoothingEnabled = false;
   const W = cv.width, H = cv.height;
 
-  // ---- colors ----
   const BG = "#1a1626", PANEL = "#272138", PANEL2 = "#201b30";
   const INK = "#f4f4ee", DIM = "#9a9cb2", GOLD = "#ffd54a";
-  const P1C = "#ff5d5d", P2C = "#5db4ff";
 
-  // ---- pre-render each fighter sprite to its own tiny canvas ----
+  // per-player config: colour, controls, and a short control hint
+  const PCONF = [
+    { tag: "P1", color: "#ff5d5d", keys: { up: "KeyW", down: "KeyS", left: "KeyA", right: "KeyD" }, ok: ["Space", "KeyF"], ctl: "WASD / SPACE", def: 0 },
+    { tag: "P2", color: "#5db4ff", keys: { up: "ArrowUp", down: "ArrowDown", left: "ArrowLeft", right: "ArrowRight" }, ok: ["Enter", "Numpad0"], ctl: "ARROWS / ENTER", def: 3 },
+    { tag: "P3", color: "#6bd66b", keys: { up: "KeyI", down: "KeyK", left: "KeyJ", right: "KeyL" }, ok: ["KeyO", "KeyU"], ctl: "IJKL / O", def: 4 },
+    { tag: "P4", color: "#ffd54a", keys: { up: "KeyT", down: "KeyG", left: "KeyF", right: "KeyH" }, ok: ["KeyR", "KeyY"], ctl: "TFGH / R", def: 7 },
+  ];
+  let count = 2;
+  try { const c = +localStorage.getItem("partyCount"); if (c >= 2 && c <= 4) count = c; } catch (e) {}
+  const players = PCONF.map(c => ({ tag: c.tag, color: c.color, keys: c.keys, ok: c.ok, ctl: c.ctl, idx: c.def, locked: false }));
+  const act = () => players.slice(0, count);
+
+  // ---- sprites + font ----
   const sprites = D.roster.map(ch => {
-    const rows = ch.rows;
-    const w = Math.max(...rows.map(r => r.length)), h = rows.length;
-    const c = document.createElement("canvas");
-    c.width = w; c.height = h;
-    const g = c.getContext("2d");
-    for (let y = 0; y < h; y++) {
-      const row = rows[y];
-      for (let x = 0; x < row.length; x++) {
-        const col = D.palette[row[x]];
-        if (!col) continue;
-        g.fillStyle = col; g.fillRect(x, y, 1, 1);
-      }
-    }
+    const rows = ch.rows, w = Math.max(...rows.map(r => r.length)), h = rows.length;
+    const c = document.createElement("canvas"); c.width = w; c.height = h; const g = c.getContext("2d");
+    for (let y = 0; y < h; y++) for (let x = 0; x < rows[y].length; x++) { const col = D.palette[rows[y][x]]; if (col) { g.fillStyle = col; g.fillRect(x, y, 1, 1); } }
     return { canvas: c, w, h };
   });
-
-  // ---- pixel font ----
   const FONT = D.font;
-  function textWidth(s, sc, sp = 1) { return (s.length * (5 + sp) - sp) * sc; }
-  function drawText(s, x, y, sc, color, sp = 1) {
-    s = String(s).toUpperCase();
-    ctx.fillStyle = color;
-    let cx = x;
-    for (const chr of s) {
-      const g = FONT[chr] || FONT[" "];
-      for (let ry = 0; ry < g.length; ry++) {
-        const row = g[ry];
-        for (let rx = 0; rx < row.length; rx++)
-          if (row[rx] === "1") ctx.fillRect(cx + rx * sc, y + ry * sc, sc, sc);
-      }
-      cx += (5 + sp) * sc;
-    }
+  function tW(s, sc, sp = 1) { return (String(s).length * (5 + sp) - sp) * sc; }
+  function text(s, x, y, sc, color, sp = 1) {
+    s = String(s).toUpperCase(); ctx.fillStyle = color; let cx = x;
+    for (const chr of s) { const g = FONT[chr] || FONT[" "];
+      for (let ry = 0; ry < g.length; ry++) for (let rx = 0; rx < g[ry].length; rx++) if (g[ry][rx] === "1") ctx.fillRect(cx + rx * sc, y + ry * sc, sc, sc);
+      cx += (5 + sp) * sc; }
   }
-  function textCentered(s, cx, y, sc, color, sp = 1) {
-    drawText(s, Math.round(cx - textWidth(s, sc, sp) / 2), y, sc, color, sp);
-  }
-  function textShadow(s, x, y, sc, color, sp = 1) {
-    drawText(s, x + sc, y + sc, sc, "#15121f", sp);
-    drawText(s, x, y, sc, color, sp);
-  }
+  const tc = (s, cx, y, sc, c, sp = 1) => text(s, Math.round(cx - tW(s, sc, sp) / 2), y, sc, c, sp);
+  const ts = (s, x, y, sc, c, sp = 1) => { text(s, x + sc, y + sc, sc, "#15121f", sp); text(s, x, y, sc, c, sp); };
 
-  // ---- grid layout ----
-  const COLS = 4, ROWS = 2;
-  const CW = 150, CH = 170, GX = 16, GY = 16;
-  const GRIDW = COLS * CW + (COLS - 1) * GX;
-  const GX0 = Math.round((W - GRIDW) / 2), GY0 = 96;
-  function cellRect(i) {
-    const col = i % COLS, row = Math.floor(i / COLS);
-    return { x: GX0 + col * (CW + GX), y: GY0 + row * (CH + GY), w: CW, h: CH };
-  }
+  // ---- grid ----
+  const COLS = 4, ROWS = 2, CW = 150, CH = 168, GX = 16, GY = 16;
+  const GRIDW = COLS * CW + (COLS - 1) * GX, GX0 = Math.round((W - GRIDW) / 2), GY0 = 92;
+  function cellRect(i) { const c = i % COLS, r = (i / COLS) | 0; return { x: GX0 + c * (CW + GX), y: GY0 + r * (CH + GY), w: CW, h: CH }; }
 
-  // ---- state ----
-  const state = {
-    p1: { idx: 0, locked: false, color: P1C, name: "PLAYER 1" },
-    p2: { idx: 3, locked: false, color: P2C, name: "PLAYER 2" },
-  };
-  let readyAt = 0;                 // timestamp when both players locked in
-  const START_DELAY = 1400;        // ms shown on the VS screen before auto kick-off
-
+  let readyAt = 0; const START_DELAY = 1400;
   function move(p, dx, dy) {
-    if (p.locked) { p.locked = false; return; }   // moving cancels a lock
-    let col = p.idx % COLS, row = Math.floor(p.idx / COLS);
-    col = (col + dx + COLS) % COLS;
-    row = (row + dy + ROWS) % ROWS;
-    p.idx = row * COLS + col;
+    if (p.locked) { p.locked = false; return; }
+    let c = p.idx % COLS, r = (p.idx / COLS) | 0;
+    c = (c + dx + COLS) % COLS; r = (r + dy + ROWS) % ROWS; p.idx = r * COLS + c;
   }
 
   // ---- input ----
-  const KEYMAP = {
-    KeyW: ["p1", "up"], KeyS: ["p1", "down"], KeyA: ["p1", "left"], KeyD: ["p1", "right"],
-    Space: ["p1", "ok"], KeyF: ["p1", "ok"],
-    ArrowUp: ["p2", "up"], ArrowDown: ["p2", "down"], ArrowLeft: ["p2", "left"],
-    ArrowRight: ["p2", "right"], Enter: ["p2", "ok"], Numpad0: ["p2", "ok"],
-  };
-  window.addEventListener("keydown", (e) => {
-    if (e.code === "Backspace") { e.preventDefault(); state.p1.locked = state.p2.locked = false; return; }
-    if (state.p1.locked && state.p2.locked) return;  // match auto-starts; only reselect is allowed
-    const m = KEYMAP[e.code];
-    if (!m) return;
-    e.preventDefault();
-    const [pk, act] = m, p = state[pk];
-    if (act === "ok") { if (!e.repeat) p.locked = true; return; }
-    if (act === "up") move(p, 0, -1);
-    if (act === "down") move(p, 0, 1);
-    if (act === "left") move(p, -1, 0);
-    if (act === "right") move(p, 1, 0);
+  window.addEventListener("keydown", e => {
+    if (e.code === "Backspace") { e.preventDefault(); players.forEach(p => p.locked = false); return; }
+    if (["Digit2", "Digit3", "Digit4", "Numpad2", "Numpad3", "Numpad4"].includes(e.code)) {
+      if (!act().every(p => p.locked)) { count = +e.code.slice(-1); players.forEach(p => p.locked = false); }
+      e.preventDefault(); return;
+    }
+    if (act().every(p => p.locked)) return;     // ready; only reselect/back
+    for (let i = 0; i < count; i++) {
+      const p = players[i];
+      if (e.code === p.keys.up) { e.preventDefault(); return move(p, 0, -1); }
+      if (e.code === p.keys.down) { e.preventDefault(); return move(p, 0, 1); }
+      if (e.code === p.keys.left) { e.preventDefault(); return move(p, -1, 0); }
+      if (e.code === p.keys.right) { e.preventDefault(); return move(p, 1, 0); }
+      if (p.ok.includes(e.code)) { e.preventDefault(); if (!e.repeat) p.locked = true; return; }
+    }
   });
 
-  // ---- drawing helpers ----
-  function rrect(x, y, w, h, r) {
-    ctx.beginPath();
-    ctx.roundRect(x, y, w, h, r);
-  }
-  function drawSpriteInto(s, rx, ry, rw, rh) {
-    const scale = Math.min(rw / s.w, rh / s.h);
-    const dw = Math.round(s.w * scale), dh = Math.round(s.h * scale);
-    ctx.drawImage(s.canvas, Math.round(rx + (rw - dw) / 2), Math.round(ry + (rh - dh)), dw, dh);
-  }
+  // ---- drawing ----
+  function rr(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
+  function spriteInto(s, rx, ry, rw, rh) { const sc = Math.min(rw / s.w, rh / s.h), dw = Math.round(s.w * sc), dh = Math.round(s.h * sc); ctx.drawImage(s.canvas, Math.round(rx + (rw - dw) / 2), Math.round(ry + (rh - dh)), dw, dh); }
 
-  function drawCell(i, t) {
+  function drawCell(i) {
     const r = cellRect(i), ch = D.roster[i], s = sprites[i];
-    // base tile
-    ctx.fillStyle = PANEL2;
-    rrect(r.x, r.y, r.w, r.h, 10); ctx.fill();
-    ctx.strokeStyle = "#3a3352"; ctx.lineWidth = 2;
-    rrect(r.x + 1, r.y + 1, r.w - 2, r.h - 2, 9); ctx.stroke();
-    // floor shadow
-    ctx.fillStyle = "rgba(15,12,24,.45)";
-    ctx.beginPath();
-    ctx.ellipse(r.x + r.w / 2, r.y + r.h - 40, 42, 8, 0, 0, Math.PI * 2); ctx.fill();
-    // sprite
-    drawSpriteInto(s, r.x + 12, r.y + 12, r.w - 24, r.h - 56);
-    // name strip
-    ctx.fillStyle = "#15121f";
-    rrect(r.x + 10, r.y + r.h - 34, r.w - 20, 24, 6); ctx.fill();
-    textCentered(ch.name, r.x + r.w / 2, r.y + r.h - 29, 2, ch.accent);
+    ctx.fillStyle = PANEL2; rr(r.x, r.y, r.w, r.h, 10); ctx.fill();
+    ctx.strokeStyle = "#3a3352"; ctx.lineWidth = 2; rr(r.x + 1, r.y + 1, r.w - 2, r.h - 2, 9); ctx.stroke();
+    ctx.fillStyle = "rgba(15,12,24,.45)"; ctx.beginPath(); ctx.ellipse(r.x + r.w / 2, r.y + r.h - 40, 42, 8, 0, 0, 7); ctx.fill();
+    spriteInto(s, r.x + 12, r.y + 12, r.w - 24, r.h - 56);
+    ctx.fillStyle = "#15121f"; rr(r.x + 10, r.y + r.h - 34, r.w - 20, 24, 6); ctx.fill();
+    tc(ch.name, r.x + r.w / 2, r.y + r.h - 29, 2, ch.accent);
   }
-
-  function drawCursor(p, t, inset, label) {
-    const r = cellRect(p.idx);
-    const pulse = p.locked ? 1 : 0.55 + 0.45 * Math.sin(t / 140);
-    ctx.save();
-    ctx.globalAlpha = p.locked ? 1 : 0.5 + 0.5 * pulse;
-    ctx.strokeStyle = p.color;
-    ctx.lineWidth = p.locked ? 6 : 4;
-    rrect(r.x - 2 + inset, r.y - 2 + inset, r.w + 4 - inset * 2, r.h + 4 - inset * 2, 12);
-    ctx.stroke();
-    ctx.restore();
-    // player tag — left corner for P1, right corner for P2
-    const tagW = 34, tagH = 18;
-    const tx = label === "P1" ? r.x - 4 : r.x + r.w - tagW + 4;
-    ctx.fillStyle = p.color;
-    rrect(tx, r.y - 12, tagW, tagH, 5); ctx.fill();
-    drawText(label, tx + 6, r.y - 8, 2, "#15121f");
-    if (p.locked) {
-      ctx.fillStyle = p.color;
-      rrect(r.x + r.w / 2 - 30, r.y + 4, 60, 16, 5); ctx.fill();
-      textCentered("READY", r.x + r.w / 2, r.y + 7, 2, "#15121f");
-    }
+  function drawCursor(p, t, inset) {
+    const r = cellRect(p.idx), pulse = p.locked ? 1 : 0.55 + 0.45 * Math.sin(t / 140);
+    ctx.save(); ctx.globalAlpha = p.locked ? 1 : 0.5 + 0.5 * pulse; ctx.strokeStyle = p.color; ctx.lineWidth = p.locked ? 6 : 4;
+    rr(r.x - 2 + inset, r.y - 2 + inset, r.w + 4 - inset * 2, r.h + 4 - inset * 2, 12); ctx.stroke(); ctx.restore();
+    const tagW = 30, tx = r.x - 4 + inset; ctx.fillStyle = p.color; rr(tx, r.y - 12 + inset, tagW, 18, 5); ctx.fill();
+    text(p.tag, tx + 5, r.y - 8 + inset, 2, "#15121f");
+    if (p.locked) { ctx.fillStyle = p.color; rr(r.x + r.w / 2 - 28, r.y + 4, 56, 15, 5); ctx.fill(); tc("READY", r.x + r.w / 2, r.y + 6, 1.6 | 0, "#15121f"); }
   }
-
-  function drawPanel(p, px, py, pw, ph, align) {
+  function drawPanel(p, x, y, w, h) {
     const ch = D.roster[p.idx];
-    ctx.fillStyle = PANEL;
-    rrect(px, py, pw, ph, 12); ctx.fill();
-    ctx.strokeStyle = p.color; ctx.lineWidth = 3;
-    rrect(px + 1.5, py + 1.5, pw - 3, ph - 3, 11); ctx.stroke();
-    // header
-    drawText(p.name, px + 16, py + 14, 2, p.color);
-    drawText(p.locked ? "LOCKED IN" : "CHOOSING...", px + 16, py + 36, 1.6 | 0,
-             p.locked ? GOLD : DIM);
-    // big name
-    textShadow(ch.name, px + 16, py + 58, 4, ch.accent);
-    // controls
-    const keys = p === state.p1 ? "MOVE WASD   PICK SPACE" : "MOVE ARROWS   PICK ENTER";
-    drawText(keys, px + 16, py + ph - 22, 1.4 | 0, DIM);
+    ctx.fillStyle = PANEL; rr(x, y, w, h, 10); ctx.fill();
+    ctx.strokeStyle = p.color; ctx.lineWidth = 3; rr(x + 1.5, y + 1.5, w - 3, h - 3, 9); ctx.stroke();
+    text(p.tag, x + 12, y + 10, 2, p.color);
+    text(p.locked ? "LOCKED" : "PICKING", x + 12, y + 28, 1, p.locked ? GOLD : DIM);
+    ts(ch.name, x + 12, y + 44, 2.4 | 0, ch.accent);
+    text(p.ctl, x + 12, y + h - 16, 1, DIM);
   }
 
-  function drawReadyCard(p, label, cx) {
-    const ch = D.roster[p.idx], s = sprites[p.idx];
-    const cw = 300, chh = 380, x = cx - cw / 2, y = 150;
-    ctx.fillStyle = PANEL; rrect(x, y, cw, chh, 14); ctx.fill();
-    ctx.strokeStyle = p.color; ctx.lineWidth = 4; rrect(x + 2, y + 2, cw - 4, chh - 4, 12); ctx.stroke();
-    ctx.fillStyle = p.color; rrect(x + 18, y + 16, cw - 36, 34, 8); ctx.fill();
-    textCentered(label + " READY", cx, y + 25, 2, "#15121f");
-    ctx.fillStyle = "rgba(15,12,24,.45)";
-    ctx.beginPath(); ctx.ellipse(cx, y + 290, 90, 12, 0, 0, Math.PI * 2); ctx.fill();
-    drawSpriteInto(s, x + 50, y + 60, cw - 100, 240);
-    textCentered(ch.name, cx, y + chh - 56, 4, ch.accent);
-  }
-
-  function drawReadyScreen(t, elapsed) {
-    textShadow("BOTH FIGHTERS READY!", W / 2 - textWidth("BOTH FIGHTERS READY!", 5) / 2, 60, 5, GOLD);
-    drawReadyCard(state.p1, "P1", W / 2 - 200);
-    drawReadyCard(state.p2, "P2", W / 2 + 200);
-    // VS badge in the middle
-    const cy = 340;
-    ctx.fillStyle = GOLD; ctx.beginPath(); ctx.arc(W / 2, cy, 42, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = "#15121f"; ctx.lineWidth = 5; ctx.stroke();
-    textCentered("VS", W / 2, cy - 18, 5, "#15121f");
-    const left = Math.max(0, Math.ceil((START_DELAY - (elapsed || 0)) / 1000));
-    textCentered("CHOOSING GAME IN " + left + "...", W / 2, H - 58, 2, GOLD);
-    textCentered("BACKSPACE  =  RESELECT", W / 2, H - 30, 2, DIM);
-  }
-
-  // ---- main loop ----
   function frame(t) {
-    // background
     ctx.fillStyle = BG; ctx.fillRect(0, 0, W, H);
     for (let y = 0; y < H; y += 4) { ctx.fillStyle = "#1e1930"; ctx.fillRect(0, y, W, 1); }
-    ctx.fillStyle = P2C; ctx.fillRect(0, 0, W, 6);
-    ctx.fillStyle = P1C; ctx.fillRect(0, H - 6, W, 6);
+    ctx.fillStyle = "#5db4ff"; ctx.fillRect(0, 0, W, 6); ctx.fillStyle = "#ff5d5d"; ctx.fillRect(0, H - 6, W, 6);
 
-    if (state.p1.locked && state.p2.locked) {
+    const allLocked = act().every(p => p.locked);
+    if (allLocked) {
       if (!readyAt) readyAt = t;
-      drawReadyScreen(t, t - readyAt);
-      if (t - readyAt > START_DELAY) {
-        localStorage.setItem("partyPicks", JSON.stringify({
-          p1: D.roster[state.p1.idx].name, p2: D.roster[state.p2.idx].name }));
-        location.href = "gameselect.html";
-        return;
+      ts("FIGHTERS READY!", W / 2 - tW("FIGHTERS READY!", 5) / 2, 60, 5, GOLD);
+      const n = count, cw = Math.min(300, (W - 60) / n - 16), gap = ((W - 60) - cw * n) / (n - 1 || 1);
+      let x = 30;
+      for (const p of act()) {
+        const ch = D.roster[p.idx], s = sprites[p.idx], y = 170, chh = 360;
+        ctx.fillStyle = PANEL; rr(x, y, cw, chh, 12); ctx.fill();
+        ctx.strokeStyle = p.color; ctx.lineWidth = 4; rr(x + 2, y + 2, cw - 4, chh - 4, 10); ctx.stroke();
+        ctx.fillStyle = p.color; rr(x + 14, y + 14, cw - 28, 28, 7); ctx.fill(); tc(p.tag + " READY", x + cw / 2, y + 20, 1.8 | 0, "#15121f");
+        spriteInto(s, x + 24, y + 54, cw - 48, chh - 130); tc(ch.name, x + cw / 2, y + chh - 50, 3, ch.accent);
+        x += cw + gap;
       }
-      requestAnimationFrame(frame);
-      return;
+      const left = Math.max(0, Math.ceil((START_DELAY - (t - readyAt)) / 1000));
+      tc("CHOOSING GAME IN " + left + "...", W / 2, H - 54, 2, GOLD);
+      tc("BACKSPACE = RESELECT", W / 2, H - 28, 2, DIM);
+      if (t - readyAt > START_DELAY) {
+        const picks = {}; players.forEach((p, i) => picks["p" + (i + 1)] = D.roster[p.idx].name);
+        localStorage.setItem("partyCount", String(count));
+        localStorage.setItem("partyPicks", JSON.stringify(picks));
+        location.href = "gameselect.html"; return;
+      }
+      requestAnimationFrame(frame); return;
     }
     readyAt = 0;
 
-    // title
-    textShadow("CHOOSE YOUR FIGHTER", W / 2 - textWidth("CHOOSE YOUR FIGHTER", 5) / 2, 24, 5, GOLD);
-    textCentered("8-BIT PARTY  *  4-BIT BUILD  *  LOCAL COUCH CO-OP", W / 2, 70, 2, DIM);
+    ts("CHOOSE YOUR FIGHTER", W / 2 - tW("CHOOSE YOUR FIGHTER", 4) / 2, 16, 4, GOLD);
+    // player-count selector
+    let lab = "PLAYERS:  "; tc(lab, W / 2 - 70, 62, 2, DIM);
+    for (let n = 2; n <= 4; n++) { const bx = W / 2 - 6 + (n - 2) * 34; ctx.fillStyle = n === count ? GOLD : "#3a3352"; rr(bx, 58, 26, 20, 5); ctx.fill(); tc(String(n), bx + 13, 62, 2, n === count ? "#15121f" : DIM); }
+    tc("(PRESS 2 / 3 / 4)", W / 2 + 130, 64, 1, DIM);
 
-    // grid
-    for (let i = 0; i < D.roster.length; i++) drawCell(i, t);
-
-    // cursors (when both hover the same cell, P2 nests inside so both stay visible)
-    const same = state.p1.idx === state.p2.idx;
-    drawCursor(state.p2, t, same ? 7 : 0, "P2");
-    drawCursor(state.p1, t, 0, "P1");
-
-    // info panels
-    drawPanel(state.p1, 20, 470, 460, 150, "left");
-    drawPanel(state.p2, 500, 470, 460, 150, "right");
+    for (let i = 0; i < D.roster.length; i++) drawCell(i);
+    // cursors: nest by order when several share a cell
+    for (let i = count - 1; i >= 0; i--) {
+      const p = players[i]; let nest = 0;
+      for (let j = 0; j < i; j++) if (players[j].idx === p.idx) nest++;
+      drawCursor(p, t, nest * 6);
+    }
+    // bottom panels (one per active player)
+    const n = count, pw = (W - 40 - (n - 1) * 12) / n;
+    for (let i = 0; i < n; i++) drawPanel(players[i], 20 + i * (pw + 12), H - 132, pw, 110);
 
     requestAnimationFrame(frame);
   }
