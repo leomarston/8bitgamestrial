@@ -72,6 +72,8 @@
     p1: { idx: 0, locked: false, color: P1C, name: "PLAYER 1" },
     p2: { idx: 3, locked: false, color: P2C, name: "PLAYER 2" },
   };
+  let readyAt = 0;                 // timestamp when both players locked in
+  const START_DELAY = 1400;        // ms shown on the VS screen before auto kick-off
 
   function move(p, dx, dy) {
     if (p.locked) { p.locked = false; return; }   // moving cancels a lock
@@ -90,15 +92,7 @@
   };
   window.addEventListener("keydown", (e) => {
     if (e.code === "Backspace") { e.preventDefault(); state.p1.locked = state.p2.locked = false; return; }
-    if (state.p1.locked && state.p2.locked) {
-      if (e.code === "Space" || e.code === "Enter" || e.code === "NumpadEnter") {
-        e.preventDefault();
-        localStorage.setItem("partyPicks", JSON.stringify({
-          p1: D.roster[state.p1.idx].name, p2: D.roster[state.p2.idx].name }));
-        location.href = "football.html";
-      }
-      return;
-    }
+    if (state.p1.locked && state.p2.locked) return;  // match auto-starts; only reselect is allowed
     const m = KEYMAP[e.code];
     if (!m) return;
     e.preventDefault();
@@ -193,7 +187,7 @@
     textCentered(ch.name, cx, y + chh - 56, 4, ch.accent);
   }
 
-  function drawReadyScreen(t) {
+  function drawReadyScreen(t, elapsed) {
     textShadow("BOTH FIGHTERS READY!", W / 2 - textWidth("BOTH FIGHTERS READY!", 5) / 2, 60, 5, GOLD);
     drawReadyCard(state.p1, "P1", W / 2 - 200);
     drawReadyCard(state.p2, "P2", W / 2 + 200);
@@ -202,7 +196,8 @@
     ctx.fillStyle = GOLD; ctx.beginPath(); ctx.arc(W / 2, cy, 42, 0, Math.PI * 2); ctx.fill();
     ctx.strokeStyle = "#15121f"; ctx.lineWidth = 5; ctx.stroke();
     textCentered("VS", W / 2, cy - 18, 5, "#15121f");
-    textCentered("SPACE / ENTER  =  KICK OFF", W / 2, H - 58, 2, GOLD);
+    const left = Math.max(0, Math.ceil((START_DELAY - (elapsed || 0)) / 1000));
+    textCentered("MATCH STARTING IN " + left + "...", W / 2, H - 58, 2, GOLD);
     textCentered("BACKSPACE  =  RESELECT", W / 2, H - 30, 2, DIM);
   }
 
@@ -215,10 +210,18 @@
     ctx.fillStyle = P1C; ctx.fillRect(0, H - 6, W, 6);
 
     if (state.p1.locked && state.p2.locked) {
-      drawReadyScreen(t);
+      if (!readyAt) readyAt = t;
+      drawReadyScreen(t, t - readyAt);
+      if (t - readyAt > START_DELAY) {
+        localStorage.setItem("partyPicks", JSON.stringify({
+          p1: D.roster[state.p1.idx].name, p2: D.roster[state.p2.idx].name }));
+        location.href = "football.html";
+        return;
+      }
       requestAnimationFrame(frame);
       return;
     }
+    readyAt = 0;
 
     // title
     textShadow("CHOOSE YOUR FIGHTER", W / 2 - textWidth("CHOOSE YOUR FIGHTER", 5) / 2, 24, 5, GOLD);

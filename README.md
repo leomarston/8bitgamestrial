@@ -38,8 +38,8 @@ data is inlined).
 
 ## Minigame: FOOTBALL (Pong-style)
 
-After both players lock in, press **Space/Enter** to **kick off** into the
-football match (`game/football.html`). It's Pong with a football skin:
+After both players lock in, the football match (`game/football.html`) **starts
+automatically** (a short VS countdown, then play). It's Pong with a football skin:
 
 - Each player is a **keeper** that moves **up/down only** (no left/right) in
   front of their net.

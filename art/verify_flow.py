@@ -25,9 +25,8 @@ async def main():
         await page.keyboard.press("Enter"); await page.wait_for_timeout(300)  # P2 lock
         await page.screenshot(path=os.path.join(OUT, "flow_1_ready.png"))
 
-        # kick off -> football
-        await page.keyboard.press("Space")
-        await page.wait_for_timeout(800)
+        # no button: match should AUTO-start after the ready countdown
+        await page.wait_for_timeout(2200)
         url_now = page.url
         await page.screenshot(path=os.path.join(OUT, "flow_2_football.png"))
         names = await page.evaluate("() => { try { return JSON.parse(localStorage.getItem('partyPicks')); } catch(e){ return null; } }")
