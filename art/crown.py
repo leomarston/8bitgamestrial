@@ -263,38 +263,30 @@ def _stage(img, seed):
     return fx, fy, fw, fh
 
 # MAP 2 geometry (compact central dais) — shared by art + game collision
-M2_TOPL, M2_TOPR = 120 - 36, 120 + 36   # top surface x 84..156
-M2_TOPY, M2_FACEY, M2_FACEBOT = 64, 80, 96
-M2_STEPS = 2
+M2_WL, M2_WR = CX - 7, CX + 7            # central wall, x 113..127
+M2_WT, M2_WB = CY - 40, CY + 40          # wall y 40..120 (open floor above & below)
 
 def _draw_map2(img, crown=True):
-    """MAP 2 — a compact raised stone dais in the middle (the blocked high ground)
-    with a short flight of steps on each side; the crown sits on top. Plenty of
-    open floor around it to run. Every block is a hand-authored tile, stamped in."""
+    """MAP 2 — an open court split by a single stone wall down the middle; run
+    around either open end. Hand-drawn masonry tiles (no flat blocks)."""
     fx, fy, fw, fh = _stage(img, 11)
     px = img.load(); W, H = img.size
     cxc = W // 2
-    topL, topR, topY, faceY, faceBot, steps = M2_TOPL, M2_TOPR, M2_TOPY, M2_FACEY, M2_FACEBOT, M2_STEPS
-    # soft ground shadow under the dais
-    for x in range(topL - 20, topR + 20):
-        for t in range(2): sp(px, W, H, x, faceBot + t, col("u"))
-    # the dais: front face (masonry) then the flat top, with gold trim
-    tile_rect(img, FACETILE, topL, faceY, topR, faceBot, bond=True)
-    tile_rect(img, TOPTILE, topL, topY, topR, faceY)
-    for x in range(topL, topR):          # gold trim capping the top edge
-        sp(px, W, H, x, topY, col("Y")); sp(px, W, H, x, topY + 1, col("y"))
-    for y in range(topY, faceBot):       # gold corner posts
-        sp(px, W, H, topL, y, col("y")); sp(px, W, H, topR - 1, y, col("y"))
-    # short steps on each side (climb up onto the dais)
-    for k in range(steps):               # LEFT steps, adjacent step highest
-        x0 = topL - (k + 1) * 8; ty = faceY + k * 8
-        tile_rect(img, FACETILE, x0, ty, x0 + 8, faceBot); blit(img, STEPCAP, x0, ty)
-    for k in range(steps):               # RIGHT steps mirrored
-        x0 = topR + k * 8; ty = faceY + k * 8
-        tile_rect(img, FACETILE, x0, ty, x0 + 8, faceBot); blit(img, STEPCAP, x0, ty)
+    wl, wr, wt, wb = M2_WL, M2_WR, M2_WT, M2_WB
+    for x in range(wl, wr):                       # ground shadow
+        for t in range(2): sp(px, W, H, x + 2, wb + t, col("u"))
+    tile_rect(img, FACETILE, wl, wt, wr, wb, bond=True)          # masonry wall
+    for x in range(wl, wr):                       # gold coping top + base trim
+        sp(px, W, H, x, wt, col("Y")); sp(px, W, H, x, wt + 1, col("y")); sp(px, W, H, x, wb - 1, col("y"))
+    for y in range(wt, wb):                       # gold edge posts
+        sp(px, W, H, wl, y, col("y")); sp(px, W, H, wr - 1, y, col("y"))
+    for x in range(wl - 1, wr + 1):               # outline
+        sp(px, W, H, x, wt - 1, col("K")); sp(px, W, H, x, wb, col("K"))
+    for y in range(wt - 1, wb + 1):
+        sp(px, W, H, wl - 1, y, col("K")); sp(px, W, H, wr, y, col("K"))
     if crown:
-        blit(img, CROWN, cxc - len(CROWN[0]) // 2, topY + 2)
-        star(img, cxc + 11, topY + 2, "W")
+        blit(img, CROWN, cxc - len(CROWN[0]) // 2, fy + 12)
+        star(img, cxc + 11, fy + 12, "W")
     return fx, fy, fw, fh
 
 def arena2():
@@ -315,10 +307,9 @@ def maps_meta():
          "obstacles": pill,
          "spawn": {"p1": [CX - 76, CY + 18], "p2": [CX + 76, CY + 18], "crown": [CX, CY + 1]}},
         {"bg": "crown_map2.png", "scale": SC_GAME, "bounds": bounds,
-         # central face block is solid; the top + the two side step lanes stay open
-         "obstacles": [{"type": "rect", "x": M2_TOPL, "y": M2_FACEY,
-                        "w": M2_TOPR - M2_TOPL, "h": M2_FACEBOT - M2_FACEY}],
-         "spawn": {"p1": [CX - 76, FY + FH - 24], "p2": [CX + 76, FY + FH - 24], "crown": [CX, M2_TOPY + 8]}},
+         # one solid wall down the middle; run around the open top/bottom ends
+         "obstacles": [{"type": "rect", "x": M2_WL, "y": M2_WT, "w": M2_WR - M2_WL, "h": M2_WB - M2_WT}],
+         "spawn": {"p1": [CX - 76, CY], "p2": [CX + 76, CY], "crown": [CX, FY + 22]}},
     ]
 
 def export_backgrounds():
