@@ -43,6 +43,89 @@ TILE_R = tile(PAL["R"], PAL["r"])
 TILE_B = tile(PAL["B"], PAL["b"])
 TILES = {0: TILE_N, 1: TILE_R, 2: TILE_B}
 
+# ===========================================================================
+# GAME EXPORT — a glossy beveled tile authored as one template that the game
+# recolours per owner, a hand-drawn bumper, the playfield grid metadata, and a
+# clean background PNG. Single source of truth shared by the art and the game.
+# ===========================================================================
+SC_GAME = 4
+CELL, COLS, ROWS, OX, OY = 16, 14, 8, 8, 14          # native grid (x 8..232, y 14..142)
+# h=highlight  o=body  #=grid-line/shadow  *=gloss
+TILE_TEMPLATE = [
+    "hhhhhhhhhhhhhhh#",
+    "h**oooooooooooo#",
+    "h*ooooooooooooo#",
+    "hoooooooooooooo#",
+    "hoooooooooooooo#",
+    "hoooooooooooooo#",
+    "hoooooooooooooo#",
+    "hoooooooooooooo#",
+    "hoooooooooooooo#",
+    "hoooooooooooooo#",
+    "hoooooooooooooo#",
+    "hoooooooooooooo#",
+    "hoooooooooooooo#",
+    "hoooooooooooooo#",
+    "hoooooooooooooo#",
+    "################",
+]
+TILE_COLORS = {
+    "N": {"h": "#d6d2ea", "o": "#b9b3cf", "#": "#6b6690", "*": "#ffffff"},
+    "R": {"h": "#ff9aa6", "o": "#ff5d6c", "#": "#b3324a", "*": "#ffe2e6"},
+    "B": {"h": "#9bd8ff", "o": "#4fb8ff", "#": "#2356a8", "*": "#e2f3ff"},
+}
+BUMPER = [
+    ".....KKKKKK.....",
+    "...KKYYYYYYKK...",
+    "..KYYYYYYYYYYK..",
+    ".KYYYYYYYYYYYYK.",
+    ".KYYYYYWWYYYYYK.",
+    "KYYYYWWWWWWYYYYK",
+    "KYYYWWWWWWWWYYYK",
+    "KYYYWWCCCCWWYYYK",
+    "KYYYWWCCCCWWYYYK",
+    "KYYYWWWWWWWWYYYK",
+    "KYYYYWWWWWWYYYYK",
+    ".KYYYYYWWYYYYYK.",
+    ".KYYYYYYYYYYYYK.",
+    "..KYYYYYYYYYYK..",
+    "...KKYYYYYYKK...",
+    ".....KKKKKK.....",
+]
+BUMPER_CELLS = []          # no obstacles — a clean open paint floor
+
+def tb_meta():
+    def cc(c, r): return [OX + c * CELL + CELL // 2, OY + r * CELL + CELL // 2]
+    return {
+        "scale": SC_GAME, "cell": CELL, "cols": COLS, "rows": ROWS, "ox": OX, "oy": OY,
+        "bounds": {"l": OX + 4, "r": OX + COLS * CELL - 4, "t": OY + 4, "b": OY + ROWS * CELL - 4},
+        "bumpers": [{"x": cc(c, r)[0], "y": cc(c, r)[1], "cell": [c, r], "r": 7} for (c, r) in BUMPER_CELLS],
+        "spawn": {"p1": cc(1, ROWS - 2), "p2": cc(COLS - 2, 1)},
+        "bg": "tileblitz_bg.png",
+    }
+
+def export_bg():
+    import random
+    W, H = 240, 150
+    im = Image.new("RGBA", (W, H), (*PAL["D"], 255)); px = im.load()
+    random.seed(4)
+    for _ in range(150):
+        x, y = random.randint(0, W - 1), random.randint(0, H - 1)
+        px[x, y] = col(random.choice(["G", "M", "Y", "R", "B", "W", "P"]))
+    gx0, gy0, gx1, gy1 = OX, OY, OX + COLS * CELL, OY + ROWS * CELL
+    for t in range(1, 5):                              # beveled purple frame ring
+        for x in range(gx0 - t, gx1 + t):
+            for yy in (gy0 - t, gy1 + t - 1): setpx(px, W, H, x, yy, col("P") if (x + yy) % 2 == 0 else col("p"))
+        for y in range(gy0 - t, gy1 + t):
+            for xx in (gx0 - t, gx1 + t - 1): setpx(px, W, H, xx, y, col("P") if (xx + y) % 2 == 0 else col("p"))
+    for x in range(gx0 - 5, gx1 + 5):                 # black outline
+        setpx(px, W, H, x, gy0 - 5, col("K")); setpx(px, W, H, x, gy1 + 4, col("K"))
+    for y in range(gy0 - 5, gy1 + 5):
+        setpx(px, W, H, gx0 - 5, y, col("K")); setpx(px, W, H, gx1 + 4, y, col("K"))
+    GAMEDIR = os.path.join(os.path.dirname(HERE), "game")
+    im.convert("RGB").save(os.path.join(GAMEDIR, "tileblitz_bg.png"))
+    print("wrote game/tileblitz_bg.png")
+
 # ---------------------------------------------------------------------------
 # colored ground pad under a fighter (marks who they are / their paint colour)
 # ---------------------------------------------------------------------------
@@ -170,4 +253,4 @@ def arena():
     print("wrote tilebangers_arena.png", up.size)
 
 if __name__ == "__main__":
-    assets_sheet(); arena(); print("done")
+    assets_sheet(); arena(); export_bg(); print("done")

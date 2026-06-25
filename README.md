@@ -12,8 +12,8 @@ data is inlined).
 **Flow:** character select → **game select** → the chosen minigame.
 After both fighters lock in, a **CHOOSE A GAME** hub appears (a 4×2 grid like the
 character select). **Player 1** drives the cursor (`WASD` + `Space`) and picks a
-minigame — **Football** and **Flappy** are live, the other 6 tiles are "coming
-soon". `Backspace` goes back a step.
+minigame — **Football, Flappy, Graveyard, Runner, Crown Grab** and **Tile Blitz**
+are live, the other 2 tiles are "coming soon". `Backspace` goes back a step.
 
 ### Controls
 
@@ -110,6 +110,34 @@ right on its own, fast but slower than you can run**; **fall behind the left edg
 Controls: **P1 `A`/`D` + `W` (jump)**, **P2 arrows + `Up` (jump)**, `Enter`/`R`
 = rematch, `Backspace` = menu.
 
+## Minigame: CROWN GRAB (king of the crown)
+
+`game/crown.html` — top-down couch duel over a golden crown. **Grab the crown,
+carry it on your head, and HOLD IT LONGEST.** There's **no punching** — each
+player has a **DASH**. Dash into your rival and you **steal the crown** (if they
+had it) and **black them out for 1 second** (they can't move). The scoreboard
+shows each player's **cumulative hold time in milliseconds, live**; when the
+clock runs out, **most cumulative hold time wins.**
+
+The arena is **picked at random each round** from two hand-drawn stages: the
+**Royal Court** (open floor with four pillars for cover) and the **Stone Dais**
+(a raised middle you reach via short side steps). Solid collision for the pillars
+and the dais. Art lives in `art/crown.py`; stages export to `game/crown_map*.png`.
+
+Controls: **P1 `WASD` + `Space` (dash)**, **P2 arrows + `Enter` (dash)**,
+`Enter`/`Space`/`R` = rematch, `Backspace` = menu.
+
+## Minigame: TILE BLITZ (paint the floor)
+
+`game/tileblitz.html` — top-down territory duel on a tiled floor. **Roam the grid
+and paint every tile you step on your colour**, stealing the rival's tiles by
+walking over them. When the timer runs out, whoever **owns the most tiles wins**.
+A live count and a territory bar track the lead. Art lives in `art/tilebangers.py`;
+the floor tile is one template the game recolours per player.
+
+Controls: **P1 `WASD`**, **P2 arrows**, `Enter`/`Space`/`R` = rematch,
+`Backspace` = menu.
+
 ## Music & sound
 
 `game/music.js` (loaded by every page) handles background music:
@@ -128,7 +156,11 @@ game/            the playable screens
   index.html     character select
   game.js        MK-style select logic (cursors, lock-in, mirror) -> game select
   gameselect.html  the "choose a game" hub
-  gameselect.js  4x2 minigame grid (P1 picks; Football/Flappy/Graveyard/Runner live, 4 soon)
+  gameselect.js  4x2 minigame grid (P1 picks; 6 games live, 2 soon)
+  crown.html / crown_game.js        CROWN GRAB (carry the crown, dash to steal)
+  crown_map1.png / crown_map2.png   the two CROWN GRAB stage backgrounds
+  tileblitz.html / tileblitz_game.js  TILE BLITZ (paint the most tiles)
+  tileblitz_bg.png                  the TILE BLITZ arena background
   platformer.html / platformer.js   the RUNNER auto-scroll platformer
   football.html  the football minigame
   football.js    Pong-style football (pitch, nets, ball physics, scoring)

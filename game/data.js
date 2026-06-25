@@ -1220,5 +1220,106 @@ window.GAME_DATA = {
 }
 }
 ]
+},
+"tileblitz": {
+"palette": {
+"K": "#201438",
+"W": "#ffffff",
+"N": "#b9b3cf",
+"n": "#847ea6",
+"R": "#ff5d6c",
+"r": "#c23350",
+"B": "#4fb8ff",
+"b": "#2462c0",
+"Y": "#ffd23e",
+"C": "#bdeaff",
+"P": "#7a45c8",
+"p": "#43286f",
+"G": "#4fd66b",
+"M": "#ff7ad0",
+"D": "#261c4a"
+},
+"tileTemplate": [
+"hhhhhhhhhhhhhhh#",
+"h**oooooooooooo#",
+"h*ooooooooooooo#",
+"hoooooooooooooo#",
+"hoooooooooooooo#",
+"hoooooooooooooo#",
+"hoooooooooooooo#",
+"hoooooooooooooo#",
+"hoooooooooooooo#",
+"hoooooooooooooo#",
+"hoooooooooooooo#",
+"hoooooooooooooo#",
+"hoooooooooooooo#",
+"hoooooooooooooo#",
+"hoooooooooooooo#",
+"################"
+],
+"tileColors": {
+"N": {
+"h": "#d6d2ea",
+"o": "#b9b3cf",
+"#": "#6b6690",
+"*": "#ffffff"
+},
+"R": {
+"h": "#ff9aa6",
+"o": "#ff5d6c",
+"#": "#b3324a",
+"*": "#ffe2e6"
+},
+"B": {
+"h": "#9bd8ff",
+"o": "#4fb8ff",
+"#": "#2356a8",
+"*": "#e2f3ff"
+}
+},
+"bumper": [
+".....KKKKKK.....",
+"...KKYYYYYYKK...",
+"..KYYYYYYYYYYK..",
+".KYYYYYYYYYYYYK.",
+".KYYYYYWWYYYYYK.",
+"KYYYYWWWWWWYYYYK",
+"KYYYWWWWWWWWYYYK",
+"KYYYWWCCCCWWYYYK",
+"KYYYWWCCCCWWYYYK",
+"KYYYWWWWWWWWYYYK",
+"KYYYYWWWWWWYYYYK",
+".KYYYYYWWYYYYYK.",
+".KYYYYYYYYYYYYK.",
+"..KYYYYYYYYYYK..",
+"...KKYYYYYYKK...",
+".....KKKKKK....."
+],
+"meta": {
+"scale": 4,
+"cell": 16,
+"cols": 14,
+"rows": 8,
+"ox": 8,
+"oy": 14,
+"bounds": {
+"l": 12,
+"r": 228,
+"t": 18,
+"b": 138
+},
+"bumpers": [],
+"spawn": {
+"p1": [
+32,
+118
+],
+"p2": [
+208,
+38
+]
+},
+"bg": "tileblitz_bg.png"
+}
 }
 };
