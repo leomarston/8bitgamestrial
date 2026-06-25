@@ -81,7 +81,8 @@
   let p1, p2, players, meteors, spawnT, phase, ready, boomT, winner, loser, sparks, t0;
   function pl(name, color, x) { return { name, color, x, vx: 0, hp: MAXHP, inv: 0, hitx: 0 }; }
   function reset() {
-    p1 = pl(p1name, P1C, M.spawn[0] * S); p2 = pl(p2name, P2C, M.spawn[1] * S); players = [p1, p2];
+    const sx = [M.spawn[0] * S, M.spawn[1] * S]; if (Math.random() < 0.5) sx.reverse();   // random sides
+    p1 = pl(p1name, P1C, sx[0]); p2 = pl(p2name, P2C, sx[1]); players = [p1, p2];
     meteors = []; sparks = []; spawnT = 0.7; t0 = 0;
     phase = "ready"; ready = 2.4; boomT = 0; winner = loser = null;
   }

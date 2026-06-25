@@ -67,7 +67,7 @@
     const gap = (n) => { x += n; };
     const ledge = (x0, x1, row) => { for (let xx = x0; xx <= x1; xx++) { if (xx < 0 || xx >= LOOP) continue; grid[row][xx] = "T"; if (row + 1 < HT) grid[row + 1][xx] = "S"; }
       grid[Math.min(HT - 1, row + 2)][Math.max(0, x0)] = "v"; };
-    flat(10);
+    flat(15);                              // clear start runway covering all 2–4 spawns
     while (x < LOOP - 14) {
       const seg = Math.floor(rng(x) * 6);
       if (seg === 0) flat(2 + (rng(x + 1) * 3 | 0));

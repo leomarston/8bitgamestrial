@@ -83,8 +83,9 @@
   function reset() {
     mapIdx = Math.floor(Math.random() * MAPS.length); map = MAPS[mapIdx];
     p1 = ent(p1name, P1C); p2 = ent(p2name, P2C); players = [p1, p2];
-    p1.x = map.spawn.p1[0]; p1.y = map.spawn.p1[1]; p1.face = 1;
-    p2.x = map.spawn.p2[0]; p2.y = map.spawn.p2[1]; p2.face = -1;
+    const sp = [map.spawn.p1, map.spawn.p2]; if (Math.random() < 0.5) sp.reverse();   // random sides
+    p1.x = sp[0][0]; p1.y = sp[0][1]; p1.face = 1;
+    p2.x = sp[1][0]; p2.y = sp[1][1]; p2.face = -1;
     crown = { holder: null, fx: map.spawn.crown[0], fy: map.spawn.crown[1], bob: 0 };
     phase = "ready"; ready = 2.4; timeLeft = MATCH; winner = null; msg = ""; msgT = 0; sparks = [];
   }

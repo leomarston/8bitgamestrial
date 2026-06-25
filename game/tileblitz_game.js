@@ -74,8 +74,9 @@
 
   function reset() {
     p1 = ent(p1name, P1C, 1); p2 = ent(p2name, P2C, 2); players = [p1, p2];
-    p1.x = M.spawn.p1[0] * S; p1.y = M.spawn.p1[1] * S; p1.face = 1;
-    p2.x = M.spawn.p2[0] * S; p2.y = M.spawn.p2[1] * S; p2.face = -1;
+    const sp = [M.spawn.p1, M.spawn.p2]; if (Math.random() < 0.5) sp.reverse();   // random sides
+    p1.x = sp[0][0] * S; p1.y = sp[0][1] * S; p1.face = 1;
+    p2.x = sp[1][0] * S; p2.y = sp[1][1] * S; p2.face = -1;
     grid = []; for (let r = 0; r < ROWS; r++) { const row = []; for (let c = 0; c < COLS; c++) row.push(BUMP_CELL.has(c + "," + r) ? -1 : 0); grid.push(row); }
     phase = "ready"; ready = 2.4; timeLeft = MATCH; winner = null; c1 = 0; c2 = 0; sparks = [];
     paintAt(p1); paintAt(p2);
