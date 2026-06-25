@@ -139,13 +139,29 @@
     if (side === "left") { ctx.fillRect(L, T, TH, A); for (let y = T; y < B; y += 22) { ctx.beginPath(); ctx.moveTo(L, y); ctx.lineTo(L + TH, y); ctx.stroke(); } }
     if (side === "right") { ctx.fillRect(R - TH, T, TH, A); for (let y = T; y < B; y += 22) { ctx.beginPath(); ctx.moveTo(R - TH, y); ctx.lineTo(R, y); ctx.stroke(); } }
   }
-  function drawGoal(side, color) {
-    ctx.save(); ctx.globalAlpha = 0.5; ctx.fillStyle = color; const TH = 6;
-    if (side === "bottom") ctx.fillRect(L + CORNER, B - TH, A - CORNER * 2, TH);
-    if (side === "top") ctx.fillRect(L + CORNER, T, A - CORNER * 2, TH);
-    if (side === "left") ctx.fillRect(L, T + CORNER, TH, A - CORNER * 2);
-    if (side === "right") ctx.fillRect(R - TH, T + CORNER, TH, A - CORNER * 2);
+  function line(a, b, c, d) { ctx.beginPath(); ctx.moveTo(a, b); ctx.lineTo(c, d); ctx.stroke(); }
+  function drawGoalNet(side, color) {
+    const NETD = 24, NET = "#c7ccd6";
+    let x0, y0, w, h;
+    if (side === "bottom") { x0 = L + CORNER; y0 = B - NETD; w = A - 2 * CORNER; h = NETD; }
+    else if (side === "top") { x0 = L + CORNER; y0 = T; w = A - 2 * CORNER; h = NETD; }
+    else if (side === "left") { x0 = L; y0 = T + CORNER; w = NETD; h = A - 2 * CORNER; }
+    else { x0 = R - NETD; y0 = T + CORNER; w = NETD; h = A - 2 * CORNER; }
+    ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, w, h); ctx.clip();
+    ctx.fillStyle = "rgba(16,24,18,.62)"; ctx.fillRect(x0, y0, w, h);          // goal mouth
+    ctx.strokeStyle = NET; ctx.lineWidth = 1; ctx.globalAlpha = 0.8;          // crosshatch net
+    for (let gx = x0; gx <= x0 + w; gx += 7) line(gx, y0, gx, y0 + h);
+    for (let gy = y0; gy <= y0 + h; gy += 7) line(x0, gy, x0 + w, gy);
     ctx.restore();
+    ctx.strokeStyle = color; ctx.lineWidth = 5; ctx.lineCap = "round";        // posts (player colour)
+    if (side === "bottom" || side === "top") {
+      const ye = side === "bottom" ? B : T, yi = side === "bottom" ? B - NETD : T + NETD;
+      line(x0, ye, x0 + w, ye); line(x0, yi, x0, ye); line(x0 + w, yi, x0 + w, ye);
+    } else {
+      const xe = side === "left" ? L : R, xi = side === "left" ? L + NETD : R - NETD;
+      line(xe, y0, xe, y0 + h); line(xi, y0, xe, y0); line(xi, y0 + h, xe, y0 + h);
+    }
+    ctx.lineCap = "butt";
   }
   function drawPitch() {
     ctx.fillStyle = GRASS; ctx.fillRect(L, T, A, A);
@@ -153,10 +169,7 @@
     ctx.strokeStyle = LINE; ctx.lineWidth = 3; ctx.strokeRect(L + 4, T + 4, A - 8, A - 8);
     ctx.beginPath(); ctx.arc(CXc, CYc, 64, 0, 7); ctx.stroke();
     ctx.fillStyle = LINE; ctx.beginPath(); ctx.arc(CXc, CYc, 4, 0, 7); ctx.fill();
-    // corner blocks (always solid)
-    ctx.fillStyle = WALLC;
-    for (const [cx, cy] of [[L, T], [R - CORNER, T], [L, B - CORNER], [R - CORNER, B - CORNER]]) { /* visual hint */ }
-    for (let i = 0; i < 4; i++) { const p = players[i]; if (p.active && p.alive) drawGoal(p.side, p.color); else drawWall(p.side); }
+    for (let i = 0; i < 4; i++) { const p = players[i]; if (p.active && p.alive) drawGoalNet(p.side, p.color); else drawWall(p.side); }
   }
   function drawPaddle(p) {
     const r = padRect(p), s = spr[p.name];
