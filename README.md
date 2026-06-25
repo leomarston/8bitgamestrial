@@ -54,6 +54,21 @@ Controls: **P1 `W`/`S`**, **P2 `↑`/`↓`**, `Backspace` = back to select,
 `Enter`/`R` = rematch on the win screen. The keepers are whoever you picked on
 the select screen (defaults to PIXEL vs BYTE if launched directly).
 
+## Minigame: FLAPPY DUEL (2-player)
+
+`game/flappy.html` — two-player couch Flappy Bird. Both chosen fighters (with
+flapping wings) fly the **same pipes at once**, staggered so one is **in front**.
+
+- Hit a pipe or the ground = you're out.
+- When a flyer goes down, a coloured **"PASS!" line** drops at the crash spot; the
+  other player must fly **past that line to win** — otherwise whoever got further
+  wins. (Furthest distance wins.)
+- Parallax 4-bit world: gradient sky, clouds, a city skyline with lit windows,
+  trees, and scrolling ground.
+
+Controls: **P1 `W`/`Space`**, **P2 `↑`**, `Enter`/`R` = rematch, `Backspace` = menu.
+Defaults to PIXEL vs BYTE; otherwise uses the fighters picked on the select screen.
+
 ## Repo layout
 
 ```
@@ -62,6 +77,8 @@ game/            the playable screens
   game.js        MK-style select logic (cursors, lock-in, mirror, kick off)
   football.html  the football minigame
   football.js    Pong-style football (pitch, nets, ball physics, scoring)
+  flappy.html    the flappy duel minigame
+  flappy.js      2-player flappy (parallax city, wings, furthest-flyer duel)
   data.js        AUTO-GENERATED sprites + palette + pixel font + ball (do not edit)
 art/             the art pipeline (source of truth for all sprites)
   characters.py  hand-authored pixel grids for all 8 fighters

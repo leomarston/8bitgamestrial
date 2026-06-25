@@ -716,5 +716,25 @@ window.GAME_DATA = {
 "..KWWWWWWWWLLK..",
 "...KKWWWWLLKK...",
 ".....KKKKKK....."
+],
+"wingUp": [
+".......KK..",
+".....KKWWK.",
+"...KKWWWWK.",
+".KKWWWWWLK.",
+"KWWWWWWLK..",
+"KWWWWWLK...",
+".KWWWLK....",
+"..KKKK....."
+],
+"wingDown": [
+"..KKKK.....",
+".KWWWLK....",
+"KWWWWWLK...",
+"KWWWWWWLK..",
+".KKWWWWWLK.",
+"...KKWWWWK.",
+".....KKWWK.",
+".......KK.."
 ]
 };

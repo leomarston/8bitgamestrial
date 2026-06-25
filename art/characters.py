@@ -204,6 +204,31 @@ BALL = "\n".join([
 ])
 
 # ---------------------------------------------------------------------------
+# Flappy wings — a right wing in two flap frames (mirror in code for the left).
+# White feathers, dark trailing edge, grey underside shading.
+# ---------------------------------------------------------------------------
+WING_UP = "\n".join([
+    ".......KK..",
+    ".....KKWWK.",
+    "...KKWWWWK.",
+    ".KKWWWWWLK.",
+    "KWWWWWWLK..",
+    "KWWWWWLK...",
+    ".KWWWLK....",
+    "..KKKK.....",
+])
+WING_DOWN = "\n".join([
+    "..KKKK.....",
+    ".KWWWLK....",
+    "KWWWWWLK...",
+    "KWWWWWWLK..",
+    ".KKWWWWWLK.",
+    "...KKWWWWK.",
+    ".....KKWWK.",
+    ".......KK..",
+])
+
+# ---------------------------------------------------------------------------
 # Roster (order = grid order, row-major 4x2)
 # ---------------------------------------------------------------------------
 ROSTER = [
