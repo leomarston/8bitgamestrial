@@ -435,11 +435,11 @@ def _hud(img):
 # three structurally-different arenas: open yard / street crossroads / house rooms
 MAPS = [
     {"bg": "hotpotato_map1.png", "mock": "hotpotato_arena.png", "draw": _draw_yard, "obs": yard_obs,
-     "spawn": {"p1": [CX - 70, CY], "p2": [CX + 70, CY]}},
+     "spawn": {"p": [[60, CY], [180, CY], [CX, 40], [CX, 120]]}},          # central spread, clear of barrels
     {"bg": "hotpotato_map2.png", "mock": "hotpotato_arena2.png", "draw": _draw_street, "obs": street_obs,
-     "spawn": {"p1": [FX + 12, CY], "p2": [FX + FW - 12, CY]}},
+     "spawn": {"p": [[FX + 12, CY], [FX + FW - 12, CY], [CX, FY + 12], [CX, FY + FH - 12]]}},   # four road arms
     {"bg": "hotpotato_map3.png", "mock": "hotpotato_arena3.png", "draw": _draw_house, "obs": house_obs,
-     "spawn": {"p1": [62, FY + 12], "p2": [150, FY + FH - 14]}},
+     "spawn": {"p": [[60, FY + 28], [FX + FW - 60, FY + 28], [60, FY + FH - 28], [FX + FW - 60, FY + FH - 28]]}},   # one per room
 ]
 
 def arena():
