@@ -139,7 +139,7 @@
     p1 = ent(p1name, spawn.p1.x, spawn.p1.y, P1C);
     p2 = ent(p2name, spawn.p2.x, spawn.p2.y, P2C);
     players = [p1, p2];
-    mon = { x: spawn.mon.x, y: spawn.mon.y, r: 18, bob: 0, walkT: 0, moving: false, face: 1 };
+    mon = { x: spawn.mon.x, y: spawn.mon.y, r: 18, bob: 0, walkT: 0, moving: false, face: 1, avoid: 0 };
     phase = "ready"; timer = 2.2; winner = null; t0 = 0; msg = ""; msgT = 0;
   }
   reset();
@@ -187,6 +187,32 @@
     if (dy && !blocked(e.x, e.y + dy, e.r)) e.y += dy;
   }
 
+  // Monster steering: head straight at the target; if a grave blocks the way,
+  // fan out to angled directions and commit to going around one side until clear.
+  function monStep(spd) {
+    const alive = players.filter(p => p.alive); if (!alive.length) return null;
+    let tgt = alive[0], best = 1e9;
+    for (const p of alive) { const d = (p.x - mon.x) ** 2 + (p.y - mon.y) ** 2; if (d < best) { best = d; tgt = p; } }
+    const base = Math.atan2(tgt.y - mon.y, tgt.x - mon.x), ox = mon.x;
+    const tryA = (a) => {
+      const nx = mon.x + Math.cos(a) * spd, ny = mon.y + Math.sin(a) * spd;
+      if (!blocked(nx, ny, mon.r)) { mon.x = nx; mon.y = ny; return true; }
+      return false;
+    };
+    mon.moving = false;
+    if (tryA(base)) { mon.avoid = 0; mon.moving = true; }      // straight path clear
+    else {                                                     // blocked -> detour
+      const sides = mon.avoid >= 0 ? [1, -1] : [-1, 1];        // keep rounding the same way
+      for (const s of sides) {
+        let done = false;
+        for (const off of [0.6, 1.0, 1.45, 1.9, 2.4]) { if (tryA(base + s * off)) { mon.avoid = s; mon.moving = true; done = true; break; } }
+        if (done) break;
+      }
+    }
+    if (Math.abs(mon.x - ox) > 0.2) mon.face = mon.x > ox ? 1 : -1;
+    return tgt;
+  }
+
   // ---------- update ----------
   const PSPD = 188;
   function update(dt) {
@@ -212,17 +238,13 @@
     }
     setWalking(anyMoving);
 
-    // monster chases the nearest living player — ALWAYS slower than the players
+    // monster chases the nearest living player — ALWAYS slower than the players,
+    // and steers AROUND graves instead of getting stuck on them.
     const alive = players.filter(p => p.alive);
     if (alive.length) {
-      let tgt = alive[0], best = 1e9;
-      for (const p of alive) { const d = (p.x - mon.x) ** 2 + (p.y - mon.y) ** 2; if (d < best) { best = d; tgt = p; } }
       const ms = (145 + Math.min(28, t0 * 1.1)) * dt;     // ~145 -> 173 px/s, below player 188
-      const dx = tgt.x - mon.x, dy = tgt.y - mon.y, m = Math.hypot(dx, dy) || 1;
-      const ox = mon.x, oy = mon.y;
-      moveEnt(mon, dx / m * ms, dy / m * ms);
-      mon.moving = (mon.x !== ox || mon.y !== oy); if (mon.moving) mon.walkT += dt * 9;
-      if (Math.abs(dx) > 2) mon.face = dx > 0 ? 1 : -1;
+      monStep(ms);
+      if (mon.moving) mon.walkT += dt * 9;
       for (const p of alive) if ((p.x - mon.x) ** 2 + (p.y - mon.y) ** 2 < (p.r + mon.r - 4) ** 2) {
         p.alive = false; msg = (p === p1 ? "P1" : "P2") + " WAS CAUGHT!"; msgT = 2.5;
       }
@@ -320,7 +342,7 @@
       tc("ENTER = REMATCH     BACKSPACE = MENU", W / 2, 520, 2, DIM);
     }
     window.__gv = { phase, winner: winner ? winner.name : null, a1: p1.alive, a2: p2.alive, d1: +p1.down.toFixed(2), d2: +p2.down.toFixed(2) };
-    window.__hook = { tp: (ax, ay, bx, by) => { p1.x = ax; p1.y = ay; p2.x = bx; p2.y = by; }, punch: () => doPunch(p1, p2) };
+    window.__hook = { tp: (ax, ay, bx, by) => { p1.x = ax; p1.y = ay; p2.x = bx; p2.y = by; }, punch: () => doPunch(p1, p2), setMon: (x, y) => { mon.x = x; mon.y = y; }, mon: () => ({ x: Math.round(mon.x), y: Math.round(mon.y) }) };
     requestAnimationFrame(t => frame(now, t));
   }
   requestAnimationFrame(t => frame(t, t));
