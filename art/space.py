@@ -101,26 +101,6 @@ tMMMsssMMMMMMMMtttt.
 .....CttttttC......
 """)
 
-# a glowing ice-crystal cluster — bright core, faceted shards, cyan glow halo
-CRYSTAL = spr("""
-........CC........
-.......CGGC.......
-......CGWWGC......
-.....CGWCCWGC.....
-....CGWCGGCWGC....
-...CGWCG..GCWGC...
-..CGWCG.WW.GCWGC..
-.CGWCG.WCCW.GCWGC.
-CGWCG.WCGGCW.GCWGC
-.CGWCG.WCCW.GCWGC.
-..CGWCG.WW.GCWGC..
-...CGWCG..GCWGC...
-....CGWCGGCWGC....
-.....CGWCCWGC.....
-......CGWWGC......
-.......CGGC.......
-........CC........
-""")
 
 def face(img, name, cx, cy):
     """draw the pilot's head (top of the fighter sprite) centred in the glass dome"""
@@ -181,9 +161,9 @@ def arena():
     W, H, SC = 240, 150, 4
     img = Image.new("RGBA", (W, H), col("K"))
     bg(img, 5)
-    # falling obstacles
-    blit(img, METEOR, 40, 30); blit(img, METEOR, 150, 60); blit(img, CRYSTAL, 95, 20)
-    blit(img, CRYSTAL, 200, 95)
+    # falling obstacles (one type — meteors)
+    blit(img, METEOR, 36, 26); blit(img, METEOR, 150, 56); blit(img, METEOR, 96, 16)
+    blit(img, METEOR, 200, 96)
     # the two shuttles sharing the lane near the bottom
     laneTop = H - 42
     shuttle(img, "PIXEL", 80, laneTop, dmg=0)
@@ -205,8 +185,7 @@ def assets():
     cell(lambda im: shuttle(im, "PIXEL", 24, 6, dmg=0), "SHUTTLE")
     cell(lambda im: shuttle(im, "BYTE", 24, 6, dmg=1), "HIT x1")
     cell(lambda im: shuttle(im, "BYTE", 24, 6, dmg=2), "HIT x2")
-    cell(lambda im: blit(im, METEOR, 18, 18), "METEOR")
-    cell(lambda im: blit(im, CRYSTAL, 17, 17), "CRYSTAL")
+    cell(lambda im: blit(im, METEOR, 16, 16), "METEOR")
     W = sum(im.width * 2 + 16 for _, im in items) + 16
     sheet = Image.new("RGBA", (W, 130), (*PAL["D"], 255)); x = 12
     for lab, im in items:
