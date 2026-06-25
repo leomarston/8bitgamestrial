@@ -71,13 +71,13 @@
   const laneY = M.laneY * S;                 // pod-centre y
   const podTop = laneY - 14 * S;             // sprite top so the body sits on the lane
   const POD_R = 25, POD_MIN = 58;            // hit radius, min centre distance (no overlap)
-  const PSPD = 250, INV = 1.1, MAXHP = 3;
+  const ACCEL = 1500, DRAG = 3.2, MAXV = 340, BOUNCE = 0.92, INV = 1.1, MAXHP = 3;
   function wdelta(a) { a = ((a % W) + W) % W; return a > W / 2 ? a - W : a; }
   function wrapx(x) { return ((x % W) + W) % W; }
 
   // ---------- state ----------
   let p1, p2, players, meteors, spawnT, phase, ready, boomT, winner, loser, sparks, t0;
-  function pl(name, color, x) { return { name, color, x, hp: MAXHP, inv: 0, hitx: 0 }; }
+  function pl(name, color, x) { return { name, color, x, vx: 0, hp: MAXHP, inv: 0, hitx: 0 }; }
   function reset() {
     p1 = pl(p1name, P1C, M.spawn[0] * S); p2 = pl(p2name, P2C, M.spawn[1] * S); players = [p1, p2];
     meteors = []; sparks = []; spawnT = 0.7; t0 = 0;
@@ -121,17 +121,26 @@
     t0 += dt;
     for (const p of players) p.inv = Math.max(0, p.inv - dt), p.hitx = Math.max(0, p.hitx - dt);
 
-    // move on the ring
-    for (const p of players) p.x = wrapx(p.x + moveInput(p) * PSPD * dt);
-    // SOLID pods: separate so they can never overlap (wrap-aware). A driver shoves
-    // the other — the pushed pod is displaced while the pusher keeps coming.
+    // momentum movement on the ring: input accelerates, drag slows, capped
+    for (const p of players) {
+      p.vx += moveInput(p) * ACCEL * dt;
+      p.vx *= Math.max(0, 1 - DRAG * dt);
+      p.vx = Math.max(-MAXV, Math.min(MAXV, p.vx));
+      p.x = wrapx(p.x + p.vx * dt);
+    }
+    // BALL BUMP: pods are solid and elastic. Separate any overlap (never go into
+    // each other), then exchange momentum like two billiard balls on a bump.
     let sep = wdelta(p2.x - p1.x);
     const ad = Math.abs(sep);
     if (ad < POD_MIN) {
-      const side = sep === 0 ? (moveInput(p1) >= 0 ? 1 : -1) : Math.sign(sep);
-      const push = (POD_MIN - ad) / 2;
-      p1.x = wrapx(p1.x - side * push);
-      p2.x = wrapx(p2.x + side * push);
+      const side = sep === 0 ? (p1.vx >= p2.vx ? 1 : -1) : Math.sign(sep);
+      const overlap = POD_MIN - ad;
+      p1.x = wrapx(p1.x - side * overlap / 2);
+      p2.x = wrapx(p2.x + side * overlap / 2);
+      if ((p2.vx - p1.vx) * side < 0) {                // only when closing in
+        const a = p1.vx, b = p2.vx;
+        p1.vx = b * BOUNCE; p2.vx = a * BOUNCE;        // swap velocities (equal mass)
+      }
     }
 
     // meteors
@@ -209,6 +218,7 @@
     }
 
     window.__sp = { phase, hp1: p1.hp, hp2: p2.hp, x1: Math.round(p1.x), x2: Math.round(p2.x),
+      v1: Math.round(p1.vx), v2: Math.round(p2.vx),
       gap: Math.round(Math.abs(wdelta(p2.x - p1.x))), winner: winner ? (winner === p1 ? "p1" : "p2") : null, met: meteors.length };
     window.__sphook = {
       setx: (a, b) => { p1.x = wrapx(a); p2.x = wrapx(b); },
