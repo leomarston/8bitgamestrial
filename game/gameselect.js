@@ -29,6 +29,8 @@
   const gMon = buildSprite(D.graveyard.monster, GYP), gHead = buildSprite(D.graveyard.headstone, GYP), gBroken = buildSprite(D.graveyard.broken, GYP);
   const BLP = D.blocks.palette;
   const bGround = buildSprite(D.blocks.ground, BLP), bStoneTop = buildSprite(D.blocks.stoneTop, BLP), bStone = buildSprite(D.blocks.stone, BLP);
+  const CRP = D.crown.palette;
+  const cCrown = buildSprite(D.crown.crownBig, CRP), cPillar = buildSprite(D.crown.pillar, CRP);
   const FONT = D.font;
 
   function tW(s, sc, sp = 1) { return (s.length * (5 + sp) - sp) * sc; }
@@ -56,7 +58,8 @@
     { name: "FLAPPY", file: "flappy.html", accent: "#5db4ff", icon: "flappy" },
     { name: "GRAVEYARD", file: "graveyard.html", accent: "#79d36a", icon: "graveyard" },
     { name: "RUNNER", file: "platformer.html", accent: "#5cc24c", icon: "runner" },
-    null, null, null, null,
+    { name: "CROWN GRAB", file: "crown.html", accent: "#ffd54a", icon: "crown" },
+    null, null, null,
   ];
 
   // ---- grid ----
@@ -131,11 +134,25 @@
     ctx.drawImage(bStone.canvas, r.x + r.w - 64, gy - 12, 24, 24);
     const f = spr[p1name]; fitDraw(f, r.x + 26, gy - 52, 34, 46);
   }
+  function iconCrown(r) {
+    const ix = r.x + 12, iy = r.y + 12, iw = r.w - 24, ih = r.h - 56;
+    ctx.save(); ctx.beginPath(); ctx.rect(ix, iy, iw, ih); ctx.clip();
+    for (let yy = 0; yy < ih; yy += 16) for (let xx = 0; xx < iw; xx += 16) {
+      ctx.fillStyle = ((((xx / 16) | 0) + ((yy / 16) | 0)) % 2) ? "#c89a52" : "#e0bd76"; ctx.fillRect(ix + xx, iy + yy, 16, 16);
+    }
+    ctx.fillStyle = "#d23a4f"; ctx.beginPath(); ctx.ellipse(r.x + r.w / 2, iy + ih * 0.66, 46, 19, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = "#ffd54a"; ctx.beginPath(); ctx.ellipse(r.x + r.w / 2, iy + ih * 0.66, 46, 19, 0, 0, 7); ctx.lineWidth = 2; ctx.strokeStyle = "#ffd54a"; ctx.stroke();
+    fitDraw(cPillar, ix + 4, iy + ih * 0.34, 22, 56);
+    fitDraw(cPillar, ix + iw - 26, iy + ih * 0.34, 22, 56);
+    fitDraw(cCrown, r.x + r.w / 2 - 32, iy + ih * 0.30, 64, 40);
+    ctx.restore();
+    ctx.strokeStyle = "#ffd54a"; ctx.lineWidth = 3; ctx.strokeRect(ix, iy, iw, ih);
+  }
   function tile(i, t) {
     const r = cell(i), g = GAMES[i];
     if (g) {
       ctx.fillStyle = "#272138"; rr(r.x, r.y, r.w, r.h, 12); ctx.fill();
-      const ic = { football: iconFootball, flappy: iconFlappy, graveyard: iconGraveyard, runner: iconRunner }[g.icon] || iconGraveyard;
+      const ic = { football: iconFootball, flappy: iconFlappy, graveyard: iconGraveyard, runner: iconRunner, crown: iconCrown }[g.icon] || iconGraveyard;
       ic(r);
       ctx.fillStyle = "#15121f"; rr(r.x + 10, r.y + r.h - 36, r.w - 20, 26, 7); ctx.fill();
       tc(g.name, r.x + r.w / 2, r.y + r.h - 31, 3, g.accent);

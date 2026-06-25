@@ -1078,5 +1078,147 @@ window.GAME_DATA = {
 ".....Kp.....",
 "....KppK...."
 ]
+},
+"crown": {
+"palette": {
+"K": "#1c1630",
+"W": "#ffffff",
+"Y": "#ffd23e",
+"y": "#c4851a",
+"R": "#ff4d5e",
+"r": "#b8243c",
+"F": "#e6b878",
+"f": "#b07c44",
+"S": "#b9b3cf",
+"s": "#6b6690",
+"U": "#5a78d0",
+"u": "#2a2660",
+"G": "#5fd06b",
+"M": "#ff7ad0",
+"C": "#ffe9a0",
+"D": "#181436"
+},
+"crownBig": [
+"..K.....K.....K..",
+"..K.K...K...K.K..",
+".KYKYK.KYK.KYKYK.",
+".KYRYKKKYKKKYRYK.",
+".KYYYYYYYYYYYYYK.",
+".KYYRYYYWYYYRYYK.",
+".KYYYYYYYYYYYYYK.",
+".KyyyyyyyyyyyyyK.",
+".KKKKKKKKKKKKKKK."
+],
+"crownSmall": [
+"K.K.K",
+"KYKYK",
+"YYYYY",
+"YRYRY",
+"yyyyy"
+],
+"pillar": [
+".KKKKKK.",
+"KYYYYYYK",
+"KYWWWWYK",
+"KKKKKKKK",
+"KRRRRRRK",
+"KWWWWWWK",
+"KRRRRRRK",
+"KWWWWWWK",
+"KRRRRRRK",
+"KWWWWWWK",
+"KRRRRRRK",
+"KWWWWWWK",
+"KRRRRRRK",
+"KKsssssK",
+"KSssssSK",
+"KSsssssK",
+".KKKKKK."
+],
+"maps": [
+{
+"bg": "crown_map1.png",
+"scale": 4,
+"bounds": {
+"l": 12,
+"r": 228,
+"t": 22,
+"b": 140
+},
+"obstacles": [
+{
+"type": "circle",
+"x": 34,
+"y": 50,
+"r": 6
+},
+{
+"type": "circle",
+"x": 210,
+"y": 50,
+"r": 6
+},
+{
+"type": "circle",
+"x": 34,
+"y": 130,
+"r": 6
+},
+{
+"type": "circle",
+"x": 210,
+"y": 130,
+"r": 6
+}
+],
+"spawn": {
+"p1": [
+44,
+98
+],
+"p2": [
+196,
+98
+],
+"crown": [
+120,
+81
+]
+}
+},
+{
+"bg": "crown_map2.png",
+"scale": 4,
+"bounds": {
+"l": 12,
+"r": 228,
+"t": 22,
+"b": 140
+},
+"obstacles": [
+{
+"type": "rect",
+"x": 84,
+"y": 80,
+"w": 72,
+"h": 16
+}
+],
+"spawn": {
+"p1": [
+44,
+120
+],
+"p2": [
+196,
+120
+],
+"crown": [
+120,
+72
+]
+}
+}
+]
 }
 };

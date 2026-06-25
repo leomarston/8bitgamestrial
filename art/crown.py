@@ -140,10 +140,12 @@ def star(img, cx, cy, c="W"):
     for (gx, gy) in [(0, 0), (2, 0), (-2, 0), (0, 2), (0, -2), (1, 1), (-1, -1), (1, -1), (-1, 1)]:
         sp(px, img.width, img.height, cx + gx, cy + gy, col(c))
 
+CROWN_SMALL = ["K.K.K", "KYKYK", "YYYYY", "YRYRY", "yyyyy"]  # tiny crown carried on a head
+
 def crown_small(img, cx, cy):
     """tiny crown to sit on a head"""
     px = img.load()
-    rows = ["K.K.K", "KYKYK", "YYYYY", "YRYRY", "yyyyy"]
+    rows = CROWN_SMALL
     for j, row in enumerate(rows):
         for i, ch in enumerate(row):
             if ch != ".": sp(px, img.width, img.height, cx - 2 + i, cy + j, col(ch))
@@ -185,38 +187,34 @@ def panel(img, x, y, ww, hh, color):
             sp(px, img.width, img.height, xx, yy, col("K") if edge else col(color))
 
 # --------------------------------------------------------------------------
+# Native (240x150) stage geometry — the single source of truth shared by the
+# rendered art and the game (export_json multiplies by SC_GAME for the canvas).
+SC_GAME = 4
+# floor rect (native) — the playable stage, pushed right out to the canvas edges
+FX, FY, FW, FH = 4, 16, 232, 128
+CX, CY = FX + FW // 2, FY + FH // 2                       # 120, 80
+PILLARS = [(FX + 26, FY + 22), (FX + FW - 30, FY + 22),   # PILLAR sprite top-lefts
+           (FX + 26, FY + FH - 26), (FX + FW - 30, FY + FH - 26)]
+DAIS_C = (CX, CY + 1)                                     # map1 dais centre
+
+def _draw_map1(img, crown=True):
+    """MAP 1 — open dais with the crown on a pedestal, four pillars for cover."""
+    fx, fy, fw, fh = _stage(img, 6)
+    px = img.load(); W, H = img.size
+    cxc, cyc = DAIS_C
+    dais(px, W, H, cxc, cyc)
+    for (pcx, pcy) in PILLARS:
+        disc(px, W, H, pcx + 3, pcy + len(PILLAR), 7, 3, col("u"))   # ground shadow
+        blit(img, PILLAR, pcx, pcy)
+    if crown:
+        blit(img, CROWN, cxc - len(CROWN[0]) // 2, cyc - 30)
+        star(img, cxc + 10, cyc - 30, "W")
+    return fx, fy, fw, fh
+
 def arena():
     W, H, SC = 240, 150, 4
-    img = Image.new("RGBA", (W, H), col("u")); px = img.load()
-    spotlight(px, W, H, 50, 22, 150, 70); spotlight(px, W, H, 190, 22, 150, 70)
-    random.seed(6)
-    for _ in range(90):
-        x, y = random.randint(0, W - 1), random.randint(28, H - 1)
-        px[x, y] = col(random.choice(["G", "M", "Y", "R", "U", "W"]))
-    bunting(px, W, H, 22)
-
-    # ---- stage floor (checker) with border ----
-    fx, fy, fw, fh = 18, 40, W - 36, H - 50
-    for yy in range(fy, fy + fh):
-        for xx in range(fx, fx + fw):
-            px[xx, yy] = col("F") if ((xx // 12) + (yy // 12)) % 2 == 0 else col("f")
-    for xx in range(fx - 2, fx + fw + 2):
-        for t in range(2): px[xx, fy - 1 - t] = col("Y" if t == 0 else "y"); px[xx, fy + fh + t] = col("y")
-    for yy in range(fy - 2, fy + fh + 2):
-        for t in range(2): px[fx - 1 - t, yy] = col("Y" if t == 0 else "y"); px[fx + fw + t, yy] = col("y")
-
-    # ---- centre dais + pedestal + crown ----
-    cxc, cyc = W // 2, fy + fh // 2 + 6
-    dais(px, W, H, cxc, cyc)
-    blit(img, CROWN, cxc - len(CROWN[0]) // 2, cyc - 30)   # crown floating over pedestal
-    star(img, cxc + 10, cyc - 30, "W")
-
-    # ---- pillars (cover to juke around) ----
-    for (pcx, pcy) in [(fx + 26, fy + 22), (fx + fw - 30, fy + 22), (fx + 26, fy + fh - 24), (fx + fw - 30, fy + fh - 24)]:
-        # ground shadow
-        disc(px, W, H, pcx + 3, pcy + len(PILLAR), 7, 3, col("u"))
-        blit(img, PILLAR, pcx, pcy)
-
+    img = Image.new("RGBA", (W, H), col("u"))
+    _draw_map1(img, crown=True)
     img.resize((W * SC, H * SC), Image.NEAREST).convert("RGB").save(os.path.join(OUT, "crown_arena.png"))
     print("wrote crown_arena.png")
 
@@ -253,8 +251,8 @@ def _stage(img, seed):
     for _ in range(90):
         x, y = random.randint(0, W - 1), random.randint(28, H - 1)
         px[x, y] = col(random.choice(["G", "M", "Y", "R", "U", "W"]))
-    bunting(px, W, H, 22)
-    fx, fy, fw, fh = 18, 40, W - 36, H - 50
+    bunting(px, W, H, 8)
+    fx, fy, fw, fh = FX, FY, FW, FH
     for yy in range(fy, fy + fh):
         for xx in range(fx, fx + fw):
             px[xx, yy] = col("F") if ((xx // 12) + (yy // 12)) % 2 == 0 else col("f")
@@ -264,50 +262,72 @@ def _stage(img, seed):
         for t in range(2): px[fx - 1 - t, yy] = col("Y" if t == 0 else "y"); px[fx + fw + t, yy] = col("y")
     return fx, fy, fw, fh
 
-def arena2():
+# MAP 2 geometry (compact central dais) — shared by art + game collision
+M2_TOPL, M2_TOPR = 120 - 36, 120 + 36   # top surface x 84..156
+M2_TOPY, M2_FACEY, M2_FACEBOT = 64, 80, 96
+M2_STEPS = 2
+
+def _draw_map2(img, crown=True):
     """MAP 2 — a compact raised stone dais in the middle (the blocked high ground)
     with a short flight of steps on each side; the crown sits on top. Plenty of
     open floor around it to run. Every block is a hand-authored tile, stamped in."""
-    W, H, SC = 240, 150, 4
-    img = Image.new("RGBA", (W, H), col("u")); px = img.load()
     fx, fy, fw, fh = _stage(img, 11)
+    px = img.load(); W, H = img.size
     cxc = W // 2
-    # --- compact central dais (all multiples of the 8px tile) ---
-    topL, topR = cxc - 36, cxc + 36     # 72px-wide top surface, x 84..156
-    topY = 70                            # flat walkable top of the dais
-    faceY = 86                           # front face starts here (16px tall)
-    faceBot = 102
-    steps = 2                            # short steps either side (not a pyramid)
+    topL, topR, topY, faceY, faceBot, steps = M2_TOPL, M2_TOPR, M2_TOPY, M2_FACEY, M2_FACEBOT, M2_STEPS
     # soft ground shadow under the dais
     for x in range(topL - 20, topR + 20):
         for t in range(2): sp(px, W, H, x, faceBot + t, col("u"))
-
-    # --- the dais: front face (masonry) then the flat top, with gold trim ---
+    # the dais: front face (masonry) then the flat top, with gold trim
     tile_rect(img, FACETILE, topL, faceY, topR, faceBot, bond=True)
     tile_rect(img, TOPTILE, topL, topY, topR, faceY)
     for x in range(topL, topR):          # gold trim capping the top edge
         sp(px, W, H, x, topY, col("Y")); sp(px, W, H, x, topY + 1, col("y"))
     for y in range(topY, faceBot):       # gold corner posts
         sp(px, W, H, topL, y, col("y")); sp(px, W, H, topR - 1, y, col("y"))
-
-    # --- short steps on each side (climb up onto the dais) ---
+    # short steps on each side (climb up onto the dais)
     for k in range(steps):               # LEFT steps, adjacent step highest
-        x0 = topL - (k + 1) * 8
-        ty = faceY + k * 8
-        tile_rect(img, FACETILE, x0, ty, x0 + 8, faceBot)
-        blit(img, STEPCAP, x0, ty)
+        x0 = topL - (k + 1) * 8; ty = faceY + k * 8
+        tile_rect(img, FACETILE, x0, ty, x0 + 8, faceBot); blit(img, STEPCAP, x0, ty)
     for k in range(steps):               # RIGHT steps mirrored
-        x0 = topR + k * 8
-        ty = faceY + k * 8
-        tile_rect(img, FACETILE, x0, ty, x0 + 8, faceBot)
-        blit(img, STEPCAP, x0, ty)
+        x0 = topR + k * 8; ty = faceY + k * 8
+        tile_rect(img, FACETILE, x0, ty, x0 + 8, faceBot); blit(img, STEPCAP, x0, ty)
+    if crown:
+        blit(img, CROWN, cxc - len(CROWN[0]) // 2, topY + 2)
+        star(img, cxc + 11, topY + 2, "W")
+    return fx, fy, fw, fh
 
-    # --- the crown waiting on top centre ---
-    blit(img, CROWN, cxc - len(CROWN[0]) // 2, topY + 2)
-    star(img, cxc + 11, topY + 2, "W")
-
+def arena2():
+    W, H, SC = 240, 150, 4
+    img = Image.new("RGBA", (W, H), col("u"))
+    _draw_map2(img, crown=True)
     img.resize((W * SC, H * SC), Image.NEAREST).convert("RGB").save(os.path.join(OUT, "crown_arena2.png"))
     print("wrote crown_arena2.png")
+
+# --------------------------------------------------------------------------
+def maps_meta():
+    """Native-coord map data the game multiplies by SC_GAME. Bounds = play area
+    (inset inside the gold frame); obstacles are solid; spawns place crown+players."""
+    pill = [{"type": "circle", "x": px + 4, "y": py + 12, "r": 6} for (px, py) in PILLARS]
+    bounds = {"l": FX + 8, "r": FX + FW - 8, "t": FY + 6, "b": FY + FH - 4}
+    return [
+        {"bg": "crown_map1.png", "scale": SC_GAME, "bounds": bounds,
+         "obstacles": pill,
+         "spawn": {"p1": [CX - 76, CY + 18], "p2": [CX + 76, CY + 18], "crown": [CX, CY + 1]}},
+        {"bg": "crown_map2.png", "scale": SC_GAME, "bounds": bounds,
+         # central face block is solid; the top + the two side step lanes stay open
+         "obstacles": [{"type": "rect", "x": M2_TOPL, "y": M2_FACEY,
+                        "w": M2_TOPR - M2_TOPL, "h": M2_FACEBOT - M2_FACEY}],
+         "spawn": {"p1": [CX - 76, FY + FH - 24], "p2": [CX + 76, FY + FH - 24], "crown": [CX, M2_TOPY + 8]}},
+    ]
+
+def export_backgrounds():
+    GAMEDIR = os.path.join(os.path.dirname(HERE), "game")
+    for fn, drawer in [("crown_map1.png", _draw_map1), ("crown_map2.png", _draw_map2)]:
+        img = Image.new("RGBA", (240, 150), col("u"))
+        drawer(img, crown=False)
+        img.convert("RGB").save(os.path.join(GAMEDIR, fn))
+        print("wrote game/" + fn)
 
 def assets():
     SC = 7
@@ -334,4 +354,4 @@ def assets():
     print("wrote crown_assets.png")
 
 if __name__ == "__main__":
-    assets(); arena(); arena2(); print("done")
+    assets(); arena(); arena2(); export_backgrounds(); print("done")
