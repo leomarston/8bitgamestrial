@@ -242,7 +242,7 @@
     // and steers AROUND graves instead of getting stuck on them.
     const alive = players.filter(p => p.alive);
     if (alive.length) {
-      const ms = (145 + Math.min(28, t0 * 1.1)) * dt;     // ~145 -> 173 px/s, below player 188
+      const ms = (108 + Math.min(28, t0 * 0.8)) * dt;     // ~108 -> 136 px/s, well below player 188
       monStep(ms);
       if (mon.moving) mon.walkT += dt * 9;
       for (const p of alive) if ((p.x - mon.x) ** 2 + (p.y - mon.y) ** 2 < (p.r + mon.r - 4) ** 2) {

@@ -51,7 +51,8 @@ automatically** (a short VS countdown, then play). It's Pong with a football ski
   front of their net.
 - A **bigger 4-bit football** bounces off keepers and the touchlines; the
   bounce angle depends on where it hits the keeper.
-- Get the ball into the opponent's **net** to score. **First to 5 wins.**
+- Get the ball into the opponent's **net** to score. The ball **speeds up over
+  time**. **First to 3 wins.**
 - Real pitch art: mowed-stripe grass, full markings (centre circle, penalty &
   6-yard boxes, arcs, spots, corners), **goals with crosshatch nets**, and a
   **pixel crowd** in the stands.
@@ -100,7 +101,11 @@ right on its own, fast but slower than you can run**; **fall behind the left edg
 - **Solid blocks actually block** — you stand on / are stopped by ground, ledges
   and crates; background towers, trees and vines don't block.
 - The level is generated from segments and **loops seamlessly** (effectively
-  infinite). Art lives in `art/blocks.py`.
+  infinite), and it's **re-randomised every round** (new obstacles/alignment).
+- **Stomp:** land on the other player's head and they get **squished — flattened
+  and frozen for ~1s** (then pop back), while you bounce off. The instant one
+  player is out (fell behind / pit), the other **wins immediately**.
+  Art lives in `art/blocks.py`.
 
 Controls: **P1 `A`/`D` + `W` (jump)**, **P2 arrows + `Up` (jump)**, `Enter`/`R`
 = rematch, `Backspace` = menu.

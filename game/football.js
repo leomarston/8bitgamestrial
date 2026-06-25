@@ -60,7 +60,7 @@
   const p2 = { x: rightLine - 46, y: cyC, color: P2C, name: p2name, ch: ch2 };
   const ball = { x: cxC, y: cyC, r: 16, vx: 0, vy: 0, spin: 0 };
 
-  let score1 = 0, score2 = 0, target = 5;
+  let score1 = 0, score2 = 0, target = 3;
   let phase = "kickoff", timer = 1.4, msg = "GET READY", flash = 0, winner = null, lastConceded = "p1";
 
   function resetBall(toward) {
@@ -110,6 +110,9 @@
     if (phase === "win") return;
 
     // move ball
+    // ball gradually speeds up over the course of the match
+    const bsp = Math.hypot(ball.vx, ball.vy);
+    if (bsp > 1 && bsp < 820) { const k = 1 + 0.05 * dt; ball.vx *= k; ball.vy *= k; }
     ball.x += ball.vx * dt; ball.y += ball.vy * dt; ball.spin += ball.vx * dt * 0.05;
     // walls (touchlines)
     if (ball.y - ball.r < fieldTop) { ball.y = fieldTop + ball.r; ball.vy = Math.abs(ball.vy); }
@@ -122,7 +125,7 @@
           ball.y + ball.r > hy && ball.y - ball.r < hy + PADH) {
         if ((dir < 0 && ball.vx < 0) || (dir > 0 && ball.vx > 0)) {
           const off = (ball.y - p.y) / (PADH / 2);
-          const sp = Math.min(Math.hypot(ball.vx, ball.vy) * 1.06, 760);
+          const sp = Math.min(Math.hypot(ball.vx, ball.vy) * 1.06, 820);
           const ang = off * 0.9;
           ball.vx = -dir * Math.abs(sp * Math.cos(ang));
           ball.vy = sp * Math.sin(ang);
