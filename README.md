@@ -93,12 +93,13 @@ Controls: **P1 `WASD`/`Space`**, **P2 arrows/`Enter`**, **P3 `IJKL`/`O`**,
 **P4 `TFGH`/`R`**; `Enter`/`R` = rematch, `Backspace` = menu. Art in
 `art/graveyard.py`, sounds in `game/sfx/`.
 
-## Minigame: RUNNER (auto-scroll platformer)
+## Minigame: RUNNER (auto-scroll platformer, 2–4 players)
 
 `game/platformer.html` — a forward auto-scrolling platformer in a night sandbox
-style (cobblestone, wood, grass/red-brick, vines, crates). The **frame scrolls
-right on its own, fast but slower than you can run**; **fall behind the left edge
-(or into a pit) and you're OUT.** Last one keeping up wins.
+style (cobblestone, wood, grass/red-brick, vines, crates) for **2–4 players**.
+The **frame scrolls right on its own, fast but slower than you can run**; **fall
+behind the left edge (or into a pit) and you're OUT.** Last one keeping up wins.
+Controls: **P1 `A`/`D`+`W`**, **P2 arrows+`Up`**, **P3 `J`/`L`+`I`**, **P4 `F`/`H`+`T`**.
 
 - Players are **one block tall** and **jump high** (~3 blocks) for nimble parkour.
 - **Solid blocks actually block** — you stand on / are stopped by ground, ledges

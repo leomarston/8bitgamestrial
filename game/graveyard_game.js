@@ -103,9 +103,11 @@
     { U: "KeyT", Dn: "KeyG", L: "KeyF", Rt: "KeyH", act: ["KeyR", "KeyY"] },
   ];
   let players, mon, phase, timer, winner, t0, msg, msgT;
+  function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
   function reset() {
     players = [];
-    for (let i = 0; i < count; i++) players.push(ent(NAMES[i], SPAWN[i][0], SPAWN[i][1], PCOL[i], "P" + (i + 1)));
+    const slots = shuffle([0, 1, 2, 3].slice(0, count));   // randomised corners — no fixed spot
+    for (let i = 0; i < count; i++) { const sp = SPAWN[slots[i]]; players.push(ent(NAMES[i], sp[0], sp[1], PCOL[i], "P" + (i + 1))); }
     mon = { x: spawnMon.x, y: spawnMon.y, r: 18, bob: 0, walkT: 0, moving: false, face: 1, avoid: 0 };
     phase = "ready"; timer = 2.4; winner = null; t0 = 0; msg = ""; msgT = 0;
   }

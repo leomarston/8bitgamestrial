@@ -34,12 +34,20 @@
       for (let ry = 0; ry < g.length; ry++) for (let rx = 0; rx < g[ry].length; rx++) if (g[ry][rx] === "1") ctx.fillRect(cx + rx * sc, y + ry * sc, sc, sc);
       cx += (5 + sp) * sc; } }
   const tc = (s, cx, y, sc, c, sp = 1) => text(s, Math.round(cx - tW(s, sc, sp) / 2), y, sc, c, sp);
-  const GOLD = "#ffc44a", DIM = "#9fb0d0", P1C = "#ff5d5d", P2C = "#5db4ff", INK = "#14111c";
+  const GOLD = "#ffc44a", DIM = "#9fb0d0", INK = "#14111c";
+  const PCOL = ["#ff5d5d", "#5db4ff", "#6bd66b", "#ffd54a"];
 
-  // ---------- picks ----------
-  let p1name = "PIXEL", p2name = "BYTE";
-  try { const s = JSON.parse(localStorage.getItem("partyPicks")); if (s && s.p1 && s.p2) { p1name = s.p1; p2name = s.p2; } } catch (e) {}
-  if (!fight[p1name]) p1name = "PIXEL"; if (!fight[p2name]) p2name = "BYTE";
+  // ---------- count + picks ----------
+  let count = 2; try { const c = +localStorage.getItem("partyCount"); if (c >= 2 && c <= 4) count = c; } catch (e) {}
+  let picks = { p1: "PIXEL", p2: "BYTE", p3: "NOVA", p4: "CHIP" };
+  try { const s = JSON.parse(localStorage.getItem("partyPicks")); if (s) picks = Object.assign(picks, s); } catch (e) {}
+  const NAMES = [picks.p1, picks.p2, picks.p3, picks.p4].map(n => fight[n] ? n : "PIXEL");
+  const PMOVE = [
+    { L: "KeyA", R: "KeyD", jump: ["KeyW", "Space"] },
+    { L: "ArrowLeft", R: "ArrowRight", jump: ["ArrowUp"] },
+    { L: "KeyJ", R: "KeyL", jump: ["KeyI", "KeyO"] },
+    { L: "KeyF", R: "KeyH", jump: ["KeyT", "KeyR"] },
+  ];
 
   // ---------- world ----------
   const TS = 16, SC = 3, HT = 12, GROW = 9, LOOP = 240;
@@ -79,11 +87,14 @@
 
   // ---------- entities ----------
   const PW = 12, PH = 16, GRAV = 780, JUMP = -300, RUN = 132, SCROLL = 76, MAXF = 430;
-  let cam, p1, p2, players, phase, timer, winner;
-  function mk(name, x, color) { return { name, color, x, y: GROW * TS - PH, vx: 0, vy: 0, onG: true, alive: true, face: 1, coy: 0, walkT: 0, dist: 0, squish: 0 }; }
+  let cam, players, phase, timer, winner;
+  function mk(name, x, color, tag) { return { name, color, tag, x, y: GROW * TS - PH, vx: 0, vy: 0, onG: true, alive: true, face: 1, coy: 0, walkT: 0, dist: 0, squish: 0 }; }
+  function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
   function reset() {
     genLevel(Math.floor(Math.random() * 1e9));   // new random map every round
-    cam = 0; p1 = mk(p1name, 112, P1C); p2 = mk(p2name, 140, P2C); players = [p1, p2];
+    cam = 0; players = [];
+    const xs = shuffle([0, 1, 2, 3].slice(0, count)).map(k => 112 + k * 26);   // randomised start spots
+    for (let i = 0; i < count; i++) players.push(mk(NAMES[i], xs[i], PCOL[i], "P" + (i + 1)));
     phase = "ready"; timer = 2.2; winner = null;
   }
   reset();
@@ -95,7 +106,7 @@
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(e.code)) e.preventDefault();
     if (e.code === "Backspace") { location.href = "gameselect.html"; return; }
     if (phase === "over" && (e.code === "Enter" || e.code === "KeyR" || e.code === "Space")) { if (window.GameMusic) window.GameMusic.next(); reset(); return; }
-    if (!e.repeat) { if (e.code === "KeyW" || e.code === "Space") jump(p1); if (e.code === "ArrowUp") jump(p2); }
+    if (!e.repeat) { for (let i = 0; i < count; i++) if (PMOVE[i].jump.includes(e.code)) { jump(players[i]); break; } }
     held[e.code] = true;
   });
   window.addEventListener("keyup", e => { held[e.code] = false; });
@@ -119,7 +130,8 @@
     if (phase === "over") return;
     cam += SCROLL * dt;
 
-    for (const [p, L, R] of [[p1, "KeyA", "KeyD"], [p2, "ArrowLeft", "ArrowRight"]]) {
+    for (let i = 0; i < count; i++) {
+      const p = players[i], L = PMOVE[i].L, R = PMOVE[i].R;
       if (!p.alive) continue;
       p.squish = Math.max(0, p.squish - dt);
       const dir = p.squish > 0 ? 0 : (held[R] ? 1 : 0) - (held[L] ? 1 : 0);   // squished = can't move
@@ -134,17 +146,18 @@
       if (p.x + PW < cam + 2 || p.y > 168) p.alive = false;
       p.dist = p.x;
     }
-    // stomp: a player landing on the other's head squishes them (1s, immobile)
-    for (const [a, b] of [[p1, p2], [p2, p1]]) {
+    // stomp: a player landing on another's head squishes them (1s, immobile)
+    for (let i = 0; i < count; i++) for (let j = 0; j < count; j++) {
+      if (i === j) continue; const a = players[i], b = players[j];
       if (!a.alive || !b.alive || b.squish > 0) continue;
       if (a.vy > 0 && a.x < b.x + PW - 2 && a.x + PW > b.x + 2 &&
           a.y + PH >= b.y && a.y + PH <= b.y + PH * 0.7 && a.y < b.y) {
-        b.squish = 1.0; a.vy = -190; a.y = b.y - PH; a.onG = false;   // squish them, bounce off
+        b.squish = 1.0; a.vy = -190; a.y = b.y - PH; a.onG = false;
       }
     }
     const alive = players.filter(p => p.alive);
     if (alive.length <= 1) {
-      winner = alive.length === 1 ? alive[0] : (p1.x >= p2.x ? p1 : p2);
+      winner = alive.length === 1 ? alive[0] : players.slice().sort((m, n) => n.x - m.x)[0];
       phase = "over";
     }
   }
@@ -161,7 +174,7 @@
       ctx.drawImage(s.canvas, sx, sy, dw * SC, dh * SC);
       if (Math.sin(p.squish * 30) > 0) { ctx.fillStyle = "#ffd86b"; ctx.fillRect(sx + dw * SC / 2 - 2, sy - 9, 4, 4); }
       ctx.fillStyle = p.color; ctx.fillRect(sx + dw * SC / 2 - 9, sy - 17, 18, 7);
-      text(p === p1 ? "P1" : "P2", sx + dw * SC / 2 - 6, sy - 16, 1, INK);
+      text(p.tag, sx + dw * SC / 2 - 6, sy - 16, 1, INK);
       return;
     }
     const dh = 18, dw = Math.round(s.w * dh / s.h);
@@ -170,7 +183,7 @@
     const sy = Math.round((p.y + PH - dh) * SC) - bob * SC;
     ctx.drawImage(s.canvas, sx, sy, dw * SC, dh * SC);
     ctx.fillStyle = p.color; ctx.fillRect(sx + dw * SC / 2 - 9, sy - 9, 18, 7);
-    text(p === p1 ? "P1" : "P2", sx + dw * SC / 2 - 6, sy - 8, 1, INK);
+    text(p.tag, sx + dw * SC / 2 - 6, sy - 8, 1, INK);
   }
 
   function frame(prev, now) {
@@ -208,10 +221,9 @@
 
     // HUD
     ctx.fillStyle = "rgba(16,17,28,.7)"; ctx.fillRect(0, 0, CW, 26);
-    text(p1name + (p1.alive ? "" : "  OUT"), 12, 9, 2, p1.alive ? P1C : "#6a6a86");
-    const r2 = p2name + (p2.alive ? "" : "  OUT"); text(r2, CW - 12 - tW(r2, 2), 9, 2, p2.alive ? P2C : "#6a6a86");
-    tc("RUNNER  -  KEEP UP OR FALL OFF", CW / 2, 4, 2, GOLD);
-    tc("P1 A/D +W      P2 ARROWS +UP      BACKSPACE MENU", CW / 2, 17, 1, DIM);
+    const colW = (CW - 24) / count;
+    for (let i = 0; i < count; i++) { const p = players[i]; text(p.tag + " " + p.name + (p.alive ? "" : " OUT"), 12 + i * colW, 9, 1.6 | 0, p.alive ? p.color : "#6a6a86"); }
+    tc("RUNNER  -  LAST KEEPING UP WINS", CW / 2, 4, 2, GOLD);
 
     if (phase === "ready") {
       ctx.fillStyle = "rgba(10,15,31,.5)"; ctx.fillRect(0, 0, CW, CH);
@@ -220,14 +232,14 @@
     }
     if (phase === "over") {
       ctx.fillStyle = "rgba(10,15,31,.86)"; ctx.fillRect(0, 0, CW, CH);
-      if (winner) { tc((winner === p1 ? "P1" : "P2") + " SURVIVES!", CW / 2, 150, 6, GOLD);
+      if (winner) { tc(winner.tag + " SURVIVES!", CW / 2, 150, 6, GOLD);
         const s = fight[winner.name], scl = 150 / s.h; ctx.drawImage(s.canvas, CW / 2 - s.w * scl / 2, 230, s.w * scl, 150);
         tc(winner.name + " WINS", CW / 2, 400, 4, winner.color);
-      } else tc("BOTH FELL!", CW / 2, 250, 6, GOLD);
+      } else tc("EVERYONE FELL!", CW / 2, 250, 6, GOLD);
       tc("ENTER = REMATCH     BACKSPACE = MENU", CW / 2, 470, 2, DIM);
     }
-    window.__rn = { phase, a1: p1.alive, a2: p2.alive, winner: winner ? winner.name : null, camx: Math.round(cam), p1x: Math.round(p1.x), p1y: Math.round(p1.y), p1g: p1.onG, s1: +p1.squish.toFixed(2), s2: +p2.squish.toFixed(2), seed: SEED };
-    window.__rnhook = { tp: (ax, ay, bx, by) => { p1.x = ax; p1.y = ay; p2.x = bx; p2.y = by; p1.vy = 0; p2.vy = 0; }, drop: () => { p1.vy = 120; } };
+    window.__rn = { phase, count, alive: players.map(p => p.alive), winner: winner ? winner.tag : null, camx: Math.round(cam), x: players.map(p => Math.round(p.x)), squish: players.map(p => +p.squish.toFixed(2)), seed: SEED };
+    window.__rnhook = { tp: (i, x, y) => { if (players[i]) { players[i].x = x; players[i].y = y; players[i].vy = 0; } }, kill: i => { if (players[i]) players[i].alive = false; } };
     requestAnimationFrame(t => frame(now, t));
   }
   requestAnimationFrame(t => frame(t, t));
