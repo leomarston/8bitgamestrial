@@ -300,19 +300,36 @@ def scol(k): return (*STR[k], 255)
 RW, SW = 26, 5                                            # half road width, sidewalk width
 def _street_rects():
     vL, vR, hT, hB = CX - RW, CX + RW, CY - RW, CY + RW
-    return [(FX, FY, vL - SW, hT - SW, "R"), (vR + SW, FY, FX + FW, hT - SW, "U"),
-            (FX, hB + SW, vL - SW, FY + FH, "T"), (vR + SW, hB + SW, FX + FW, FY + FH, "U")]
+    # each house's 2 entrances face the two roads it borders
+    return [(FX, FY, vL - SW, hT - SW, "R", {"right", "bottom"}),
+            (vR + SW, FY, FX + FW, hT - SW, "U", {"left", "bottom"}),
+            (FX, hB + SW, vL - SW, FY + FH, "T", {"right", "top"}),
+            (vR + SW, hB + SW, FX + FW, FY + FH, "U", {"left", "top"})]
 
-def _bld(px, W, H, x0, y0, x1, y1, ck):
-    rectf(px, W, H, x0, y0, x1, y1, scol(ck))
-    for x in range(x0, x1): sp(px, W, H, x, y1 - 1, scol(ck.lower())); sp(px, W, H, x, y1 - 2, scol(ck.lower()))
-    for y in range(y0, y1): sp(px, W, H, x1 - 1, y, scol(ck.lower())); sp(px, W, H, x1 - 2, y, scol(ck.lower()))
-    orect(px, W, H, x0, y0, x1, y1, scol("K"), 1)
-    cxm, cym = (x0 + x1) // 2, (y0 + y1) // 2             # rooftop details
-    rectf(px, W, H, cxm - 7, cym - 6, cxm - 1, cym, scol("M")); orect(px, W, H, cxm - 7, cym - 6, cxm - 1, cym, scol("K"))
-    rectf(px, W, H, cxm + 2, cym - 4, cxm + 9, cym + 3, scol("G")); orect(px, W, H, cxm + 2, cym - 4, cxm + 9, cym + 3, scol("K"))
-    for gx in range(x0 + 4, x1 - 5, 9):                  # gravel/AC dots
-        sp(px, W, H, gx, y0 + 4, scol("s")); sp(px, W, H, gx + 1, y0 + 5, scol("s"))
+WT, DW = 4, 20                                            # wall thickness, doorway width
+def _house_walls(x0, y0, x1, y1, doors):
+    cx, cy = (x0 + x1) // 2, (y0 + y1) // 2
+    gx0, gx1, gy0, gy1 = cx - DW // 2, cx + DW // 2, cy - DW // 2, cy + DW // 2
+    w = []
+    w += ([(x0, y0, gx0, y0 + WT), (gx1, y0, x1, y0 + WT)] if "top" in doors else [(x0, y0, x1, y0 + WT)])
+    w += ([(x0, y1 - WT, gx0, y1), (gx1, y1 - WT, x1, y1)] if "bottom" in doors else [(x0, y1 - WT, x1, y1)])
+    w += ([(x0, y0, x0 + WT, gy0), (x0, gy1, x0 + WT, y1)] if "left" in doors else [(x0, y0, x0 + WT, y1)])
+    w += ([(x1 - WT, y0, x1, gy0), (x1 - WT, gy1, x1, y1)] if "right" in doors else [(x1 - WT, y0, x1, y1)])
+    return w
+
+def _bld(px, W, H, x0, y0, x1, y1, ck, doors):
+    dk = ck.lower()
+    rectf(px, W, H, x0, y0, x1, y1, scol("C"))            # warm interior floor
+    for gy in range(y0, y1, 7):                           # plank lines
+        for gx in range(x0, x1): sp(px, W, H, gx, gy, scol("t"))
+    cxm, cym = (x0 + x1) // 2, (y0 + y1) // 2             # little rug inside
+    rug = "U" if ck != "U" else "R"
+    rectf(px, W, H, cxm - 11, cym - 5, cxm + 11, cym + 5, scol(rug)); orect(px, W, H, cxm - 11, cym - 5, cxm + 11, cym + 5, scol("K"))
+    for (wx0, wy0, wx1, wy1) in _house_walls(x0, y0, x1, y1, doors):   # brick walls (with door gaps)
+        rectf(px, W, H, wx0, wy0, wx1, wy1, scol(ck))
+        for x in range(wx0, wx1): sp(px, W, H, x, wy1 - 1, scol(dk))
+        for y in range(wy0, wy1): sp(px, W, H, wx1 - 1, y, scol(dk))
+        orect(px, W, H, wx0, wy0, wx1, wy1, scol("K"), 1)
 
 def _draw_street(img, bomb=True, players=True):
     px = img.load(); W, H = img.size
@@ -336,7 +353,7 @@ def _draw_street(img, bomb=True, players=True):
         rectf(px, W, H, x, hT - 4, x + 3, hT - 1, scol("W")); rectf(px, W, H, x, hB + 1, x + 3, hB + 4, scol("W"))
     for y in range(hT + 2, hB - 2, 6):                    # crosswalks across the horizontal road
         rectf(px, W, H, vL - 4, y, vL - 1, y + 3, scol("W")); rectf(px, W, H, vR + 1, y, vR + 4, y + 3, scol("W"))
-    for (x0, y0, x1, y1, ck) in _street_rects(): _bld(px, W, H, x0, y0, x1, y1, ck)
+    for (x0, y0, x1, y1, ck, doors) in _street_rects(): _bld(px, W, H, x0, y0, x1, y1, ck, doors)
     if players: _draw_actors(img, bomb)
 
 # ===========================================================================
@@ -398,7 +415,12 @@ def _draw_house(img, bomb=True, players=True):
 
 # --------------------------------------------------------------------------
 def yard_obs(): return [{"type": "circle", "x": bx + 7, "y": by + 13, "r": 6} for (bx, by) in BARRELS]
-def street_obs(): return [{"type": "rect", "x": x0, "y": y0, "w": x1 - x0, "h": y1 - y0} for (x0, y0, x1, y1, ck) in _street_rects()]
+def street_obs():
+    obs = []
+    for (x0, y0, x1, y1, ck, doors) in _street_rects():
+        for (wx0, wy0, wx1, wy1) in _house_walls(x0, y0, x1, y1, doors):
+            obs.append({"type": "rect", "x": wx0, "y": wy0, "w": wx1 - wx0, "h": wy1 - wy0})
+    return obs
 def house_obs():
     return ([{"type": "rect", "x": x0, "y": y0, "w": x1 - x0, "h": y1 - y0} for (x0, y0, x1, y1) in HOUSE_WALLS]
             + [{"type": "rect", "x": x0, "y": y0, "w": x1 - x0, "h": y1 - y0} for (x0, y0, x1, y1, k) in HOUSE_FURN])
