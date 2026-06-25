@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>8-BIT PARTY — Runner</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0a0f1f;
+    display: flex; align-items: center; justify-content: center;
+    font-family: monospace; overflow: hidden; }
+  #stage { image-rendering: pixelated; image-rendering: crisp-edges;
+    width: min(100vw, 160vh); height: auto;
+    box-shadow: 0 0 0 3px #182648, 0 18px 50px rgba(0,0,0,.7); border-radius: 6px; }
+</style>
+</head>
+<body>
+  <canvas id="stage" width="960" height="600"></canvas>
+  <script src="music.js"></script>
+  <script src="data.js"></script>
+  <script src="platformer.js"></script>
+</body>
+</html>

@@ -89,6 +89,22 @@ Controls: **P1 `WASD` + `Space` (punch)**, **P2 arrows + `Enter` (punch)**,
 `Enter`/`R` = rematch, `Backspace` = menu. The cemetery uses its own moody
 16-colour palette; art lives in `art/graveyard.py`, sounds in `game/sfx/`.
 
+## Minigame: RUNNER (auto-scroll platformer)
+
+`game/platformer.html` — a forward auto-scrolling platformer in a night sandbox
+style (cobblestone, wood, grass/red-brick, vines, crates). The **frame scrolls
+right on its own, fast but slower than you can run**; **fall behind the left edge
+(or into a pit) and you're OUT.** Last one keeping up wins.
+
+- Players are **one block tall** and **jump high** (~3 blocks) for nimble parkour.
+- **Solid blocks actually block** — you stand on / are stopped by ground, ledges
+  and crates; background towers, trees and vines don't block.
+- The level is generated from segments and **loops seamlessly** (effectively
+  infinite). Art lives in `art/blocks.py`.
+
+Controls: **P1 `A`/`D` + `W` (jump)**, **P2 arrows + `Up` (jump)**, `Enter`/`R`
+= rematch, `Backspace` = menu.
+
 ## Music & sound
 
 `game/music.js` (loaded by every page) handles background music:
@@ -107,7 +123,8 @@ game/            the playable screens
   index.html     character select
   game.js        MK-style select logic (cursors, lock-in, mirror) -> game select
   gameselect.html  the "choose a game" hub
-  gameselect.js  4x2 minigame grid (P1 picks; Football/Flappy/Graveyard live, 5 soon)
+  gameselect.js  4x2 minigame grid (P1 picks; Football/Flappy/Graveyard/Runner live, 4 soon)
+  platformer.html / platformer.js   the RUNNER auto-scroll platformer
   football.html  the football minigame
   football.js    Pong-style football (pitch, nets, ball physics, scoring)
   flappy.html    the flappy duel minigame

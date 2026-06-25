@@ -27,6 +27,8 @@
   const ballS = buildSprite(D.ball), wUp = buildSprite(D.wingUp), wUpL = flip(wUp);
   const GYP = D.graveyard.palette;
   const gMon = buildSprite(D.graveyard.monster, GYP), gHead = buildSprite(D.graveyard.headstone, GYP), gBroken = buildSprite(D.graveyard.broken, GYP);
+  const BLP = D.blocks.palette;
+  const bGround = buildSprite(D.blocks.ground, BLP), bStoneTop = buildSprite(D.blocks.stoneTop, BLP), bStone = buildSprite(D.blocks.stone, BLP);
   const FONT = D.font;
 
   function tW(s, sc, sp = 1) { return (s.length * (5 + sp) - sp) * sc; }
@@ -53,7 +55,8 @@
     { name: "FOOTBALL", file: "football.html", accent: "#6bd66b", icon: "football" },
     { name: "FLAPPY", file: "flappy.html", accent: "#5db4ff", icon: "flappy" },
     { name: "GRAVEYARD", file: "graveyard.html", accent: "#79d36a", icon: "graveyard" },
-    null, null, null, null, null,
+    { name: "RUNNER", file: "platformer.html", accent: "#5cc24c", icon: "runner" },
+    null, null, null, null,
   ];
 
   // ---- grid ----
@@ -118,11 +121,22 @@
     fitDraw(gBroken, r.x + r.w - 56, r.y + 30, 34, 56);
     fitDraw(gMon, r.x + r.w / 2 - 28, r.y + 22, 56, 64);
   }
+  function iconRunner(r) {
+    ctx.fillStyle = "#18244a"; ctx.fillRect(r.x + 12, r.y + 12, r.w - 24, r.h - 56);
+    ctx.fillStyle = "#eef2ff";
+    for (let i = 0; i < 10; i++) ctx.fillRect(r.x + 18 + (i * 37 % (r.w - 40)), r.y + 18 + (i * 23 % 40), 2, 2);
+    const gy = r.y + r.h - 70;
+    for (let x = r.x + 12; x < r.x + r.w - 12; x += 24) ctx.drawImage(bGround.canvas, x, gy, 24, 24);
+    ctx.drawImage(bStoneTop.canvas, r.x + r.w - 64, gy - 36, 24, 24);
+    ctx.drawImage(bStone.canvas, r.x + r.w - 64, gy - 12, 24, 24);
+    const f = spr[p1name]; fitDraw(f, r.x + 26, gy - 52, 34, 46);
+  }
   function tile(i, t) {
     const r = cell(i), g = GAMES[i];
     if (g) {
       ctx.fillStyle = "#272138"; rr(r.x, r.y, r.w, r.h, 12); ctx.fill();
-      if (g.icon === "football") iconFootball(r); else if (g.icon === "flappy") iconFlappy(r); else iconGraveyard(r);
+      const ic = { football: iconFootball, flappy: iconFlappy, graveyard: iconGraveyard, runner: iconRunner }[g.icon] || iconGraveyard;
+      ic(r);
       ctx.fillStyle = "#15121f"; rr(r.x + 10, r.y + r.h - 36, r.w - 20, 26, 7); ctx.fill();
       tc(g.name, r.x + r.w / 2, r.y + r.h - 31, 3, g.accent);
     } else {
