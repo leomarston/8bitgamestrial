@@ -36,6 +36,17 @@
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const col = colors[TBT[y][x]]; if (col) { g.fillStyle = col; g.fillRect(x, y, 1, 1); } } return { canvas: c, w, h }; }
   const tbR = buildTile(TBC.R), tbB = buildTile(TBC.B), tbN = buildTile(TBC.N);
   const hpBomb = buildSprite(D.hotpotato.bomb, D.hotpotato.palette);
+  const spMet = buildSprite(D.space.meteor, D.space.palette);
+  let _podIcon = null;
+  function podIcon() {                                  // shuttle hull + pilot head
+    if (_podIcon) return _podIcon;
+    const SHU = D.space.shuttle, SW = SHU[0].length, SH = SHU.length;
+    const c = document.createElement("canvas"); c.width = SW; c.height = SH; const g = c.getContext("2d");
+    const rc = D.roster.find(r => r.name === p1name) || D.roster[0]; const hr = rc.rows.slice(0, 10), hw = hr[0].length;
+    const put = (rows, pal, ox, oy) => { for (let y = 0; y < rows.length; y++) for (let x = 0; x < rows[y].length; x++) { const col = pal[rows[y][x]]; if (col) { g.fillStyle = col; g.fillRect(ox + x, oy + y, 1, 1); } } };
+    put(hr, D.palette, Math.round(SW / 2 - hw / 2) - 1, 8); put(SHU, D.space.palette, 0, 0);
+    _podIcon = { canvas: c, w: SW, h: SH }; return _podIcon;
+  }
   const FONT = D.font;
 
   function tW(s, sc, sp = 1) { return (s.length * (5 + sp) - sp) * sc; }
@@ -66,7 +77,7 @@
     { name: "CROWN GRAB", file: "crown.html", accent: "#ffd54a", icon: "crown" },
     { name: "TILE BLITZ", file: "tileblitz.html", accent: "#ff7ad0", icon: "tileblitz" },
     { name: "HOT POTATO", file: "hotpotato.html", accent: "#ff8e34", icon: "hotpotato" },
-    null,
+    { name: "METEOR DERBY", file: "space.html", accent: "#7aa7ff", icon: "space" },
   ];
 
   // ---- grid ----
@@ -176,11 +187,22 @@
     ctx.restore();
     ctx.strokeStyle = "#ffce3c"; ctx.lineWidth = 3; ctx.strokeRect(ix, iy, iw, ih);
   }
+  function iconSpace(r) {
+    const ix = r.x + 12, iy = r.y + 12, iw = r.w - 24, ih = r.h - 56;
+    ctx.save(); ctx.beginPath(); ctx.rect(ix, iy, iw, ih); ctx.clip();
+    ctx.fillStyle = "#10122e"; ctx.fillRect(ix, iy, iw, ih);
+    for (let i = 0; i < 40; i++) { ctx.fillStyle = i % 4 ? "#cfe0ff" : "#5db4ff"; ctx.fillRect(ix + (i * 53 % iw), iy + (i * 37 % ih), 2, 2); }
+    fitDraw(spMet, ix + 10, iy + 10, 40, 40);
+    fitDraw(spMet, ix + iw - 44, iy + ih - 50, 34, 34);
+    fitDraw(podIcon(), r.x + r.w / 2 - 30, iy + ih - 70, 60, 70);
+    ctx.restore();
+    ctx.strokeStyle = "#7aa7ff"; ctx.lineWidth = 3; ctx.strokeRect(ix, iy, iw, ih);
+  }
   function tile(i, t) {
     const r = cell(i), g = GAMES[i];
     if (g) {
       ctx.fillStyle = "#272138"; rr(r.x, r.y, r.w, r.h, 12); ctx.fill();
-      const ic = { football: iconFootball, flappy: iconFlappy, graveyard: iconGraveyard, runner: iconRunner, crown: iconCrown, tileblitz: iconTileBlitz, hotpotato: iconHotPotato }[g.icon] || iconGraveyard;
+      const ic = { football: iconFootball, flappy: iconFlappy, graveyard: iconGraveyard, runner: iconRunner, crown: iconCrown, tileblitz: iconTileBlitz, hotpotato: iconHotPotato, space: iconSpace }[g.icon] || iconGraveyard;
       ic(r);
       ctx.fillStyle = "#15121f"; rr(r.x + 10, r.y + r.h - 36, r.w - 20, 26, 7); ctx.fill();
       tc(g.name, r.x + r.w / 2, r.y + r.h - 31, 3, g.accent);

@@ -12,8 +12,9 @@ data is inlined).
 **Flow:** character select → **game select** → the chosen minigame.
 After both fighters lock in, a **CHOOSE A GAME** hub appears (a 4×2 grid like the
 character select). **Player 1** drives the cursor (`WASD` + `Space`) and picks a
-minigame — **Football, Flappy, Graveyard, Runner, Crown Grab, Tile Blitz** and
-**Hot Potato** are live, the last tile is "coming soon". `Backspace` goes back a step.
+minigame — **Football, Flappy, Graveyard, Runner, Crown Grab, Tile Blitz,
+Hot Potato** and **Meteor Derby** are live — all 8 tiles are filled. `Backspace`
+goes back a step.
 
 ### Controls
 
@@ -158,6 +159,19 @@ doorway gaps). Art lives in `art/hotpotato.py`; stages export to
 Controls: **P1 `WASD` + `Space` (dash)**, **P2 arrows + `Enter` (dash)**,
 `Enter`/`Space`/`R` = rematch, `Backspace` = menu.
 
+## Minigame: METEOR DERBY (space dodge)
+
+`game/space.html` — two pilot pods **share one lane** in deep space. Each moves
+**left/right only** and **wraps** around the screen edges. The pods are **solid**
+— ram your rival to **shove them sideways** (they can never overlap) so a falling
+meteor lands on *them*. Each hit wrecks your pod a little (cracked → wrecked);
+**3 hits and you're destroyed**, the other pilot wins. Brief invincibility flash
+after each hit; **3 health pips** per player. Art lives in `art/space.py`; the
+starfield exports to `game/space_bg.png`.
+
+Controls: **P1 `A`/`D`**, **P2 `←`/`→`**, `Enter`/`Space`/`R` = rematch,
+`Backspace` = menu.
+
 ## Music & sound
 
 `game/music.js` (loaded by every page) handles background music:
@@ -176,13 +190,15 @@ game/            the playable screens
   index.html     character select
   game.js        MK-style select logic (cursors, lock-in, mirror) -> game select
   gameselect.html  the "choose a game" hub
-  gameselect.js  4x2 minigame grid (P1 picks; 7 games live, 1 soon)
+  gameselect.js  4x2 minigame grid (P1 picks; all 8 games live)
   crown.html / crown_game.js        CROWN GRAB (carry the crown, dash to steal)
   crown_map1.png / crown_map2.png   the two CROWN GRAB stage backgrounds
   tileblitz.html / tileblitz_game.js  TILE BLITZ (paint the most tiles)
   tileblitz_bg.png                  the TILE BLITZ arena background
   hotpotato.html / hotpotato_game.js  HOT POTATO (pass the bomb, dash)
   hotpotato_map1.png .. _map3.png   the three HOT POTATO stage backgrounds
+  space.html / space_game.js        METEOR DERBY (shared lane, shove, dodge)
+  space_bg.png                      the METEOR DERBY starfield background
   platformer.html / platformer.js   the RUNNER auto-scroll platformer
   football.html  the football minigame
   football.js    Pong-style football (pitch, nets, ball physics, scoring)

@@ -1691,5 +1691,89 @@ window.GAME_DATA = {
 ]
 }
 ]
+},
+"space": {
+"palette": {
+"K": "#0a0a18",
+"D": "#12142e",
+"N": "#282e60",
+"W": "#f4f7ff",
+"S": "#c6cde0",
+"s": "#8a92ac",
+"t": "#5c6380",
+"B": "#4a7eec",
+"b": "#2848b0",
+"Y": "#ffd650",
+"O": "#ff8a2e",
+"G": "#76e096",
+"C": "#c6f2ff",
+"R": "#ec4a4c",
+"F": "#f0c896",
+"M": "#969eb6"
+},
+"shuttle": [
+"..........RR............",
+"..........Rb............",
+"..........tt............",
+".........tKKt...........",
+"........tKSWSKt.........",
+".......tKSWWWSKt........",
+"......KKKWWWWSSKK.......",
+".....KWWWWWWWWSSSK......",
+"....KWWWWWWWWWWSSSK.....",
+"....KWWCCCCCCCCCWSSK....",
+"...KWWC.........CWSSK...",
+"...KWC...........CWSK...",
+"...KWC...........CWSK...",
+"...KWC...........CWSK...",
+"...KWC...........CWSK...",
+"...KWWC.........CWSSK...",
+"....KWWCCCCCCCCCWSSK....",
+"....KWWWWWWWWWWWSSSK....",
+"...KBBBBBBBBBBBBBBBBK...",
+"...KbbbBBBBBBBBBbbbbK...",
+"...KWWWWWWWWWWSSSSSSK...",
+"..KWWWWWWWWWWWSSSSSSSK..",
+"..KWWWWWWWsssWSSSSSSSK..",
+"..KWSWWWWWsssWSSSSSsSK..",
+".KBBKWWWWWsssWWSSSSKBBK.",
+"KBBBBKWWWWWWWWWWSSKBBBBK",
+"KBBBB.KWWWWWWWWWSK.BBBBK",
+".KBB...KKKKKKKKKKK..BBK.",
+"..........WWW...........",
+".........WWYWWW.........",
+"........OOYYWYYOO.......",
+"........OYWWWWYO........",
+".........OYYWYO.........",
+".........OOYYOO.........",
+"..........OYO...........",
+"...........O............"
+],
+"meteor": [
+".....CttttttC.......",
+"...CtMMMMMMMMttC....",
+"..tMMWWWMMMMMMMtt...",
+".tMWWWWMMMMsssMMtt..",
+".tMWWMMMMMMsssMMMt..",
+"tMMMMMMMMMMsssMMMtt.",
+"tMMMsssMMMMMMMMMMtt.",
+"tMMsssssMMMMWWMMMtt.",
+"tMMsssssMMMMWWMMtttt",
+"tMMMsssMMMMMMMMtttt.",
+".tMMMMMMMMsssMMttt..",
+".tMMMMMMMMsssMtttt..",
+"..tMMMMMMMsssMttt...",
+"...CttMMMMMMtttC....",
+".....CttttttC......."
+],
+"meta": {
+"scale": 4,
+"bg": "space_bg.png",
+"laneY": 122,
+"spawn": [
+80,
+160
+]
+}
 }
 };

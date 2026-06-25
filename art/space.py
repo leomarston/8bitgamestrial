@@ -196,5 +196,17 @@ def assets():
     sheet.resize((sheet.width * 2, sheet.height * 2), Image.NEAREST).convert("RGB").save(os.path.join(OUT, "space_assets.png"))
     print("wrote space_assets.png")
 
+SC_GAME = 4
+LANE_Y = 122                                            # native pod-centre y (shared lane)
+
+def sp_meta():
+    return {"scale": SC_GAME, "bg": "space_bg.png", "laneY": LANE_Y, "spawn": [80, 160]}
+
+def export_bg():
+    img = Image.new("RGBA", (240, 150), col("K")); bg(img, 5)
+    GAMEDIR = os.path.join(os.path.dirname(HERE), "game")
+    img.convert("RGB").save(os.path.join(GAMEDIR, "space_bg.png"))
+    print("wrote game/space_bg.png")
+
 if __name__ == "__main__":
-    assets(); arena(); print("done")
+    assets(); arena(); export_bg(); print("done")
