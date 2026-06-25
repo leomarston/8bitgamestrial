@@ -51,7 +51,7 @@
   const HUD = 54, STAND = 46;
   const FX = 14, FY = HUD + STAND, FW = W - 28, FH = H - HUD - STAND - STAND;
   const fieldTop = FY, fieldBot = FY + FH, cxC = FX + FW / 2, cyC = FY + FH / 2;
-  const GOAL_H = 210, goalTop = cyC - GOAL_H / 2, goalBot = cyC + GOAL_H / 2;
+  const GOAL_H = 290, goalTop = cyC - GOAL_H / 2, goalBot = cyC + GOAL_H / 2;
   const NET_DEPTH = 34;
   const leftLine = FX + NET_DEPTH, rightLine = FX + FW - NET_DEPTH;
 
