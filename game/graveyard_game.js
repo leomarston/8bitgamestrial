@@ -1,6 +1,8 @@
-/* 8-BIT PARTY — Graveyard (monster in the middle). Top-down chase: the monster
- * hunts the nearest living player and speeds up over time. Get touched = out.
- * LAST ONE STANDING WINS.  P1 = WASD,  P2 = Arrow keys. */
+/* 8-BIT PARTY — Graveyard (monster in the middle). Top-down chase: a zombie
+ * hunts the nearest living player. It is SLOWER than the players but relentless
+ * and can't pass through graves. Punch your rival (lands within range) to knock
+ * them down for 0.7s. Get touched by the zombie = out. LAST ONE STANDING WINS.
+ * P1 = WASD + Space(punch),  P2 = Arrows + Enter(punch). */
 (() => {
   const D = window.GAME_DATA, GY = D.graveyard;
   const cv = document.getElementById("stage");
@@ -42,6 +44,15 @@
   const GOLD = "#ffd86b", DIM = "#9a9ab8", P1C = "#ff5d5d", P2C = "#5db4ff", INK = "#100c1c";
   function hsh(x, y, s) { const v = Math.sin(x * 127.1 + y * 311.7 + s * 53.7) * 43758.5; return v - Math.floor(v); }
 
+  // ---------- audio ----------
+  function mkAudio(src, vol, loop) { const a = new Audio(src); a.volume = vol; a.loop = !!loop; return a; }
+  const sndWalk = mkAudio("sfx/walk.mp3", 0.2, true);
+  const sndZombie = mkAudio("sfx/zombie.mp3", 0.18, true);
+  let audioReady = false;
+  function unlockAudio() { audioReady = true; }
+  function playPunch() { const a = new Audio("sfx/punch.mp3"); a.volume = 0.5; a.play().catch(() => {}); }
+  function setWalking(on) { if (on && audioReady) { if (sndWalk.paused) sndWalk.play().catch(() => {}); } else if (!sndWalk.paused) sndWalk.pause(); }
+
   // ---------- picks ----------
   let p1name = "PIXEL", p2name = "BYTE";
   try { const s = JSON.parse(localStorage.getItem("partyPicks")); if (s && s.p1 && s.p2) { p1name = s.p1; p2name = s.p2; } } catch (e) {}
@@ -55,7 +66,7 @@
   function stoneAt(g, key, cx, by) {              // place a grave with base centred at (cx,by)
     const s = S[key], w = s.w * SC, h = s.h * SC;
     drawSpr(g, s, cx - w / 2, by - h, SC);
-    obstacles.push({ x: cx - w * 0.3, y: by - 7 * SC, w: w * 0.6, h: 6 * SC });
+    obstacles.push({ x: cx - w * 0.34, y: by - h * 0.55, w: w * 0.68, h: h * 0.55 });
   }
 
   const STONES = [
@@ -122,13 +133,13 @@
 
   // ---------- entities ----------
   const PSC = 1.9, MSC = 3.1;
-  function ent(name, x, y, color) { return { name, x, y, color, alive: true, face: 1, r: 15 }; }
+  function ent(name, x, y, color) { return { name, x, y, color, alive: true, face: 1, r: 14, down: 0, punch: 0, cool: 0, walkT: 0, moving: false }; }
   let p1, p2, mon, players, phase, timer, winner, t0, msg, msgT;
   function reset() {
     p1 = ent(p1name, spawn.p1.x, spawn.p1.y, P1C);
     p2 = ent(p2name, spawn.p2.x, spawn.p2.y, P2C);
     players = [p1, p2];
-    mon = { x: spawn.mon.x, y: spawn.mon.y, r: 18, bob: 0 };
+    mon = { x: spawn.mon.x, y: spawn.mon.y, r: 18, bob: 0, walkT: 0, moving: false, face: 1 };
     phase = "ready"; timer = 2.2; winner = null; t0 = 0; msg = ""; msgT = 0;
   }
   reset();
@@ -136,12 +147,31 @@
   // ---------- input ----------
   const held = {};
   window.addEventListener("keydown", e => {
+    unlockAudio();
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(e.code)) e.preventDefault();
     if (e.code === "Backspace") { location.href = "gameselect.html"; return; }
-    if (phase === "over" && (e.code === "Enter" || e.code === "KeyR" || e.code === "Space")) reset();
+    if (phase === "over" && (e.code === "Enter" || e.code === "KeyR" || e.code === "Space")) { reset(); return; }
+    if (phase === "play" && !e.repeat) {
+      if (e.code === "Space" || e.code === "KeyF") doPunch(p1, p2);
+      if (e.code === "Enter" || e.code === "NumpadEnter" || e.code === "Slash") doPunch(p2, p1);
+    }
     held[e.code] = true;
   });
   window.addEventListener("keyup", e => { held[e.code] = false; });
+
+  function doPunch(p, other) {
+    if (phase !== "play" || !p.alive || p.down > 0 || p.punch > 0 || p.cool > 0) return;
+    p.punch = 0.22; p.cool = 0.55; playPunch();
+    const dx = other.x - p.x, dy = other.y - p.y, dd = dx * dx + dy * dy;
+    if (Math.abs(dx) > 2) p.face = dx > 0 ? 1 : -1;
+    if (other.alive && other.down <= 0 && dd < 72 * 72) {        // landed a hit
+      other.down = 0.7;
+      const m = Math.hypot(dx, dy) || 1;
+      moveEnt(other, dx / m * 16, dy / m * 16);                  // knockback
+      msg = (other === p1 ? "P1" : "P2") + " GOT PUNCHED!"; msgT = 1.2;
+    }
+  }
+  function canMove(p) { return p.alive && p.down <= 0 && p.punch <= 0; }
 
   // ---------- collision ----------
   function blocked(x, y, r) {
@@ -158,27 +188,42 @@
   }
 
   // ---------- update ----------
+  const PSPD = 188;
   function update(dt) {
     mon.bob += dt * 4;
-    if (phase === "ready") { timer -= dt; if (timer <= 0) phase = "play"; return; }
-    if (phase === "over") return;
+    // ambient zombie groan only during play
+    if (phase === "play" && audioReady) { if (sndZombie.paused) sndZombie.play().catch(() => {}); }
+    else if (!sndZombie.paused) sndZombie.pause();
+
+    if (phase === "ready") { timer -= dt; if (timer <= 0) phase = "play"; setWalking(false); return; }
+    if (phase === "over") { setWalking(false); return; }
     t0 += dt;
     msgT = Math.max(0, msgT - dt);
+    for (const p of players) { p.down = Math.max(0, p.down - dt); p.punch = Math.max(0, p.punch - dt); p.cool = Math.max(0, p.cool - dt); }
 
-    const ps = 188 * dt;
-    if (p1.alive) { let dx = (held.KeyD ? 1 : 0) - (held.KeyA ? 1 : 0), dy = (held.KeyS ? 1 : 0) - (held.KeyW ? 1 : 0); norm(p1, dx, dy, ps); }
-    if (p2.alive) { let dx = (held.ArrowRight ? 1 : 0) - (held.ArrowLeft ? 1 : 0), dy = (held.ArrowDown ? 1 : 0) - (held.ArrowUp ? 1 : 0); norm(p2, dx, dy, ps); }
+    const ps = PSPD * dt; let anyMoving = false;
+    const ctrl = [[p1, "KeyW", "KeyS", "KeyA", "KeyD"], [p2, "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]];
+    for (const [p, U, Dn, L, R] of ctrl) {
+      p.moving = false;
+      if (canMove(p)) {
+        const dx = (held[R] ? 1 : 0) - (held[L] ? 1 : 0), dy = (held[Dn] ? 1 : 0) - (held[U] ? 1 : 0);
+        if (dx || dy) { norm(p, dx, dy, ps); p.moving = true; anyMoving = true; p.walkT += dt * 12; }
+      }
+    }
+    setWalking(anyMoving);
 
-    // monster chases nearest alive player, ramping speed
+    // monster chases the nearest living player — ALWAYS slower than the players
     const alive = players.filter(p => p.alive);
     if (alive.length) {
       let tgt = alive[0], best = 1e9;
       for (const p of alive) { const d = (p.x - mon.x) ** 2 + (p.y - mon.y) ** 2; if (d < best) { best = d; tgt = p; } }
-      const ms = (140 + Math.min(120, t0 * 5)) * dt;     // 140 -> 260 px/s over ~24s
-      let dx = tgt.x - mon.x, dy = tgt.y - mon.y; const m = Math.hypot(dx, dy) || 1;
+      const ms = (145 + Math.min(28, t0 * 1.1)) * dt;     // ~145 -> 173 px/s, below player 188
+      const dx = tgt.x - mon.x, dy = tgt.y - mon.y, m = Math.hypot(dx, dy) || 1;
+      const ox = mon.x, oy = mon.y;
       moveEnt(mon, dx / m * ms, dy / m * ms);
-      // catch
-      for (const p of alive) if ((p.x - mon.x) ** 2 + (p.y - mon.y) ** 2 < (p.r + mon.r - 6) ** 2) {
+      mon.moving = (mon.x !== ox || mon.y !== oy); if (mon.moving) mon.walkT += dt * 9;
+      if (Math.abs(dx) > 2) mon.face = dx > 0 ? 1 : -1;
+      for (const p of alive) if ((p.x - mon.x) ** 2 + (p.y - mon.y) ** 2 < (p.r + mon.r - 4) ** 2) {
         p.alive = false; msg = (p === p1 ? "P1" : "P2") + " WAS CAUGHT!"; msgT = 2.5;
       }
     }
@@ -193,21 +238,53 @@
 
   // ---------- draw ----------
   function shadow(x, y, rw) { ctx.fillStyle = "rgba(8,10,20,.4)"; ctx.beginPath(); ctx.ellipse(x, y, rw, rw * 0.35, 0, 0, 7); ctx.fill(); }
+  // walk cycle: body bob + legs (split halves) stepping opposite
+  function drawAnim(s, cx, feetY, scale, walkT, moving) {
+    const w = Math.round(s.w * scale), h = Math.round(s.h * scale);
+    const left = Math.round(cx - w / 2), top = feetY - h;
+    const legSrc = Math.floor(s.h * 0.62), legH = s.h - legSrc;
+    const hop = moving ? -Math.round(Math.abs(Math.sin(walkT)) * 1.5) : 0;
+    const step = moving ? Math.round(Math.sin(walkT) * 2) : 0;
+    const mid = left + Math.round(s.w / 2 * scale);
+    const legTop = top + Math.round(legSrc * scale) + hop;
+    ctx.drawImage(s.canvas, 0, 0, s.w, legSrc, left, top + hop, w, Math.round(legSrc * scale));
+    ctx.drawImage(s.canvas, 0, legSrc, s.w / 2, legH, left, legTop + step, mid - left, Math.round(legH * scale));
+    ctx.drawImage(s.canvas, s.w / 2, legSrc, s.w / 2, legH, mid, legTop - step, left + w - mid, Math.round(legH * scale));
+  }
+  function drawDown(s, cx, feetY, scale) {
+    const w = Math.round(s.w * scale), h = Math.round(s.h * scale);
+    ctx.save(); ctx.translate(cx, feetY - h * 0.38); ctx.rotate(Math.PI * 0.46);
+    ctx.drawImage(s.canvas, (-w / 2) | 0, (-h / 2) | 0, w, h); ctx.restore();
+  }
+  function drawStars(p) {
+    const cy = p.y - 34;
+    for (let i = 0; i < 3; i++) { const a = p.down * 10 + i * 2.1; ctx.fillStyle = i % 2 ? "#ffd86b" : "#f4f4ee"; ctx.fillRect((p.x + Math.cos(a) * 12) | 0, (cy + Math.sin(a) * 4) | 0, 3, 3); }
+  }
+  function drawFist(p, lunge) {
+    const fx = p.x + lunge + p.face * 17, fy = p.y - 6;
+    ctx.fillStyle = "#f4f4ee";
+    for (const [ox, oy] of [[4, 0], [-4, 0], [0, 4], [0, -4], [3, 3], [-3, -3], [3, -3], [-3, 3]]) ctx.fillRect((fx + ox) | 0, (fy + oy) | 0, 2, 2);
+    ctx.fillStyle = "#ffd86b"; ctx.fillRect(fx | 0, fy | 0, 3, 3);
+  }
   function drawPlayer(p) {
     const s = p.face < 0 ? fight[p.name + "_f"] : fight[p.name];
-    const w = s.w * PSC, h = s.h * PSC;
-    if (!p.alive) ctx.globalAlpha = 0.5;
+    const w = Math.round(s.w * PSC), h = Math.round(s.h * PSC), feetY = p.y + 8;
     shadow(p.x, p.y + 6, w * 0.4);
-    ctx.drawImage(s.canvas, (p.x - w / 2) | 0, (p.y - h + 8) | 0, w | 0, h | 0);
-    ctx.globalAlpha = 1;
-    if (p.alive) { ctx.fillStyle = p.color; const tx = (p.x - 9) | 0; ctx.fillRect(tx, (p.y - h + 2) | 0, 20, 7); text(p === p1 ? "P1" : "P2", tx + 3, (p.y - h + 3) | 0, 1, INK); }
+    if (!p.alive) { ctx.globalAlpha = 0.45; drawDown(s, p.x, feetY, PSC); ctx.globalAlpha = 1; return; }
+    if (p.down > 0) { drawDown(s, p.x, feetY, PSC); drawStars(p); }
+    else {
+      const lunge = p.punch > 0 ? p.face * Math.round(7 * Math.sin((1 - p.punch / 0.22) * Math.PI)) : 0;
+      drawAnim(s, p.x + lunge, feetY, PSC, p.walkT, p.moving);
+      if (p.punch > 0) drawFist(p, lunge);
+    }
+    ctx.fillStyle = p.color; const tx = (p.x - 9) | 0; ctx.fillRect(tx, (feetY - h - 6) | 0, 20, 7); text(p === p1 ? "P1" : "P2", tx + 3, (feetY - h - 5) | 0, 1, INK);
   }
   function drawMonster() {
-    const s = S.monster, w = s.w * MSC, h = s.h * MSC, by = mon.y + Math.sin(mon.bob) * 4;
-    // eerie green dithered aura
-    for (let yy = -22; yy <= 22; yy++) for (let xx = -22; xx <= 22; xx++) { const d = xx * xx + yy * yy; if (d <= 484 && d > 200 && (xx + yy) % 2 === 0 && hsh(((mon.x + xx) / 2) | 0, ((mon.y + yy) / 2) | 0, (mon.bob * 2) | 0) < .12) { ctx.fillStyle = GP.E; ctx.fillRect((mon.x + xx) | 0, (mon.y + yy) | 0, 2, 2); } }
+    const s = S.monster, w = Math.round(s.w * MSC), h = Math.round(s.h * MSC);
+    const feetY = mon.y + h / 2 + Math.round(Math.sin(mon.bob) * 2);
+    for (let yy = -22; yy <= 22; yy++) for (let xx = -22; xx <= 22; xx++) { const d = xx * xx + yy * yy; if (d <= 484 && d > 230 && (xx + yy) % 2 === 0 && hsh(((mon.x + xx) / 2) | 0, ((mon.y + yy) / 2) | 0, (mon.bob * 2) | 0) < .10) { ctx.fillStyle = GP.E; ctx.fillRect((mon.x + xx) | 0, (mon.y + yy) | 0, 2, 2); } }
     shadow(mon.x, mon.y + 10, w * 0.4);
-    ctx.drawImage(s.canvas, (mon.x - w / 2) | 0, (by - h / 2) | 0, w | 0, h | 0);
+    drawAnim(s, mon.x, feetY, MSC, mon.walkT, mon.moving);
   }
 
   function frame(prev, now) {
@@ -224,7 +301,7 @@
     const r2 = p2name + "  " + (p2.alive ? "ALIVE" : "OUT");
     text(r2, W - 12 - tW(r2, 2), 9, 2, p2.alive ? P2C : "#6a6a86");
     tc("GRAVEYARD  -  LAST ONE STANDING", W / 2, 4, 2, GOLD);
-    tc("P1 WASD     P2 ARROWS     BACKSPACE MENU", W / 2, 17, 1, DIM);
+    tc("P1 WASD +SPACE PUNCH    P2 ARROWS +ENTER PUNCH    BACKSPACE MENU", W / 2, 17, 1, DIM);
 
     if (msgT > 0) tc(msg, W / 2, 70, 3, GOLD);
     if (phase === "ready") {
@@ -242,7 +319,8 @@
       } else { tc("EVERYONE PERISHED!", W / 2, 200, 5, GOLD); tc("THE MONSTER WINS", W / 2, 270, 3, "#79d36a"); }
       tc("ENTER = REMATCH     BACKSPACE = MENU", W / 2, 520, 2, DIM);
     }
-    window.__gv = { phase, winner: winner ? winner.name : null, a1: p1.alive, a2: p2.alive };
+    window.__gv = { phase, winner: winner ? winner.name : null, a1: p1.alive, a2: p2.alive, d1: +p1.down.toFixed(2), d2: +p2.down.toFixed(2) };
+    window.__hook = { tp: (ax, ay, bx, by) => { p1.x = ax; p1.y = ay; p2.x = bx; p2.y = by; }, punch: () => doPunch(p1, p2) };
     requestAnimationFrame(t => frame(now, t));
   }
   requestAnimationFrame(t => frame(t, t));

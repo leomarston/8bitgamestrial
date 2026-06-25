@@ -75,14 +75,19 @@ Defaults to PIXEL vs BYTE; otherwise uses the fighters picked on the select scre
 
 ## Minigame: GRAVEYARD (monster in the middle)
 
-`game/graveyard.html` — top-down cemetery chase. A hooded monster starts in the
-middle and hunts the **nearest living player**, speeding up over time so it always
-catches up eventually. Weave around the crypt and tombstones (solid obstacles).
-Get touched = you're out. **Last one standing wins.**
+`game/graveyard.html` — top-down cemetery chase. A **zombie** starts in the middle
+and hunts the **nearest living player**. It is **slower than the players** but
+relentless, and it **can't pass through graves** (the crypt and tombstones are
+solid). Get touched = you're out. **Last one standing wins.**
 
-Controls: **P1 `WASD`**, **P2 arrow keys**, `Enter`/`R` = rematch, `Backspace` = menu.
-The cemetery uses its own moody 16-colour palette (an 8-bit-style palette swap);
-art lives in `art/graveyard.py`.
+Players (and the zombie) have a **walk animation**. You can **punch your rival** —
+that plays a punch and knocks them **down for 0.7s** (they can't move, easy zombie
+bait), then they get back up. Sound effects: punch, footsteps on grass, and a
+zombie groan (footstep/zombie kept quiet).
+
+Controls: **P1 `WASD` + `Space` (punch)**, **P2 arrows + `Enter` (punch)**,
+`Enter`/`R` = rematch, `Backspace` = menu. The cemetery uses its own moody
+16-colour palette; art lives in `art/graveyard.py`, sounds in `game/sfx/`.
 
 ## Repo layout
 
