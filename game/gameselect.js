@@ -37,6 +37,10 @@
   const tbR = buildTile(TBC.R), tbB = buildTile(TBC.B), tbN = buildTile(TBC.N);
   const hpBomb = buildSprite(D.hotpotato.bomb, D.hotpotato.palette);
   const spMet = buildSprite(D.space.meteor, D.space.palette);
+  const TKP = D.tank.palette;
+  const tkBrick = buildSprite(D.tank.brick, TKP), tkSteel = buildSprite(D.tank.steel, TKP);
+  function buildTank(hex) { const b = hex.replace("#", ""); const shade = "#" + [0, 2, 4].map(i => Math.round(parseInt(b.substr(i, 2), 16) * 0.62).toString(16).padStart(2, "0")).join(""); return buildSprite(D.tank.tank, Object.assign({}, TKP, { C: hex, o: shade })); }
+  const tkTank = buildTank("#ff5d5d");
   let _podIcon = null;
   function podIcon() {                                  // shuttle hull + pilot head
     if (_podIcon) return _podIcon;
@@ -82,10 +86,11 @@
     { name: "TILE BLITZ", file: "tileblitz.html", accent: "#ff7ad0", icon: "tileblitz" },
     { name: "HOT POTATO", file: "hotpotato.html", accent: "#ff8e34", icon: "hotpotato" },
     { name: "METEOR DERBY", file: "space.html", accent: "#7aa7ff", icon: "space" },
+    { name: "TANK DUEL", file: "tank.html", accent: "#c0c6d2", icon: "tank" },
   ];
 
-  // ---- grid ----
-  const COLS = 4, ROWS = 2, CW = 200, CH = 150, GX = 16, GY = 18;
+  // ---- grid (5x2 holds the growing roster; empty slots show COMING SOON) ----
+  const COLS = 5, ROWS = 2, CW = 180, CH = 150, GX = 10, GY = 18;
   const GW = COLS * CW + (COLS - 1) * GX, GX0 = Math.round((W - GW) / 2), GY0 = 150;
   function cell(i) { const c = i % COLS, r = (i / COLS) | 0;
     return { x: GX0 + c * (CW + GX), y: GY0 + r * (CH + GY), w: CW, h: CH }; }
@@ -202,14 +207,23 @@
     ctx.restore();
     ctx.strokeStyle = "#7aa7ff"; ctx.lineWidth = 3; ctx.strokeRect(ix, iy, iw, ih);
   }
+  function iconTank(r) {
+    const ix = r.x + 12, iy = r.y + 12, iw = r.w - 24, ih = r.h - 56;
+    ctx.save(); ctx.beginPath(); ctx.rect(ix, iy, iw, ih); ctx.clip();
+    ctx.fillStyle = "#34322b"; ctx.fillRect(ix, iy, iw, ih);
+    for (let i = 0; i < 7; i++) fitDraw(i % 3 === 0 ? tkSteel : tkBrick, ix + 6 + (i * 41 % (iw - 26)), iy + 8 + (i * 53 % (ih - 30)), 24, 24);
+    fitDraw(tkTank, r.x + r.w / 2 - 23, iy + ih - 48, 46, 46);
+    ctx.restore();
+    ctx.strokeStyle = "#8a8f9e"; ctx.lineWidth = 3; ctx.strokeRect(ix, iy, iw, ih);
+  }
   function tile(i, t) {
     const r = cell(i), g = GAMES[i];
     if (g) {
       ctx.fillStyle = "#272138"; rr(r.x, r.y, r.w, r.h, 12); ctx.fill();
-      const ic = { football: iconFootball, flappy: iconFlappy, graveyard: iconGraveyard, runner: iconRunner, crown: iconCrown, tileblitz: iconTileBlitz, hotpotato: iconHotPotato, space: iconSpace }[g.icon] || iconGraveyard;
+      const ic = { football: iconFootball, flappy: iconFlappy, graveyard: iconGraveyard, runner: iconRunner, crown: iconCrown, tileblitz: iconTileBlitz, hotpotato: iconHotPotato, space: iconSpace, tank: iconTank }[g.icon] || iconGraveyard;
       ic(r);
-      ctx.fillStyle = "#15121f"; rr(r.x + 10, r.y + r.h - 36, r.w - 20, 26, 7); ctx.fill();
-      tc(g.name, r.x + r.w / 2, r.y + r.h - 31, 3, g.accent);
+      ctx.fillStyle = "#15121f"; rr(r.x + 8, r.y + r.h - 34, r.w - 16, 24, 7); ctx.fill();
+      tc(g.name, r.x + r.w / 2, r.y + r.h - 29, 2, g.accent);
     } else {
       ctx.fillStyle = "#201b30"; rr(r.x, r.y, r.w, r.h, 12); ctx.fill();
       ctx.strokeStyle = "#3a3352"; ctx.lineWidth = 3; ctx.setLineDash([8, 7]);
@@ -254,7 +268,7 @@
     ts("CHOOSE A GAME", W / 2 - tW("CHOOSE A GAME", 5) / 2, 30, 5, GOLD);
     tc("8-BIT PARTY  *  PICK A MINIGAME", W / 2, 78, 2, DIM);
 
-    for (let i = 0; i < 8; i++) tile(i, t);
+    for (let i = 0; i < COLS * ROWS; i++) tile(i, t);
     cursor(t);
     playerStrip();
 

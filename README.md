@@ -10,11 +10,11 @@ Just open **`game/index.html`** in any browser (no server needed — the sprite
 data is inlined).
 
 **Flow:** character select → **game select** → the chosen minigame.
-After both fighters lock in, a **CHOOSE A GAME** hub appears (a 4×2 grid like the
-character select). **Player 1** drives the cursor (`WASD` + `Space`) and picks a
-minigame — **Football, Flappy, Graveyard, Runner, Crown Grab, Tile Blitz,
-Hot Potato** and **Meteor Derby** are live — all 8 tiles are filled. `Backspace`
-goes back a step.
+After the fighters lock in, a **CHOOSE A GAME** hub appears (a 5×2 grid). **Player
+1** drives the cursor (`WASD` + `Space`) and picks a minigame — **Football,
+Flappy, Graveyard, Runner, Crown Grab, Tile Blitz, Hot Potato, Meteor Derby** and
+**Tank Duel** are live (9 games); the last slot is a COMING SOON placeholder.
+`Backspace` goes back a step.
 
 ### Controls
 
@@ -180,6 +180,23 @@ round**. Art lives in `art/space.py`; the starfield exports to `game/space_bg.pn
 
 Controls: **P1 `A`/`D`**, **P2 `←`/`→`**, **P3 `J`/`L`**, **P4 `F`/`H`**,
 `Enter`/`Space`/`R` = rematch, `Backspace` = menu.
+
+## Minigame: TANK DUEL (2–4 players)
+
+`game/tank.html` — top-down tank combat on a **freshly randomized battlefield
+every round** (Battle City / Atari Combat style). The map is a **mirror-symmetric
+maze** (fair to all four corners, always connected, open spawn pockets) of
+**destructible brick**, **solid steel**, **water** (tanks can't drive in, shots
+fly over) and **bush** (concealment). Drive in **4 directions** and **fire** your
+cannon: shells **destroy brick**, **bounce once off steel/the border**, fly over
+water and through bushes. **One hit and you're scrap — last tank rolling wins.**
+Spawns are reshuffled each round: **2P** = diagonal corners, **3P** = three random
+corners, **4P** = all four. The generator + tile art live in `art/tank.py` (sample
+maps render to `art/out/tank_map_*.png`); the map is generated live in JS.
+
+Controls: move with your cluster (**P1 `WASD`**, **P2 arrows**, **P3 `IJKL`**,
+**P4 `TFGH`**), **fire** with **`Space` / `Enter` / `O` / `R`**;
+`Enter`/`R` = rematch, `Backspace` = menu.
 
 ## Music & sound
 

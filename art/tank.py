@@ -235,6 +235,16 @@ def tank_meta():
     return {"scale": 4, "cols": COLS, "rows": ROWS, "cell": CELL,
             "spawns": [[1, 1], [COLS - 2, 1], [1, ROWS - 2], [COLS - 2, ROWS - 2]]}
 
+def tank_export():
+    """Everything the browser game needs: palette, tile + tank grids, and meta.
+    The randomized map itself is generated live in JS (same algorithm as gen_map)."""
+    pal = {k: (None if v is None else "#%02x%02x%02x" % v) for k, v in PAL.items()}
+    return {
+        "palette": pal,
+        "brick": BRICK, "steel": STEEL, "water": WATER, "bush": BUSH, "tank": TANK,
+        "meta": tank_meta(),
+    }
+
 # ---------------------------------------------------------------------------
 # render a full map preview (the "map" the player judges)
 # ---------------------------------------------------------------------------

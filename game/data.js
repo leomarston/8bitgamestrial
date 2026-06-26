@@ -1847,5 +1847,147 @@ window.GAME_DATA = {
 160
 ]
 }
+},
+"tank": {
+"palette": {
+".": null,
+"k": "#1a1820",
+"f": "#34322b",
+"g": "#3e3c32",
+"e": "#2b2923",
+"R": "#ac4a34",
+"r": "#ce6e50",
+"m": "#682c22",
+"S": "#949caa",
+"s": "#5e6678",
+"W": "#d8dee8",
+"d": "#3a404e",
+"B": "#3a74c4",
+"b": "#265496",
+"c": "#82b2ea",
+"G": "#4a9446",
+"n": "#2e6632",
+"l": "#7ac462",
+"T": "#282830",
+"t": "#464652",
+"U": "#969eac",
+"u": "#60687a",
+"C": "#ffffff",
+"o": "#ffffff"
+},
+"brick": [
+"RrRRRRRmRrRRRRRm",
+"RRRRRRRmRRRRRRRm",
+"RRRRRRRmRRRRRRRm",
+"mmmmmmmmmmmmmmmm",
+"RRRmRrRRRRRmRrRR",
+"RRRmRRRRRRRmRRRR",
+"RRRmRRRRRRRmRRRR",
+"mmmmmmmmmmmmmmmm",
+"RrRRRRRmRrRRRRRm",
+"RRRRRRRmRRRRRRRm",
+"RRRRRRRmRRRRRRRm",
+"mmmmmmmmmmmmmmmm",
+"RRRmRrRRRRRmRrRR",
+"RRRmRRRRRRRmRRRR",
+"RRRmRRRRRRRmRRRR",
+"mmmmmmmmmmmmmmmm"
+],
+"steel": [
+"WWSSSSSSSSSSSSds",
+"WWSSSSSSSSSSSSds",
+"SSSWWSSSSSSWWSds",
+"SSSWWSSSSSSWWSds",
+"SSSSSSSSSSSSSSds",
+"SSSSSSSSSSSSSSds",
+"SSSSSSSSSSSSSSds",
+"SSSSSSSSSSSSSSds",
+"SSSSSSSSSSSSSSds",
+"SSSSSSSSSSSSSSds",
+"SSSWWSSSSSSWWSds",
+"SSSWWSSSSSSWWSds",
+"SSSSSSSSSSSSSSds",
+"SSSSSSSSSSSSSSds",
+"ssssssssssssssss",
+"dddddddddddddddd"
+],
+"water": [
+"BBBBBBBBBBBBBBBB",
+"BBBcBBBBBBBcBBBB",
+"BBBBBBBBBBBBBBBB",
+"BcBBBBBcBBBBBBBB",
+"BBBBBBBBBBBBBccB",
+"BBBBBBBBBBBBBBBB",
+"BBBccBBBBBBBBBBB",
+"BBBBBBBBBBcBBBBB",
+"BBBBBBBBBBBBBBBB",
+"BBcBBBBBBBBBcBBB",
+"BBBBBBBBBBBBBBBB",
+"bBBBBBccBBBBBBBb",
+"BBBBBBBBBBBBBBBB",
+"BBBBBBBBBBBBccBB",
+"bBBBBBBBBBBBBBBb",
+"bbBBBBBBBBBBBBbb"
+],
+"bush": [
+"nGnGGnGGnGGnGGnn",
+"GGlGGGGlGGGGlGGG",
+"GnGGGnGGGnGGGnGG",
+"GGGlGGGGlGGGGlGG",
+"nGGGGnGGGGnGGGGn",
+"GlGGGGlGGGGlGGGG",
+"GGGnGGGGnGGGGnGG",
+"GGGGGlGGGGGlGGGG",
+"nGGnGGGnGGGnGGGn",
+"GGlGGGGlGGGGlGGG",
+"GnGGGnGGGnGGGnGG",
+"GGGlGGGGlGGGGlGG",
+"nGGGGnGGGGnGGGGn",
+"GlGGGGlGGGGlGGGG",
+"GGGnGGGGnGGGGnGG",
+"nGnGGnGGnGGnGGnn"
+],
+"tank": [
+".......UU.......",
+".......UU.......",
+".......UU.......",
+".TTT..kUUk..TTT.",
+".TtTkkCCCCkkTtT.",
+".TTTkCCCCCCkTTT.",
+".TtTkCooooCkTtT.",
+".TTTkCouuoCkTTT.",
+".TtTkCouuoCkTtT.",
+".TTTkCooooCkTTT.",
+".TtTkCCCCCCkTtT.",
+".TTTkkCCCCkkTTT.",
+".TtT.kkkkkk.TtT.",
+".TTT........TTT.",
+".TtT........TtT.",
+"................"
+],
+"meta": {
+"scale": 4,
+"cols": 15,
+"rows": 9,
+"cell": 16,
+"spawns": [
+[
+1,
+1
+],
+[
+13,
+1
+],
+[
+1,
+7
+],
+[
+13,
+7
+]
+]
+}
 }
 };
