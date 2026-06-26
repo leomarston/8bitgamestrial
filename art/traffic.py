@@ -27,38 +27,31 @@ WIN = (46, 48, 62)        # window glass
 WHEEL = (28, 28, 34)
 
 def draw_car(base, facing=1):
+    """Top-down car sized to fit inside ONE lane. No tyres (clean body)."""
     body = base; light = lit(base, 1.16); dark = lit(base, 0.66)
-    W, H = 64, 30
+    W, H = 50, 14
     im = Image.new("RGBA", (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
-    d.ellipse([6, H - 5, W - 6, H - 1], fill=(8, 8, 12, 90))                       # ground shadow
-    for wx in (13, W - 25):                                                        # 4 wheels poking out
-        d.rounded_rectangle([wx, 0, wx + 13, 6], 2, fill=(*WHEEL, 255))
-        d.rounded_rectangle([wx, H - 7, wx + 13, H - 1], 2, fill=(*WHEEL, 255))
-        d.rectangle([wx + 3, 2, wx + 10, 4], fill=(70, 70, 80, 255))
-        d.rectangle([wx + 3, H - 5, wx + 10, H - 3], fill=(70, 70, 80, 255))
-    d.rounded_rectangle([3, 4, W - 4, H - 4], 7, fill=(*body, 255))                # body
-    d.rounded_rectangle([3, H // 2, W - 4, H - 4], 7, fill=(*dark, 255))           # lower-half shade
-    d.rounded_rectangle([3, 4, W - 4, H - 4], 7, outline=(*lit(base, 0.45), 255), width=1)
-    d.rounded_rectangle([3, 4, W - 4, 7], 3, fill=(*light, 255))                   # top highlight
-    d.rounded_rectangle([15, 7, W - 13, H - 7], 3, fill=(*WIN, 255))               # dark cabin/glass
-    d.rounded_rectangle([24, 9, W - 22, H - 9], 2, fill=(*light, 255))             # light roof centre
-    for sx in (W - 14, 22):                                                        # window pillars
-        d.rectangle([sx, 7, sx + 1, H - 7], fill=(*dark, 255))
-    d.rectangle([W - 6, 8, W - 4, 12], fill=(255, 250, 210, 255))                  # headlights (front = right)
-    d.rectangle([W - 6, H - 12, W - 4, H - 8], fill=(255, 250, 210, 255))
-    d.rectangle([4, 9, 6, 12], fill=(220, 70, 60, 255)); d.rectangle([4, H - 12, 6, H - 9], fill=(220, 70, 60, 255))  # tail lights
+    d.ellipse([5, H - 3, W - 5, H - 1], fill=(8, 8, 12, 70))                       # faint ground shadow
+    d.rounded_rectangle([1, 1, W - 2, H - 2], 4, fill=(*body, 255), outline=(*lit(base, 0.45), 255), width=1)
+    d.rounded_rectangle([1, H // 2, W - 2, H - 2], 4, fill=(*dark, 255))           # lower-half shade
+    d.rounded_rectangle([1, 1, W - 2, 3], 2, fill=(*light, 255))                   # top highlight
+    d.rounded_rectangle([12, 3, W - 11, H - 3], 2, fill=(*WIN, 255))               # dark cabin/glass
+    d.rounded_rectangle([18, 4, W - 16, H - 4], 1, fill=(*light, 255))             # light roof centre
+    for sx in (W - 12, 17): d.rectangle([sx, 3, sx, H - 3], fill=(*dark, 255))     # window pillars
+    d.rectangle([W - 4, 3, W - 2, 5], fill=(255, 250, 210, 255)); d.rectangle([W - 4, H - 6, W - 2, H - 4], fill=(255, 250, 210, 255))  # headlights (front=right)
+    d.rectangle([2, 3, 3, 5], fill=(220, 70, 60, 255)); d.rectangle([2, H - 6, 3, H - 4], fill=(220, 70, 60, 255))  # tail lights
     if facing < 0: im = im.transpose(Image.FLIP_LEFT_RIGHT)
     return im
 
-# ---- coin with a value number ----
+# ---- coin with a value number (small) ----
 def draw_coin(val):
-    W = 26
+    W = 16
     im = Image.new("RGBA", (W, W), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
     d.ellipse([0, 0, W - 1, W - 1], fill=(120, 84, 16, 255))                       # rim
-    d.ellipse([2, 2, W - 3, W - 3], fill=(244, 200, 72, 255))                      # gold
-    d.ellipse([4, 4, W - 5, W - 5], outline=(208, 150, 32, 255), width=1)
-    d.ellipse([6, 5, 12, 11], fill=(255, 244, 200, 255))                          # shine
-    t = pf.text(str(val), 2, (120, 80, 12)); im.alpha_composite(t, ((W - t.width) // 2, (W - t.height) // 2 + 1))
+    d.ellipse([1, 1, W - 2, W - 2], fill=(244, 200, 72, 255))                      # gold
+    d.ellipse([2, 2, W - 3, W - 3], outline=(208, 150, 32, 255), width=1)
+    d.ellipse([3, 3, 6, 6], fill=(255, 244, 200, 255))                            # shine
+    t = pf.text(str(val), 1, (120, 80, 12)); im.alpha_composite(t, ((W - t.width) // 2, (W - t.height) // 2))
     return im
 
 # ---- grass tile ----
@@ -130,25 +123,27 @@ def road(im, y0, y1, lanes):
 def scene(show_grass=True):
     W, H = 240, 150
     im = Image.new("RGBA", (W, H), (*ASPH, 255))
-    WALL_H = 26; GRASS_H = 16 if show_grass else 0
-    road(im, WALL_H, H - GRASS_H, lanes=6)
-    # blood splats
-    blood(im, 70, 110, 12); blood(im, 150, 70, 10); blood(im, 95, 50, 9); blood(im, 40, 130, 8)
-    # cars (varied colours / directions across lanes)
-    cars = [("yellow", 60, 40, 1), ("green", 200, 64, -1), ("pink", 150, 96, 1), ("lime", 70, 122, 1), ("blue", 20, 134, 1)]
-    for col, cx, cy, fac in cars:
-        c = draw_car(CARS[col], fac); im.alpha_composite(c, (cx - c.width // 2, cy - c.height // 2))
+    WALL_H = 22; GRASS_H = 8 if show_grass else 0
+    LANES = 8                                                                      # -> 7 dashed lane lines
+    road(im, WALL_H, H - GRASS_H, lanes=LANES)
+    laneH = (H - GRASS_H - WALL_H) / LANES
+    def lc(L): return int(WALL_H + (L + 0.5) * laneH)                              # lane centre y
+    blood(im, 70, lc(5), 8); blood(im, 150, lc(2), 7); blood(im, 95, lc(1), 6); blood(im, 40, lc(6), 6)
+    # cars, each centred in its own lane, alternating direction
+    cars = [("yellow", 64, 0, 1), ("green", 188, 1, -1), ("pink", 150, 3, 1), ("lime", 74, 5, 1), ("blue", 28, 6, 1), ("purple", 176, 7, -1)]
+    for col, cx, L, fac in cars:
+        c = draw_car(CARS[col], fac); im.alpha_composite(c, (cx - c.width // 2, lc(L) - c.height // 2))
     # coins (value grows the higher up they are)
-    for val, cx, cy in [(8, 110, 44), (6, 95, 30), (4, 14, 70), (2, 14, 96)]:
-        cc = draw_coin(val); im.alpha_composite(cc, (cx - cc.width // 2, cy - cc.height // 2))
-    # grass
+    for val, cx, L in [(8, 112, 1), (6, 96, 0), (4, 13, 3), (2, 13, 4)]:
+        cc = draw_coin(val); im.alpha_composite(cc, (cx - cc.width // 2, lc(L) - cc.height // 2))
+    # grass safe zone + a small player on it
     if show_grass:
         gs = grass_strip(W, GRASS_H); im.alpha_composite(gs, (0, H - GRASS_H))
-        fighter(im, "NOVA", 40, H - 2, scale=1.0)
-    fighter(im, "NOVA", 95, 132, scale=1.0)
+        fighter(im, "NOVA", 40, H - 1, scale=0.62)
+    fighter(im, "NOVA", 96, lc(5) + 7, scale=0.62)
     # wall + scoreboards on top
     ws = wall_strip(W, WALL_H); im.alpha_composite(ws, (0, 0))
-    scoreboard(im, 34, 4, "GLITCH", 0); scoreboard(im, 96, 4, "NOVA", 0); scoreboard(im, 158, 4, "ACE", 8)
+    scoreboard(im, 34, 3, "GLITCH", 0); scoreboard(im, 96, 3, "NOVA", 0); scoreboard(im, 158, 3, "ACE", 8)
     return im.resize((W * 4, H * 4), Image.NEAREST)
 
 def assets_sheet():
