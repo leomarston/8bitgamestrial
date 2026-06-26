@@ -157,7 +157,7 @@
     }
     const alive = players.filter(p => p.alive);
     if (alive.length <= 1) {
-      winner = alive.length === 1 ? alive[0] : players.slice().sort((m, n) => n.x - m.x)[0];
+      winner = alive.length === 1 ? alive[0] : null;   // 0 alive == a true simultaneous wipeout -> "EVERYONE FELL!"
       phase = "over";
     }
   }

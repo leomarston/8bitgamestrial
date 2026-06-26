@@ -15,9 +15,9 @@
   function load(src, resumeAt) {
     audio.src = src;
     const start = () => { if (resumeAt) { try { audio.currentTime = Math.min(resumeAt, (audio.duration || 1e9) - 0.05); } catch (e) {} } audio.play().catch(() => {}); };
+    // play only AFTER we can seek to the resume point, so a menu->menu hop doesn't blip from 0 first
     if (audio.readyState >= 1) start();
     else audio.addEventListener("loadedmetadata", start, { once: true });
-    audio.play().catch(() => {});   // also try immediately
   }
 
   if (isMenu) {

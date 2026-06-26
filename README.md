@@ -86,8 +86,11 @@ player-zombie — and you TURN INTO A ZOMBIE that you keep controlling**, then h
 the survivors. **Last human standing wins.**
 
 Humans can **punch a rival** (knocks them **down for 0.7s** — easy zombie bait);
-player-zombies can **lunge** to grab. Player-zombies are tinted green. Sound
-effects: punch, footsteps, zombie groan.
+player-zombies can **lunge** to grab. Player-zombies are tinted green but keep a
+**bright ring and name-tag in their own player colour**, so each dead player can
+always tell which zombie they're controlling. Sound effects: punch, footsteps,
+zombie groan. (The turn-into-a-zombie twist only changes play at 3–4 players; at
+2 players it's simply last-human-standing.)
 
 Controls: **P1 `WASD`/`Space`**, **P2 arrows/`Enter`**, **P3 `IJKL`/`O`**,
 **P4 `TFGH`/`R`**; `Enter`/`R` = rematch, `Backspace` = menu. Art in

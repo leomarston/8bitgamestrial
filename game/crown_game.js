@@ -130,13 +130,14 @@
 
     // dash impacts: a dasher blacks out the FIRST rival it hits (one per dash) and
     // steals the crown if that rival held it. Guards stop double / blacked-out hits.
-    for (const att of players) {
+    const startHolder = crown.holder;   // snapshot: only the holder AT THE START of this frame can be robbed,
+    for (const att of players) {        // so a chain of same-frame dashers can't relay the crown off a fresh holder
       if (att.dash <= 0 || att.black > 0) continue;
       for (const vic of players) {
         if (vic === att || vic.black > 0) continue;
         if ((att.x - vic.x) ** 2 + (att.y - vic.y) ** 2 < (att.r + vic.r + 6) ** 2) {
           vic.black = BLACKOUT; att.dash = 0; att.dashCool = Math.min(att.dashCool, 0.25);
-          const stole = crown.holder === vic; if (stole) crown.holder = att;
+          const stole = vic === startHolder; if (stole) crown.holder = att;
           moveEnt(vic, att.dashDir[0] * 20, att.dashDir[1] * 20);
           const mx = (att.x + vic.x) / 2, my = (att.y + vic.y) / 2;
           for (let k = 0; k < 10; k++) { const a = k / 10 * 7, sp = 80 + (k % 3) * 60; sparks.push({ x: mx, y: my, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, t: 0.4, c: stole ? GOLD : "#fff" }); }

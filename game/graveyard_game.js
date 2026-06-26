@@ -197,9 +197,23 @@
     const isZ = p.state === "zombie", set = isZ ? fz : fight, s = p.face < 0 ? set[p.name + "_f"] : set[p.name];
     const w = Math.round(s.w * PSC), h = Math.round(s.h * PSC), feetY = p.y + 8;
     shadow(p.x, p.y + 6, w * 0.4);
+    if (isZ) {   // bright owner-ring under the feet so each dead player can spot the zombie THEY control
+      ctx.save();
+      const rw = w * 0.5, rh = rw * 0.42;
+      ctx.lineWidth = 5; ctx.strokeStyle = "rgba(8,8,16,.6)";   // dark halo = contrast on grass / green bodies
+      ctx.beginPath(); ctx.ellipse(p.x, p.y + 7, rw, rh, 0, 0, 7); ctx.stroke();
+      ctx.globalAlpha = 0.34; ctx.fillStyle = p.color;
+      ctx.beginPath(); ctx.ellipse(p.x, p.y + 7, rw, rh, 0, 0, 7); ctx.fill();
+      ctx.globalAlpha = 1; ctx.lineWidth = 3; ctx.strokeStyle = p.color;
+      ctx.beginPath(); ctx.ellipse(p.x, p.y + 7, rw, rh, 0, 0, 7); ctx.stroke();
+      ctx.restore();
+    }
     if (!isZ && p.down > 0) { drawDown(s, p.x, feetY, PSC); drawStars(p); }
     else { const lunge = (!isZ && p.punch > 0) ? p.face * Math.round(7 * Math.sin((1 - p.punch / 0.22) * Math.PI)) : 0; drawAnim(s, p.x + lunge, feetY, PSC, p.walkT, p.moving); if (!isZ && p.punch > 0) drawFist(p, lunge); }
-    ctx.fillStyle = isZ ? ZC : p.color; const tx = (p.x - 9) | 0; ctx.fillRect(tx, (feetY - h - 6) | 0, 20, 7); text(p.tag, tx + 3, (feetY - h - 5) | 0, 1, INK);
+    // tag keeps the PLAYER's colour even as a zombie, with a green pip marking zombie state
+    const tx = (p.x - 9) | 0, ty = (feetY - h - 6) | 0;
+    ctx.fillStyle = p.color; ctx.fillRect(tx, ty, 20, 7); text(p.tag, tx + 3, ty + 1, 1, INK);
+    if (isZ) { ctx.fillStyle = ZC; ctx.fillRect(tx + 21, ty, 4, 7); }
   }
   function drawMonster() {
     const s = S.monster, w = Math.round(s.w * MSC), h = Math.round(s.h * MSC), feetY = mon.y + h / 2 + Math.round(Math.sin(mon.bob) * 2);
@@ -216,8 +230,9 @@
 
     ctx.fillStyle = "rgba(16,12,28,.72)"; ctx.fillRect(0, 0, W, 26);
     const colW = (W - 24) / count;
-    for (let i = 0; i < count; i++) { const p = players[i], x = 12 + i * colW; text(p.tag + " " + (p.state === "human" ? "HUMAN" : "ZOMBIE"), x, 9, 1.6 | 0, p.state === "human" ? p.color : ZC); }
-    tc("GRAVEYARD  -  LAST HUMAN WINS", W / 2, 4, 2, GOLD);
+    for (let i = 0; i < count; i++) { const p = players[i], x = 12 + i * colW, z = p.state === "zombie";
+      text(p.tag, x, 9, 1, p.color);                                   // identity always in player colour
+      text(z ? "ZOMBIE" : "HUMAN", x + tW(p.tag + " ", 1), 9, 1, z ? ZC : DIM); }
 
     if (msgT > 0) tc(msg, W / 2, 70, 3, GOLD);
     if (phase === "ready") {

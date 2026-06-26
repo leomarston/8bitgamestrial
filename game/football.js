@@ -49,10 +49,8 @@
     ["KeyW", "KeyA", "KeyS", "KeyD", "Space", "KeyF"],
     ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Enter", "Numpad0"],
     ["KeyI", "KeyJ", "KeyK", "KeyL", "KeyO", "KeyU"],
-    ["KeyT", "KeyF2", "KeyG", "KeyH", "KeyR", "KeyY"],
+    ["KeyT", "KeyG", "KeyH", "KeyR", "KeyY", "KeyV"],   // P4: T/G/H cluster (+ R/Y/V), no F clash with P1
   ];
-  // (KeyF is P1's; give P4 its own cluster T/F/G/H but avoid the F clash by using G/H/T and R)
-  PKEYS[3] = ["KeyT", "KeyG", "KeyH", "KeyR", "KeyY", "KeyV"];
   const CTL = ["WASD/SPACE", "ARROWS/ENTER", "IJKL/O", "TGHR"];
 
   let players, ball, phase, timer, msg, winner, t0;

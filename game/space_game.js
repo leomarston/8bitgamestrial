@@ -103,9 +103,10 @@
     const alive = players.filter(p => p.alive);
     // momentum movement
     for (const p of alive) { p.inv = Math.max(0, p.inv - dt); p.vx += moveInput(players.indexOf(p)) * ACCEL * dt; p.vx *= Math.max(0, 1 - DRAG * dt); p.vx = Math.max(-HARDMAX, Math.min(HARDMAX, p.vx)); p.x = wrapx(p.x + p.vx * dt); }
-    // N-body ball bumps: resolve pairwise (a few passes so 3–4 can't overlap),
-    // exchange momentum once per contact on the first pass.
-    for (let iter = 0; iter < 3; iter++) {
+    // N-body ball bumps: resolve pairwise (enough passes that even a 3–4 way
+    // pile-up onto one spot separates within the frame), exchange momentum once
+    // per contact on the first pass so the bump feel is unchanged.
+    for (let iter = 0; iter < 8; iter++) {
       for (let i = 0; i < alive.length; i++) for (let j = i + 1; j < alive.length; j++) {
         const a = alive[i], b = alive[j], sep = wdelta(b.x - a.x), ad = Math.abs(sep);
         if (ad < POD_MIN) {
