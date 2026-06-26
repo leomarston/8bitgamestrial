@@ -1,8 +1,10 @@
-/* 8-BIT PARTY — Graveyard (turn-into-a-zombie tag), 2–4 players. One AI zombie
- * starts in the middle and hunts the nearest HUMAN. Get caught — by the AI zombie
- * OR by a player-zombie — and you TURN INTO A ZOMBIE that YOU keep controlling,
- * then hunt the survivors. LAST HUMAN STANDING WINS. Humans can punch rivals
- * (knock down 0.7s); zombies can lunge to grab.
+/* 8-BIT PARTY — Graveyard (die-and-haunt tag), 2–4 players. One AI monster starts
+ * in the middle and hunts the nearest LIVING player. Get caught — by the monster
+ * OR by a player-soul — and you DIE: your body drops and stays where it fell, and
+ * YOU now control your SOUL (a floating spirit) to hunt the survivors. LAST PLAYER
+ * ALIVE WINS. The living can punch rivals (knock down 0.7s); souls can lunge to grab.
+ * Each soul keeps its owner's colour ring + tag. (The soul twist only changes play
+ * at 3–4 players; 2-player is plain last-one-alive.)
  * P1 WASD/Space · P2 Arrows/Enter · P3 IJKL/O · P4 TFGH/R */
 (() => {
   const D = window.GAME_DATA, GY = D.graveyard;
@@ -21,8 +23,13 @@
   function tint(s, col) { const c = document.createElement("canvas"); c.width = s.w; c.height = s.h; const g = c.getContext("2d"); g.drawImage(s.canvas, 0, 0); g.globalCompositeOperation = "source-atop"; g.globalAlpha = 0.55; g.fillStyle = col; g.fillRect(0, 0, s.w, s.h); g.globalAlpha = 1; g.globalCompositeOperation = "source-over"; return { canvas: c, w: s.w, h: s.h }; }
   const GP = GY.palette;
   const S = {}; for (const k of ["monster", "crypt", "headstone", "broken", "tomb", "tree", "fence", "pillar", "lantern", "skull", "bat"]) S[k] = build(GY[k], GP);
-  const fight = {}, fz = {};
-  D.roster.forEach(c => { fight[c.name] = build(c.rows, D.palette); fight[c.name + "_f"] = flip(fight[c.name]); fz[c.name] = tint(fight[c.name], "#3fae4a"); fz[c.name + "_f"] = tint(fight[c.name + "_f"], "#3fae4a"); });
+  const fight = {}, soul = {}, dead = {};
+  const SOUL_TINT = "#bfe6ff", DEAD_TINT = "#463f52";   // soul = pale spectral blue, corpse = drained grey-purple
+  D.roster.forEach(c => {
+    fight[c.name] = build(c.rows, D.palette); fight[c.name + "_f"] = flip(fight[c.name]);
+    soul[c.name] = tint(fight[c.name], SOUL_TINT); soul[c.name + "_f"] = tint(fight[c.name + "_f"], SOUL_TINT);
+    dead[c.name] = tint(fight[c.name], DEAD_TINT); dead[c.name + "_f"] = tint(fight[c.name + "_f"], DEAD_TINT);
+  });
   const FONT = D.font;
 
   function tW(s, sc, sp = 1) { return (s.length * (5 + sp) - sp) * sc; }
@@ -33,7 +40,7 @@
       cx += (5 + sp) * sc; }
   }
   const tc = (s, cx, y, sc, c, sp = 1) => text(s, Math.round(cx - tW(s, sc, sp) / 2), y, sc, c, sp);
-  const GOLD = "#ffd86b", DIM = "#9a9ab8", INK = "#100c1c", ZC = "#4caf50";
+  const GOLD = "#ffd86b", DIM = "#9a9ab8", INK = "#100c1c", ZC = "#bfe6ff";   // ZC = soul colour
   const PCOL = ["#ff5d5d", "#5db4ff", "#6bd66b", "#ffd54a"];
   function hsh(x, y, s) { const v = Math.sin(x * 127.1 + y * 311.7 + s * 53.7) * 43758.5; return v - Math.floor(v); }
 
@@ -94,7 +101,7 @@
   })();
 
   // ---------- entities ----------
-  const PSC = 1.9, MSC = 3.1, PSPD = 188, ZSPD = 166;
+  const PSC = 1.9, MSC = 3.1, PSPD = 188, ZSPD = 166, FLOAT = 16;   // FLOAT = how high a soul hovers
   function ent(name, x, y, color, tag) { return { name, x, y, color, tag, state: "human", face: 1, r: 14, down: 0, punch: 0, cool: 0, lunge: 0, walkT: 0, moving: false }; }
   const CTRL = [
     { U: "KeyW", Dn: "KeyS", L: "KeyA", Rt: "KeyD", act: ["Space"] },
@@ -102,10 +109,10 @@
     { U: "KeyI", Dn: "KeyK", L: "KeyJ", Rt: "KeyL", act: ["KeyO", "KeyU"] },
     { U: "KeyT", Dn: "KeyG", L: "KeyF", Rt: "KeyH", act: ["KeyR", "KeyY"] },
   ];
-  let players, mon, phase, timer, winner, t0, msg, msgT;
+  let players, mon, phase, timer, winner, t0, msg, msgT, corpses;
   function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
   function reset() {
-    players = [];
+    players = []; corpses = [];
     const slots = shuffle([0, 1, 2, 3].slice(0, count));   // randomised corners — no fixed spot
     for (let i = 0; i < count; i++) { const sp = SPAWN[slots[i]]; players.push(ent(NAMES[i], sp[0], sp[1], PCOL[i], "P" + (i + 1))); }
     mon = { x: spawnMon.x, y: spawnMon.y, r: 18, bob: 0, walkT: 0, moving: false, face: 1, avoid: 0 };
@@ -171,11 +178,15 @@
 
     const ms = (108 + Math.min(28, t0 * 0.8)) * dt; monStep(ms); if (mon.moving) mon.walkT += dt * 9;
 
-    // conversions: the AI zombie OR any player-zombie that touches a human turns it
+    // conversions: the AI monster OR any player-soul that touches a human kills it —
+    // the body drops and stays, and that player now controls the rising soul.
     const turn = new Set();
     for (const p of players) if (p.state === "human" && (p.x - mon.x) ** 2 + (p.y - mon.y) ** 2 < (p.r + mon.r - 4) ** 2) turn.add(p);
     for (const z of players) if (z.state === "zombie") for (const h of players) if (h.state === "human" && (h.x - z.x) ** 2 + (h.y - z.y) ** 2 < (h.r + z.r - 2) ** 2) turn.add(h);
-    for (const p of turn) { p.state = "zombie"; p.down = 0; p.punch = 0; p.lunge = 0; p.cool = 0; msg = p.tag + " TURNED ZOMBIE!"; msgT = 1.8; }
+    for (const p of turn) {
+      corpses.push({ x: p.x, y: p.y, name: p.name, face: p.face });   // the body stays where it fell
+      p.state = "zombie"; p.down = 0; p.punch = 0; p.lunge = 0; p.cool = 0; msg = p.tag + " DIED!"; msgT = 1.8;
+    }
 
     const humans = players.filter(p => p.state === "human");
     if (humans.length <= 1) { winner = humans[0] || null; phase = "over"; }
@@ -193,27 +204,44 @@
   function drawDown(s, cx, feetY, scale) { const w = Math.round(s.w * scale), h = Math.round(s.h * scale); ctx.save(); ctx.translate(cx, feetY - h * 0.38); ctx.rotate(Math.PI * 0.46); ctx.drawImage(s.canvas, (-w / 2) | 0, (-h / 2) | 0, w, h); ctx.restore(); }
   function drawStars(p) { const cy = p.y - 34; for (let i = 0; i < 3; i++) { const a = p.down * 10 + i * 2.1; ctx.fillStyle = i % 2 ? "#ffd86b" : "#f4f4ee"; ctx.fillRect((p.x + Math.cos(a) * 12) | 0, (cy + Math.sin(a) * 4) | 0, 3, 3); } }
   function drawFist(p, lunge) { const fx = p.x + lunge + p.face * 17, fy = p.y - 6; ctx.fillStyle = "#f4f4ee"; for (const [ox, oy] of [[4, 0], [-4, 0], [0, 4], [0, -4], [3, 3], [-3, -3], [3, -3], [-3, 3]]) ctx.fillRect((fx + ox) | 0, (fy + oy) | 0, 2, 2); ctx.fillStyle = "#ffd86b"; ctx.fillRect(fx | 0, fy | 0, 3, 3); }
-  function drawPlayer(p) {
-    const isZ = p.state === "zombie", set = isZ ? fz : fight, s = p.face < 0 ? set[p.name + "_f"] : set[p.name];
-    const w = Math.round(s.w * PSC), h = Math.round(s.h * PSC), feetY = p.y + 8;
-    shadow(p.x, p.y + 6, w * 0.4);
-    if (isZ) {   // bright owner-ring under the feet so each dead player can spot the zombie THEY control
-      ctx.save();
-      const rw = w * 0.5, rh = rw * 0.42;
-      ctx.lineWidth = 5; ctx.strokeStyle = "rgba(8,8,16,.6)";   // dark halo = contrast on grass / green bodies
-      ctx.beginPath(); ctx.ellipse(p.x, p.y + 7, rw, rh, 0, 0, 7); ctx.stroke();
-      ctx.globalAlpha = 0.34; ctx.fillStyle = p.color;
-      ctx.beginPath(); ctx.ellipse(p.x, p.y + 7, rw, rh, 0, 0, 7); ctx.fill();
-      ctx.globalAlpha = 1; ctx.lineWidth = 3; ctx.strokeStyle = p.color;
-      ctx.beginPath(); ctx.ellipse(p.x, p.y + 7, rw, rh, 0, 0, 7); ctx.stroke();
-      ctx.restore();
-    }
-    if (!isZ && p.down > 0) { drawDown(s, p.x, feetY, PSC); drawStars(p); }
-    else { const lunge = (!isZ && p.punch > 0) ? p.face * Math.round(7 * Math.sin((1 - p.punch / 0.22) * Math.PI)) : 0; drawAnim(s, p.x + lunge, feetY, PSC, p.walkT, p.moving); if (!isZ && p.punch > 0) drawFist(p, lunge); }
-    // tag keeps the PLAYER's colour even as a zombie, with a green pip marking zombie state
+  function ownerRing(p, gy) {   // colour-coded ground marker so each dead player can spot THEIR soul
+    const rw = 15, rh = rw * 0.42;
+    ctx.save();
+    ctx.lineWidth = 5; ctx.strokeStyle = "rgba(8,8,16,.6)";   // dark halo = contrast on grass
+    ctx.beginPath(); ctx.ellipse(p.x, gy, rw, rh, 0, 0, 7); ctx.stroke();
+    ctx.globalAlpha = 0.34; ctx.fillStyle = p.color;
+    ctx.beginPath(); ctx.ellipse(p.x, gy, rw, rh, 0, 0, 7); ctx.fill();
+    ctx.globalAlpha = 1; ctx.lineWidth = 3; ctx.strokeStyle = p.color;
+    ctx.beginPath(); ctx.ellipse(p.x, gy, rw, rh, 0, 0, 7); ctx.stroke();
+    ctx.restore();
+  }
+  function drawCorpse(c) {       // the body, fallen and lying where it died
+    const s = c.face < 0 ? dead[c.name + "_f"] : dead[c.name];
+    shadow(c.x, c.y + 8, s.w * PSC * 0.46);
+    drawDown(s, c.x, c.y + 8, PSC);
+  }
+  function drawSoul(p) {         // the player-controlled spirit: translucent, floating above the body
+    const s = p.face < 0 ? soul[p.name + "_f"] : soul[p.name];
+    const w = Math.round(s.w * PSC), h = Math.round(s.h * PSC);
+    const feetY = p.y + 8 - FLOAT + Math.sin(p.walkT * 0.4 + p.x * 0.04) * 2;   // hovers + gently bobs
+    ownerRing(p, p.y + 7);
+    ctx.save();
+    const wy = (feetY - 2) | 0, wh = Math.max(0, (p.y + 4) - wy);
+    ctx.globalAlpha = 0.16; ctx.fillStyle = ZC; ctx.fillRect((p.x - 1) | 0, wy, 3, wh);   // faint wisp tether to the ground
+    ctx.globalAlpha = 0.66; ctx.drawImage(s.canvas, (p.x - w / 2) | 0, (feetY - h) | 0, w, h);   // glides (no footsteps)
+    ctx.restore();
     const tx = (p.x - 9) | 0, ty = (feetY - h - 6) | 0;
     ctx.fillStyle = p.color; ctx.fillRect(tx, ty, 20, 7); text(p.tag, tx + 3, ty + 1, 1, INK);
-    if (isZ) { ctx.fillStyle = ZC; ctx.fillRect(tx + 21, ty, 4, 7); }
+  }
+  function drawPlayer(p) {
+    if (p.state === "zombie") return drawSoul(p);
+    const s = p.face < 0 ? fight[p.name + "_f"] : fight[p.name];
+    const w = Math.round(s.w * PSC), h = Math.round(s.h * PSC), feetY = p.y + 8;
+    shadow(p.x, p.y + 6, w * 0.4);
+    if (p.down > 0) { drawDown(s, p.x, feetY, PSC); drawStars(p); }
+    else { const lunge = p.punch > 0 ? p.face * Math.round(7 * Math.sin((1 - p.punch / 0.22) * Math.PI)) : 0; drawAnim(s, p.x + lunge, feetY, PSC, p.walkT, p.moving); if (p.punch > 0) drawFist(p, lunge); }
+    const tx = (p.x - 9) | 0, ty = (feetY - h - 6) | 0;
+    ctx.fillStyle = p.color; ctx.fillRect(tx, ty, 20, 7); text(p.tag, tx + 3, ty + 1, 1, INK);
   }
   function drawMonster() {
     const s = S.monster, w = Math.round(s.w * MSC), h = Math.round(s.h * MSC), feetY = mon.y + h / 2 + Math.round(Math.sin(mon.bob) * 2);
@@ -225,6 +253,7 @@
     const dt = Math.min((now - prev) / 1000, 0.033);
     update(dt);
     ctx.drawImage(bg, 0, 0);
+    for (const c of corpses) drawCorpse(c);   // bodies lie on the ground, under everything that still moves
     const ents = [{ y: mon.y, f: drawMonster }]; players.forEach(p => ents.push({ y: p.y, f: () => drawPlayer(p) }));
     ents.sort((a, b) => a.y - b.y).forEach(e => e.f());
 
@@ -232,18 +261,18 @@
     const colW = (W - 24) / count;
     for (let i = 0; i < count; i++) { const p = players[i], x = 12 + i * colW, z = p.state === "zombie";
       text(p.tag, x, 9, 1, p.color);                                   // identity always in player colour
-      text(z ? "ZOMBIE" : "HUMAN", x + tW(p.tag + " ", 1), 9, 1, z ? ZC : DIM); }
+      text(z ? "SOUL" : "ALIVE", x + tW(p.tag + " ", 1), 9, 1, z ? ZC : DIM); }
 
     if (msgT > 0) tc(msg, W / 2, 70, 3, GOLD);
     if (phase === "ready") {
       ctx.fillStyle = "rgba(11,10,20,.55)"; ctx.fillRect(0, 0, W, H);
       tc(timer > 0.3 ? String(Math.ceil(timer - 0.2)) : "RUN!", W / 2, H / 2 - 30, 7, GOLD);
-      tc(count + " HUMANS - GET CAUGHT = YOU TURN ZOMBIE - LAST HUMAN WINS", W / 2, H / 2 + 40, 2, "#cfe6ff");
+      tc(count + " ALIVE - GET CAUGHT = YOU DIE & CONTROL YOUR SOUL - LAST ALIVE WINS", W / 2, H / 2 + 40, 2, "#cfe6ff");
     }
     if (phase === "over") {
       ctx.fillStyle = "rgba(11,10,20,.85)"; ctx.fillRect(0, 0, W, H);
       if (winner) { tc(winner.tag + " SURVIVES!", W / 2, 120, 6, GOLD); const s = fight[winner.name], scl = 200 / s.h; ctx.drawImage(s.canvas, W / 2 - s.w * scl / 2, 200, s.w * scl, 200); tc(winner.name + " WINS", W / 2, 420, 4, winner.color); }
-      else { tc("THE HORDE WINS!", W / 2, 200, 5, GOLD); tc("EVERYONE TURNED", W / 2, 270, 3, ZC); }
+      else { tc("THE DEAD WIN!", W / 2, 200, 5, GOLD); tc("EVERY SOUL ESCAPED", W / 2, 270, 3, ZC); }
       tc("ENTER = REMATCH     BACKSPACE = MENU", W / 2, 520, 2, DIM);
     }
     window.__gv = { phase, count, winner: winner ? winner.tag : null, states: players.map(p => p.state) };
