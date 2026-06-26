@@ -154,11 +154,9 @@ def scene(state, count, progress=None):
         t = pf.text("P" + str(i + 1), 1, (20, 18, 28)); im.alpha_composite(t, (START_X, y0 + 3))
         sc2 = min(1.15, (laneH - 6) / 22)
         if i == caught:
-            x = START_X + 6                                              # sent back to start
-            for k in range(6): px(im, x + 8 + k * 4, feetY - 8, DIRT3)  # dust trail back to start
+            x = START_X + 6                                              # moved on red -> simply restarts from the beginning (still racing)
+            for k in range(7): px(im, x + 10 + k * 5, feetY - 8, DIRT3)  # faint dust trail = just zipped back to start
             fighter(im, ZN[i], x, feetY, scale=sc2, flip=False, alpha=255)
-            bub = pf.text_shadow("CAUGHT!", 1, (255, 90, 90)); im.alpha_composite(bub, (x - bub.width // 2, feetY - int(22 * sc2) - 10))
-            d.line([x - 6, feetY - 26, x + 6, feetY - 14], fill=(*RED, 255)); d.line([x + 6, feetY - 26, x - 6, feetY - 14], fill=(*RED, 255))
         else:
             fighter(im, ZN[i], x, feetY, scale=sc2, flip=False, alpha=255)
             if not red:                                                  # little speed lines while running
