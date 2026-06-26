@@ -30,43 +30,40 @@ def px(im, x, y, c):
     if 0 <= x < im.width and 0 <= y < im.height: im.putpixel((x, y), (*c, 255))
 
 # ---------------------------------------------------------------------------
-# THE DOLL  (native ~36x72) — front (watching, RED) and back (turned, GREEN)
+# THE CATCHER — a male overseer (native ~26x46). back = GREEN (turned away),
+# front = RED (facing the racers, watching). Smaller than the old doll but still
+# clearly bigger than the players.
 # ---------------------------------------------------------------------------
-def doll(front=True):
-    W, H = 36, 72
+HHAIR = (58, 44, 32); HSKIN = (240, 196, 158); HSKND = (206, 162, 126)
+JAK = (58, 74, 120); JAKD = (40, 52, 92); TIE = (222, 72, 82); PANT = (52, 56, 74); BSHOE = (30, 28, 40)
+
+def catcher(front=True):
+    W, H = 26, 46
     im = Image.new("RGBA", (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
-    # pigtails behind
-    for sx in (3, 25):
-        d.ellipse([sx, 16, sx + 8, 40], fill=(*HAIR, 255)); d.ellipse([sx + 1, 17, sx + 7, 33], fill=(*HAIR, 255))
-        d.ellipse([sx + 1, 32, sx + 7, 40], fill=(*HAIRD, 255))
-        d.rectangle([sx + 2, 14, sx + 6, 18], fill=(*BOW, 255))            # hair ties
-    # head hair
-    d.ellipse([6, 3, 30, 31], fill=(*HAIR, 255))
+    # head
+    d.ellipse([6, 2, 20, 18], fill=(*HHAIR, 255))                         # hair
     if front:
-        d.ellipse([9, 8, 27, 30], fill=(*FACE, 255))                      # face
-        d.rectangle([9, 8, 27, 14], fill=(*HAIR, 255))                    # bangs
-        d.ellipse([9, 12, 27, 16], fill=(*HAIR, 255))
-        for ex in (14, 21):                                              # eyes
-            d.ellipse([ex, 18, ex + 2, 21], fill=(*EYE, 255))
-        px(im, 13, 24, CHEEK); px(im, 14, 24, CHEEK); px(im, 22, 24, CHEEK); px(im, 23, 24, CHEEK)
-        d.rectangle([17, 25, 19, 27], fill=(*EYE, 255))                  # mouth
-        d.ellipse([16, 22, 20, 25], outline=None)
+        d.ellipse([7, 6, 19, 20], fill=(*HSKIN, 255))                    # face
+        d.rectangle([7, 6, 19, 9], fill=(*HHAIR, 255))                   # hairline
+        for ex in (10, 14):                                             # stern eyes + brows
+            d.rectangle([ex, 12, ex + 1, 13], fill=(*EYE, 255)); d.rectangle([ex - 1, 10, ex + 2, 10], fill=(*HHAIR, 255))
+        d.rectangle([11, 16, 15, 16], fill=(*HSKND, 255))               # flat mouth
     else:
-        d.ellipse([7, 4, 29, 30], fill=(*HAIR, 255))                     # full hair (no face)
-        d.line([18, 6, 18, 28], fill=(*HAIRD, 255))                      # hair part
-        d.rectangle([15, 5, 21, 10], fill=(*BOW, 255)); px(im, 18, 7, WHITE)  # back bow
-    # neck + shirt
-    d.rectangle([16, 30, 20, 33], fill=(*FACE, 255))
-    d.rounded_rectangle([11, 32, 25, 45], 3, fill=(*SHIRT, 255)); d.rectangle([11, 42, 25, 45], fill=(*SHIRTD, 255))
+        d.ellipse([6, 3, 20, 19], fill=(*HHAIR, 255)); d.line([13, 6, 13, 17], fill=(0, 0, 0, 60))  # back of head
+    # neck
+    d.rectangle([11, 19, 15, 22], fill=(*HSKIN, 255))
+    # jacket
+    d.rounded_rectangle([5, 22, 21, 34], 2, fill=(*JAK, 255)); d.rectangle([5, 32, 21, 34], fill=(*JAKD, 255))
+    if front:
+        d.polygon([(13, 22), (10, 27), (13, 27)], fill=(*JAKD, 255)); d.polygon([(13, 22), (16, 27), (13, 27)], fill=(*JAKD, 255))
+        d.rectangle([12, 23, 14, 31], fill=(*TIE, 255))                 # tie
     # arms
-    for ax in (8, 24):
-        d.rectangle([ax, 33, ax + 4, 43], fill=(*SHIRT, 255)); d.rectangle([ax, 41, ax + 4, 45], fill=(*FACE, 255))
-    # skirt
-    d.polygon([(13, 45), (23, 45), (28, 56), (8, 56)], fill=(*SKIRT, 255)); d.polygon([(8, 54), (28, 54), (28, 56), (8, 56)], fill=(*SKIRTD, 255))
-    # legs + shoes
-    for lx in (13, 19):
-        d.rectangle([lx, 56, lx + 4, 67], fill=(*FACE, 255)); d.rectangle([lx, 64, lx + 4, 67], fill=(*FACED, 255))
-        d.rectangle([lx - 1, 67, lx + 5, 71], fill=(*SHOE, 255))
+    for ax in (3, 19):
+        d.rectangle([ax, 23, ax + 4, 32], fill=(*JAK, 255)); d.rectangle([ax, 31, ax + 4, 34], fill=(*HSKIN, 255))
+    # pants + shoes
+    for lx in (8, 14):
+        d.rectangle([lx, 34, lx + 4, 42], fill=(*PANT, 255))
+        d.rectangle([lx - 1, 42, lx + 5, 46], fill=(*BSHOE, 255))
     return im
 
 # ---------------------------------------------------------------------------
@@ -131,10 +128,12 @@ def scene(state, count, progress=None):
         for k in range(3):
             c = WHITE if ((y // 6) + k) % 2 == 0 else INK
             d.rectangle([FIN_X + k * 3, y, FIN_X + k * 3 + 2, y + 5], fill=(*c, 255))
-    # the giant doll, standing on the right overseeing every lane
-    dl = doll(front=red); sc = (H - 30) / dl.height; dl = dl.resize((int(dl.width * sc), int(dl.height * sc)), Image.NEAREST)
-    d.ellipse([FIN_X + 8, H - 10, W - 2, H - 2], fill=(20, 16, 30, 90))   # shadow
-    im.alpha_composite(dl, (W - dl.width - 2, H - dl.height - 2))
+    # the catcher — a male overseer on a podium at the RIGHT-MIDDLE
+    ct = catcher(front=red); sc = 54 / ct.height; ct = ct.resize((int(ct.width * sc), int(ct.height * sc)), Image.NEAREST)
+    cx = W - ct.width - 12; feet = H // 2 + ct.height // 2                # vertically centred
+    d.rectangle([cx - 4, feet, cx + ct.width + 4, feet + 9], fill=(*WALLBG2, 255)); d.rectangle([cx - 4, feet, cx + ct.width + 4, feet + 2], fill=(*WALLBG, 255))
+    d.ellipse([cx - 4, feet + 8, cx + ct.width + 4, feet + 12], fill=(20, 16, 30, 90))
+    im.alpha_composite(ct, (cx, feet - ct.height))
     # signal lamp top-left of the field
     lp = lamp(red); lp = lp.resize((lp.width * 2, lp.height * 2), Image.NEAREST)
     im.alpha_composite(lp, (6, 2))
@@ -172,8 +171,8 @@ def scene(state, count, progress=None):
 # ---------------------------------------------------------------------------
 def assets_sheet():
     items = []
-    items.append(("DOLL: GREEN", doll(False)))
-    items.append(("DOLL: RED", doll(True)))
+    items.append(("CATCHER: GO", catcher(False)))
+    items.append(("CATCHER: STOP", catcher(True)))
     items.append(("LAMP GO", lamp(False)))
     items.append(("LAMP STOP", lamp(True)))
     # track tile
