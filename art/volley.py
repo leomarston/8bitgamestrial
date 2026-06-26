@@ -71,7 +71,7 @@ FLOOR_TOP = 106             # rim of the holes / where players stand
 FLOOR_BOT = 124             # bottom of the holes (the lose-zone interior)
 NET_TOP = 58                # how high the nets reach
 PSCALE = 0.6                # ~13px-tall players
-BALL_R = 8                  # ~16px ball ≈ 1.2x a player
+BALL_R = 11                 # bigger ball ≈ 1.7x a player
 
 def scene(count):
     W, H = 240, 150
