@@ -111,13 +111,15 @@
         b.vy = Math.min(MAXV, b.vy + GRAV * dt); b.y += b.vy * dt;
         b.angle = Math.max(-0.45, Math.min(0.85, b.vy / 700));
         if (b.y < ceil) { b.y = ceil; b.vy = 0; }
-        pipes.forEach(p => { if (!p.passed[b.i] && p.x + PW < b.x) { p.passed[b.i] = true; b.score++; } });
+        // score a pipe only once the bird is FULLY past it (trailing edge clears the pipe's
+        // right edge). Past that point a collision is impossible, so you can never both score
+        // a pipe and die on it — die on a pipe = you didn't pass it = no point for it.
+        const hw = b.bw * 0.32;
+        pipes.forEach(p => { if (!p.passed[b.i] && p.x + PW <= b.x - hw) { p.passed[b.i] = true; b.score++; } });
         if (b.y + b.bh * 0.40 >= groundY) { b.y = groundY - b.bh * 0.40; kill(b); }
         else { for (const p of pipes) if (hit(b, p)) { kill(b); break; } }
-      } else {
-        b.vy = Math.min(MAXV, b.vy + GRAV * dt); b.y += b.vy * dt; b.angle += 3 * dt;
-        if (b.y > groundY - b.bh * 0.3) b.y = groundY - b.bh * 0.3;
       }
+      // dead birds stay frozen exactly where they died — no falling, no rolling
     });
   }
 
@@ -190,6 +192,15 @@
       tc("ENTER = REMATCH     BACKSPACE = MENU", W / 2, y + 16, 2, DIM);
     }
     window.__dbg = { phase, count, scores: birds.map(b => b.score), alive: birds.map(b => b.alive), winner: winner ? winner.name : null };
+    window.__fhook = {
+      bird: i => birds[i] ? { x: birds[i].x, y: Math.round(birds[i].y), vy: Math.round(birds[i].vy), angle: +birds[i].angle.toFixed(3), alive: birds[i].alive, score: birds[i].score, bw: birds[i].bw, bh: birds[i].bh } : null,
+      set: (i, x, y, vy) => { const b = birds[i]; if (b) { if (x != null) b.x = x; if (y != null) b.y = y; if (vy != null) b.vy = vy; } },
+      pipes: () => pipes.map(p => ({ x: Math.round(p.x), gapY: Math.round(p.gapY) })),
+      clearpipes: () => { pipes = []; },
+      addpipe: (x, gapY) => { pipes.push({ x, gapY, passed: [false, false, false, false] }); return pipes.length - 1; },
+      kill: i => birds[i] && kill(birds[i]),
+      consts: () => ({ PW, GAP, groundY, ceil }),
+    };
     requestAnimationFrame(t => frame(now, t));
   }
   requestAnimationFrame(t => frame(t, t));

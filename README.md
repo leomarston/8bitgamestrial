@@ -68,9 +68,12 @@ count and fighters come from the select screen (defaults if launched directly).
 `game/flappy.html` — couch Flappy Bird for **2–4 players**. Every chosen fighter
 (with flapping wings) flies the **same pipes at once**, staggered front-to-back.
 
-- Hit a pipe or the ground = that flyer is out.
+- Hit a pipe or the ground = that flyer is out, and the crashed bird **stays
+  frozen exactly where it died** (no tumbling to the ground).
 - **Most pipes passed wins** — where or when you crash doesn't matter. Everyone
   keeps flying until they're down, then the highest pipe count wins (tie = draw).
+- A pipe only counts once you've **fully cleared it**: dying on a pipe — even
+  right at its edge — means you didn't pass it, so you get no point for it.
 - Clean 4-bit world: flat sky, simple clouds, green pipes, scrolling ground.
 
 Controls (tap to flap): **P1 `WASD`/`Space`**, **P2 arrows**, **P3 `IJKL`/`O`**,
