@@ -172,7 +172,7 @@
       const p = players[i], c = CTRL[i], isZ = p.state === "zombie"; p.moving = false;
       const movable = isZ || (p.down <= 0 && p.punch <= 0);
       if (movable) { const dx = (held[c.Rt] ? 1 : 0) - (held[c.L] ? 1 : 0), dy = (held[c.Dn] ? 1 : 0) - (held[c.U] ? 1 : 0);
-        if (dx || dy) { const sp = isZ ? (p.lunge > 0 ? ZSPD * 2.0 : ZSPD) : PSPD; norm(p, dx, dy, sp * dt); p.moving = true; anyMoving = true; p.walkT += dt * 12; } }
+        if (dx || dy) { const sp = isZ ? (p.lunge > 0 ? ZSPD * 2.0 : ZSPD) : PSPD; norm(p, dx, dy, sp * dt); p.moving = true; if (!isZ) anyMoving = true; p.walkT += dt * 12; } }   // souls glide silently — no footstep SFX
     }
     setWalking(anyMoving);
 

@@ -10,7 +10,8 @@
   const audio = new Audio();
   audio.loop = true;
   audio.volume = isMenu ? 0.45 : 0.5;
-  const pick = () => TRACKS[Math.floor(Math.random() * TRACKS.length)];
+  let curTrack = "";
+  const pick = () => { const opts = TRACKS.filter(t => t !== curTrack); curTrack = opts[Math.floor(Math.random() * opts.length)] || TRACKS[0]; return curTrack; };   // never re-roll the same track back-to-back
 
   function load(src, resumeAt) {
     audio.src = src;

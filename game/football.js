@@ -66,7 +66,11 @@
 
   function activeAlive() { return players.filter(p => p.active && p.alive); }
   function launch() {
-    const a = Math.random() * Math.PI * 2, sp = 330;
+    let a = Math.random() * Math.PI * 2, sp = 330;
+    // push the angle ≥15° off the cardinals so the ball always travels diagonally toward a
+    // goal — never a flat rally bouncing forever along a side that happens to be a wall.
+    const near = Math.round(a / (Math.PI / 2)) * (Math.PI / 2);
+    if (Math.abs(a - near) < 0.26) a = near + (a >= near ? 0.26 : -0.26);
     ball.vx = Math.cos(a) * sp; ball.vy = Math.sin(a) * sp; phase = "play";
   }
 
