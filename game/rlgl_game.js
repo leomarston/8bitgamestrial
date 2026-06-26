@@ -183,7 +183,7 @@
       ctx.fillStyle = "#221d2e"; ctx.fillRect(TXp + 4, TYp + 4, TWp - 8, THp - 8);
       ctx.strokeStyle = low ? "#ff6b6b" : "#ffd54a"; ctx.lineWidth = 2; ctx.strokeRect(TXp + 1, TYp + 1, TWp - 2, THp - 2);
       const num = (tl < 10 ? "0" : "") + tl;
-      tc(num, TXp + TWp / 2, TYp + Math.round((THp - 5 * NSC) / 2), NSC, "#ffffff");   // white, centred in the box
+      tc(num, TXp + TWp / 2, TYp + Math.round((THp - 7 * NSC) / 2), NSC, "#ffffff");   // white, centred (font glyphs are 7px tall)
     }
 
     if (phase === "ready") {
