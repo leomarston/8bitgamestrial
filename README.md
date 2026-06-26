@@ -11,10 +11,9 @@ data is inlined).
 
 **Flow:** character select → **game select** → the chosen minigame.
 After the fighters lock in, a **CHOOSE A GAME** hub appears (a 5×2 grid). **Player
-1** drives the cursor (`WASD` + `Space`) and picks a minigame — **Football,
-Flappy, Graveyard, Runner, Crown Grab, Tile Blitz, Hot Potato, Meteor Derby** and
-**Tank Duel** are live (9 games); the last slot is a COMING SOON placeholder.
-`Backspace` goes back a step.
+1** drives the cursor (`WASD` + `Space`) and picks a minigame — all **10** are
+live: **Football, Flappy, Graveyard, Runner, Crown Grab, Tile Blitz, Hot Potato,
+Meteor Derby, Tank Duel** and **Slime Volley**. `Backspace` goes back a step.
 
 ### Controls
 
@@ -197,6 +196,21 @@ maps render to `art/out/tank_map_*.png`); the map is generated live in JS.
 Controls: move with your cluster (**P1 `WASD`**, **P2 arrows**, **P3 `IJKL`**,
 **P4 `TFGH`**), **fire** with **`Space` / `Enter` / `O` / `R`**;
 `Enter`/`R` = rematch, `Backspace` = menu.
+
+## Minigame: SLIME VOLLEY (2–4 players)
+
+`game/volley.html` — a beach court split into **one colored "hole" per player**
+(2/3/4), separated by **nets**. Each player is **locked to their own zone**; move
+left/right and **jump** to bump the big ball — keep it out of **your** hole and
+knock it over a net into someone else's. The serve is **thrown at a random angle**
+each rally (never a straight drop). Every time the ball lands in your hole you
+**lose a point — you start at 2, hit 0 and you're OUT** (your hole seals up and
+bounces the ball). **Last player standing wins.** Tuned for a wide screen: small
+players, a big ball, roomy areas. Court is drawn live; mockup art in `art/volley.py`.
+
+Controls: **move** with your cluster L/R (**P1 `A`/`D`**, **P2 `←`/`→`**, **P3
+`J`/`L`**, **P4 `F`/`H`**), **jump** with **`W` / `↑` / `I` / `T`** (your action
+key also jumps); `Enter`/`R` = rematch, `Backspace` = menu.
 
 ## Music & sound
 

@@ -87,6 +87,7 @@
     { name: "HOT POTATO", file: "hotpotato.html", accent: "#ff8e34", icon: "hotpotato" },
     { name: "METEOR DERBY", file: "space.html", accent: "#7aa7ff", icon: "space" },
     { name: "TANK DUEL", file: "tank.html", accent: "#c0c6d2", icon: "tank" },
+    { name: "SLIME VOLLEY", file: "volley.html", accent: "#5bd1e0", icon: "volley" },
   ];
 
   // ---- grid (5x2 holds the growing roster; empty slots show COMING SOON) ----
@@ -216,11 +217,23 @@
     ctx.restore();
     ctx.strokeStyle = "#8a8f9e"; ctx.lineWidth = 3; ctx.strokeRect(ix, iy, iw, ih);
   }
+  function iconVolley(r) {
+    const ix = r.x + 12, iy = r.y + 12, iw = r.w - 24, ih = r.h - 56;
+    ctx.save(); ctx.beginPath(); ctx.rect(ix, iy, iw, ih); ctx.clip();
+    ctx.fillStyle = "#76c4ec"; ctx.fillRect(ix, iy, iw, ih);
+    ctx.fillStyle = "#fff7ce"; ctx.beginPath(); ctx.arc(ix + iw - 20, iy + 18, 10, 0, 7); ctx.fill();
+    const zc = ["#ff5d5d", "#5db4ff", "#6bd66b"], zw = iw / 3;
+    for (let i = 0; i < 3; i++) { ctx.fillStyle = zc[i]; ctx.fillRect(ix + i * zw + 1, iy + ih - 22, zw - 2, 22); }
+    ctx.fillStyle = "#4074d0"; for (let i = 1; i < 3; i++) ctx.fillRect(ix + i * zw - 1, iy + ih - 46, 3, 24);
+    fitDraw(ballS, ix + iw / 2 - 16, iy + ih * 0.28, 32, 32);
+    ctx.restore();
+    ctx.strokeStyle = "#e0cc9c"; ctx.lineWidth = 3; ctx.strokeRect(ix, iy, iw, ih);
+  }
   function tile(i, t) {
     const r = cell(i), g = GAMES[i];
     if (g) {
       ctx.fillStyle = "#272138"; rr(r.x, r.y, r.w, r.h, 12); ctx.fill();
-      const ic = { football: iconFootball, flappy: iconFlappy, graveyard: iconGraveyard, runner: iconRunner, crown: iconCrown, tileblitz: iconTileBlitz, hotpotato: iconHotPotato, space: iconSpace, tank: iconTank }[g.icon] || iconGraveyard;
+      const ic = { football: iconFootball, flappy: iconFlappy, graveyard: iconGraveyard, runner: iconRunner, crown: iconCrown, tileblitz: iconTileBlitz, hotpotato: iconHotPotato, space: iconSpace, tank: iconTank, volley: iconVolley }[g.icon] || iconGraveyard;
       ic(r);
       ctx.fillStyle = "#15121f"; rr(r.x + 8, r.y + r.h - 34, r.w - 16, 24, 7); ctx.fill();
       tc(g.name, r.x + r.w / 2, r.y + r.h - 29, 2, g.accent);
