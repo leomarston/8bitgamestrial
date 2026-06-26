@@ -64,11 +64,14 @@ def ball(img, cx, cy, r=7):
     sc = (2 * r) / bw; bi = bi.resize((int(bw * sc), int(bh * sc)), Image.NEAREST)
     img.alpha_composite(bi, (cx - bi.width // 2, cy - bi.height // 2))
 
-# court geometry (native px)
+# court geometry (native px) — players small + ball ~player-sized, matching the
+# reference ratios (player ~13% of play height, ball ~1.15x a player, big areas).
 PX0, PX1 = 22, 218          # play area x-range
-FLOOR_TOP = 110             # rim of the pits / sand surface
-FLOOR_BOT = 128             # bottom of the pits (the lose-line)
-NET_TOP = 60                # how high the nets reach
+FLOOR_TOP = 106             # rim of the holes / where players stand
+FLOOR_BOT = 124             # bottom of the holes (the lose-zone interior)
+NET_TOP = 58                # how high the nets reach
+PSCALE = 0.6                # ~13px-tall players
+BALL_R = 8                  # ~16px ball ≈ 1.2x a player
 
 def scene(count):
     W, H = 240, 150
@@ -115,17 +118,16 @@ def scene(count):
             for x in range(dx - 6, dx + 7):
                 if (x + y) % 2 == 0: setpx(px, W, H, x, y, NETW)
         fill(px, W, H, dx - 7, NET_TOP - 2, dx + 7, NET_TOP, NETP)         # top band
-    # players standing at the bottom of their pit (kept SMALL so the court feels big)
+    # small players standing on the RIM of their hole (so the court reads big)
     for i in range(count):
         cx = int(PX0 + (i + 0.5) * zoneW)
         rim, body, deep = ZONE[i]
-        # coloured pad
-        for yy in range(-2, 2):
-            for xx in range(-6, 7):
-                if (xx / 6) ** 2 + (yy / 2.0) ** 2 <= 1: setpx(px, W, H, cx + xx, FLOOR_BOT - 1 + yy, body)
-        fighter(img, ZNAMES[i], cx, FLOOR_BOT, scale=0.8, flip=(i % 2 == 1))
-    # the BIG beach ball, arcing over a net toward someone's hole
-    ball(img, int(PX0 + zoneW * (count - 0.7)), 56, r=13)
+        for yy in range(-1, 2):                       # small coloured pad on the rim
+            for xx in range(-5, 6):
+                if (xx / 5) ** 2 + (yy / 1.6) ** 2 <= 1: setpx(px, W, H, cx + xx, FLOOR_TOP + yy, body)
+        fighter(img, ZNAMES[i], cx, FLOOR_TOP + 1, scale=PSCALE, flip=(i % 2 == 1))
+    # the ball — roughly player-sized (a touch bigger), arcing toward someone's hole
+    ball(img, int(PX0 + zoneW * (count - 0.7)), 50, r=BALL_R)
     # score chips along the bottom sand
     for i in range(count):
         cx = int(PX0 + (i + 0.5) * zoneW); bw2 = int(zoneW) - 8
