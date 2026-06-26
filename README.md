@@ -10,10 +10,11 @@ Just open **`game/index.html`** in any browser (no server needed — the sprite
 data is inlined).
 
 **Flow:** character select → **game select** → the chosen minigame.
-After the fighters lock in, a **CHOOSE A GAME** hub appears (a 5×2 grid). **Player
-1** drives the cursor (`WASD` + `Space`) and picks a minigame — all **10** are
+After the fighters lock in, a **CHOOSE A GAME** hub appears (a 6×2 grid). **Player
+1** drives the cursor (`WASD` + `Space`) and picks a minigame — all **11** are
 live: **Football, Flappy, Graveyard, Runner, Crown Grab, Tile Blitz, Hot Potato,
-Meteor Derby, Tank Duel** and **Slime Volley**. `Backspace` goes back a step.
+Meteor Derby, Tank Duel, Slime Volley** and **Red Light Green Light**; the last
+slot is a COMING SOON placeholder. `Backspace` goes back a step.
 
 ### Controls
 
@@ -211,6 +212,23 @@ players, a big ball, roomy areas. Court is drawn live; mockup art in `art/volley
 Controls: **move** with your cluster L/R (**P1 `A`/`D`**, **P2 `←`/`→`**, **P3
 `J`/`L`**, **P4 `F`/`H`**), **jump** with **`W` / `↑` / `I` / `T`** (your action
 key also jumps); `Enter`/`R` = rematch, `Backspace` = menu.
+
+## Minigame: RED LIGHT GREEN LIGHT (2–4 players)
+
+`game/rlgl.html` — each player races their **own lane** to the finish on the
+right. A male **catcher** oversees from the right-middle: **back turned = GREEN**
+(run), **facing you = RED** (freeze). Hold **any of your cluster keys to GO**,
+release to stop — movement has **very low momentum**, so you can stop fast but
+greed still overruns the line. **Move while it's RED and you're snapped back to
+the START** (no elimination — you just keep racing). **First to the finish wins.**
+Tuned so a round takes ~6–8 green bursts (≈25–40s): a single green can only cover
+~30% of the track, the catcher's turn gives a ~0.35s window to stop, and greens
+shorten as the round drags on (with a 60s cap → furthest wins). Lanes are
+shuffled each round. Catcher/lamp art in `art/rlgl.py` (exported to `data.js`).
+
+Controls: **GO** by holding any of your keys (**P1 `WASD`/`Space`**, **P2
+arrows/`Enter`**, **P3 `IJKL`/`O`**, **P4 `TFGH`/`R`**); `Enter`/`R` = rematch,
+`Backspace` = menu.
 
 ## Music & sound
 

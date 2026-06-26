@@ -49,7 +49,7 @@ def catcher(front=True):
             d.rectangle([ex, 12, ex + 1, 13], fill=(*EYE, 255)); d.rectangle([ex - 1, 10, ex + 2, 10], fill=(*HHAIR, 255))
         d.rectangle([11, 16, 15, 16], fill=(*HSKND, 255))               # flat mouth
     else:
-        d.ellipse([6, 3, 20, 19], fill=(*HHAIR, 255)); d.line([13, 6, 13, 17], fill=(0, 0, 0, 60))  # back of head
+        d.ellipse([6, 3, 20, 19], fill=(*HHAIR, 255)); d.line([13, 6, 13, 17], fill=(40, 30, 22, 255))  # back of head
     # neck
     d.rectangle([11, 19, 15, 22], fill=(*HSKIN, 255))
     # jacket
@@ -198,6 +198,29 @@ def assets_sheet():
         sheet.alpha_composite(up, (j * cw + (cw - up.width) // 2, pad + (maxh - up.height)))
         lb = pf.text(lab, 1, (235, 232, 245)); sheet.alpha_composite(lb, (j * cw + (cw - lb.width) // 2, sheet.height - labelH + 4))
     sheet.convert("RGB").save(os.path.join(OUT, "rlgl_assets.png")); print("wrote rlgl_assets.png", sheet.size)
+
+def rlgl_export():
+    """Convert the catcher (front/back) and lamp (green/red) to char-grids + a shared
+    palette so the browser game can render the exact pixel art via build()."""
+    assets = {"catcherBack": catcher(False), "catcherFront": catcher(True), "lampGreen": lamp(False), "lampRed": lamp(True)}
+    chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@%&*+-=:;<>?/"
+    pal = {".": None}; rev = {}; idx = [0]; out = {}
+    def conv(im):
+        rows = []; pxl = im.load()
+        for y in range(im.height):
+            row = ""
+            for x in range(im.width):
+                r, g, b, a = pxl[x, y]
+                if a < 128: row += "."; continue
+                key = (r, g, b)
+                if key not in rev:
+                    ch = chars[idx[0]]; idx[0] += 1; rev[key] = ch; pal[ch] = "#%02x%02x%02x" % key
+                row += rev[key]
+            rows.append(row)
+        return rows
+    for k, im in assets.items(): out[k] = conv(im)
+    out["palette"] = pal
+    return out
 
 if __name__ == "__main__":
     scene("green", 4).convert("RGB").save(os.path.join(OUT, "rlgl_green.png")); print("wrote rlgl_green.png")

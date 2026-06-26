@@ -41,6 +41,7 @@
   const tkBrick = buildSprite(D.tank.brick, TKP), tkSteel = buildSprite(D.tank.steel, TKP);
   function buildTank(hex) { const b = hex.replace("#", ""); const shade = "#" + [0, 2, 4].map(i => Math.round(parseInt(b.substr(i, 2), 16) * 0.62).toString(16).padStart(2, "0")).join(""); return buildSprite(D.tank.tank, Object.assign({}, TKP, { C: hex, o: shade })); }
   const tkTank = buildTank("#ff5d5d");
+  const rlCatch = buildSprite(D.rlgl.catcherFront, D.rlgl.palette), rlLampR = buildSprite(D.rlgl.lampRed, D.rlgl.palette);
   let _podIcon = null;
   function podIcon() {                                  // shuttle hull + pilot head
     if (_podIcon) return _podIcon;
@@ -88,10 +89,11 @@
     { name: "METEOR DERBY", file: "space.html", accent: "#7aa7ff", icon: "space" },
     { name: "TANK DUEL", file: "tank.html", accent: "#c0c6d2", icon: "tank" },
     { name: "SLIME VOLLEY", file: "volley.html", accent: "#5bd1e0", icon: "volley" },
+    { name: "RED LIGHT", file: "rlgl.html", accent: "#ff8a8a", icon: "rlgl" },
   ];
 
-  // ---- grid (5x2 holds the growing roster; empty slots show COMING SOON) ----
-  const COLS = 5, ROWS = 2, CW = 180, CH = 150, GX = 10, GY = 18;
+  // ---- grid (6x2 holds the growing roster; empty slots show COMING SOON) ----
+  const COLS = 6, ROWS = 2, CW = 148, CH = 150, GX = 10, GY = 18;
   const GW = COLS * CW + (COLS - 1) * GX, GX0 = Math.round((W - GW) / 2), GY0 = 150;
   function cell(i) { const c = i % COLS, r = (i / COLS) | 0;
     return { x: GX0 + c * (CW + GX), y: GY0 + r * (CH + GY), w: CW, h: CH }; }
@@ -229,14 +231,27 @@
     ctx.restore();
     ctx.strokeStyle = "#e0cc9c"; ctx.lineWidth = 3; ctx.strokeRect(ix, iy, iw, ih);
   }
+  function iconRLGL(r) {
+    const ix = r.x + 12, iy = r.y + 12, iw = r.w - 24, ih = r.h - 56;
+    ctx.save(); ctx.beginPath(); ctx.rect(ix, iy, iw, ih); ctx.clip();
+    ctx.fillStyle = "#96cee8"; ctx.fillRect(ix, iy, iw, ih * 0.32);
+    for (let k = 0; k < 3; k++) { ctx.fillStyle = k % 2 ? "#98744a" : "#b08a5c"; ctx.fillRect(ix, iy + ih * 0.32 + k * (ih * 0.227), iw, ih * 0.227); ctx.fillStyle = "#68502f"; ctx.fillRect(ix, iy + ih * 0.32 + (k + 1) * (ih * 0.227) - 1, iw, 2); }
+    for (let y = iy; y < iy + ih; y += 8) { ctx.fillStyle = ((y / 8 | 0) % 2) ? "#15121f" : "#f4f4ee"; ctx.fillRect(ix + iw - 8, y, 4, 8); }   // finish
+    fitDraw(rlCatch, ix + iw - 40, iy + ih / 2 - 22, 30, 44);
+    fitDraw(spr[p1name], ix + 8, iy + ih - 36, 26, 34);
+    fitDraw(rlLampR, ix + 4, iy + 2, 10, 24);
+    ctx.restore();
+    ctx.strokeStyle = "#ff8a8a"; ctx.lineWidth = 3; ctx.strokeRect(ix, iy, iw, ih);
+  }
   function tile(i, t) {
     const r = cell(i), g = GAMES[i];
     if (g) {
       ctx.fillStyle = "#272138"; rr(r.x, r.y, r.w, r.h, 12); ctx.fill();
-      const ic = { football: iconFootball, flappy: iconFlappy, graveyard: iconGraveyard, runner: iconRunner, crown: iconCrown, tileblitz: iconTileBlitz, hotpotato: iconHotPotato, space: iconSpace, tank: iconTank, volley: iconVolley }[g.icon] || iconGraveyard;
+      const ic = { football: iconFootball, flappy: iconFlappy, graveyard: iconGraveyard, runner: iconRunner, crown: iconCrown, tileblitz: iconTileBlitz, hotpotato: iconHotPotato, space: iconSpace, tank: iconTank, volley: iconVolley, rlgl: iconRLGL }[g.icon] || iconGraveyard;
       ic(r);
       ctx.fillStyle = "#15121f"; rr(r.x + 8, r.y + r.h - 34, r.w - 16, 24, 7); ctx.fill();
-      tc(g.name, r.x + r.w / 2, r.y + r.h - 29, 2, g.accent);
+      const ns = Math.min(2, (r.w - 18) / tW(g.name, 1));      // auto-fit long names to the narrower tiles
+      tc(g.name, r.x + r.w / 2, r.y + r.h - 24 - 5 * ns, ns, g.accent);
     } else {
       ctx.fillStyle = "#201b30"; rr(r.x, r.y, r.w, r.h, 12); ctx.fill();
       ctx.strokeStyle = "#3a3352"; ctx.lineWidth = 3; ctx.setLineDash([8, 7]);
