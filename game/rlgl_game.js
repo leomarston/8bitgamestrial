@@ -176,6 +176,16 @@
     if (phase === "play" || phase === "ready") {
       const lbl = red ? "RED LIGHT - FREEZE!" : "GREEN LIGHT - RUN!";
       tc(lbl, W / 2, 14, 3, red ? "#ff7a7a" : "#8ff09a");
+      // ---- 60s round timer, top-right, chunky pixel display ----
+      const tl = phase === "ready" ? ROUND_CAP : Math.max(0, Math.ceil(ROUND_CAP - t0));
+      const low = tl <= 10, TWp = 138, THp = 58, TXp = W - TWp - 14, TYp = 8;
+      ctx.fillStyle = "#12101a"; ctx.fillRect(TXp, TYp, TWp, THp);
+      ctx.fillStyle = "#221d2e"; ctx.fillRect(TXp + 4, TYp + 4, TWp - 8, THp - 8);
+      ctx.strokeStyle = low ? "#ff6b6b" : "#ffd54a"; ctx.lineWidth = 2; ctx.strokeRect(TXp + 1, TYp + 1, TWp - 2, THp - 2);
+      tc("TIME", TXp + TWp / 2, TYp + 7, 2, "#9aa6c2");
+      const num = (tl < 10 ? "0" : "") + tl;
+      const col = low ? ((t0 * 6 | 0) % 2 ? "#ff6b6b" : "#ffd0d0") : "#8ff09a";   // flash under 10s
+      tc(num, TXp + TWp / 2, TYp + 24, 5, col);
     }
 
     if (phase === "ready") {

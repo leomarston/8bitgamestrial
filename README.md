@@ -223,8 +223,9 @@ greed still overruns the line. **Move while it's RED and you're snapped back to
 the START** (no elimination — you just keep racing). **First to the finish wins.**
 Tuned so a round takes ~6–8 green bursts (≈25–40s): a single green can only cover
 ~30% of the track, the catcher's turn gives a ~0.35s window to stop, and greens
-shorten as the round drags on (with a 60s cap → furthest wins). Lanes are
-shuffled each round. Catcher/lamp art in `art/rlgl.py` (exported to `data.js`).
+shorten as the round drags on. A **60-second countdown** runs as a pixel display
+top-right; if it expires, the furthest-ahead racer wins. Lanes are shuffled each
+round. Catcher/lamp art in `art/rlgl.py` (exported to `data.js`).
 
 Controls: **GO** by holding any of your keys (**P1 `WASD`/`Space`**, **P2
 arrows/`Enter`**, **P3 `IJKL`/`O`**, **P4 `TFGH`/`R`**); `Enter`/`R` = rematch,
