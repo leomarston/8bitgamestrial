@@ -115,17 +115,17 @@ def scene(count):
             for x in range(dx - 6, dx + 7):
                 if (x + y) % 2 == 0: setpx(px, W, H, x, y, NETW)
         fill(px, W, H, dx - 7, NET_TOP - 2, dx + 7, NET_TOP, NETP)         # top band
-    # players standing at the bottom of their pit
+    # players standing at the bottom of their pit (kept SMALL so the court feels big)
     for i in range(count):
         cx = int(PX0 + (i + 0.5) * zoneW)
         rim, body, deep = ZONE[i]
         # coloured pad
-        for yy in range(-2, 3):
-            for xx in range(-9, 10):
-                if (xx / 9) ** 2 + (yy / 2.4) ** 2 <= 1: setpx(px, W, H, cx + xx, FLOOR_BOT - 1 + yy, body)
-        fighter(img, ZNAMES[i], cx, FLOOR_BOT, scale=1.25, flip=(i % 2 == 1))
-    # the ball, arcing over a net toward someone's hole
-    ball(img, int(PX0 + zoneW * (count - 0.7)), 52, r=7)
+        for yy in range(-2, 2):
+            for xx in range(-6, 7):
+                if (xx / 6) ** 2 + (yy / 2.0) ** 2 <= 1: setpx(px, W, H, cx + xx, FLOOR_BOT - 1 + yy, body)
+        fighter(img, ZNAMES[i], cx, FLOOR_BOT, scale=0.8, flip=(i % 2 == 1))
+    # the BIG beach ball, arcing over a net toward someone's hole
+    ball(img, int(PX0 + zoneW * (count - 0.7)), 56, r=13)
     # score chips along the bottom sand
     for i in range(count):
         cx = int(PX0 + (i + 0.5) * zoneW); bw2 = int(zoneW) - 8
