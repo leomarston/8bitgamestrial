@@ -27,19 +27,29 @@ WIN = (46, 48, 62)        # window glass
 WHEEL = (28, 28, 34)
 
 def draw_car(base, facing=1):
-    """Top-down car sized to fit inside ONE lane. No tyres (clean body)."""
-    body = base; light = lit(base, 1.16); dark = lit(base, 0.66)
-    W, H = 50, 14
+    """Top-down car (drawn from scratch): compact, tapered nose, distinct cabin —
+    proportioned to fit inside one lane and read as a real car, not a stretched bar.
+    Drawn facing RIGHT (front = right)."""
+    body = base; light = lit(base, 1.18); dark = lit(base, 0.70); out = lit(base, 0.45)
+    hl = (255, 248, 200); tl = (224, 72, 60)
+    W, H = 38, 16
     im = Image.new("RGBA", (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
-    d.ellipse([5, H - 3, W - 5, H - 1], fill=(8, 8, 12, 70))                       # faint ground shadow
-    d.rounded_rectangle([1, 1, W - 2, H - 2], 4, fill=(*body, 255), outline=(*lit(base, 0.45), 255), width=1)
-    d.rounded_rectangle([1, H // 2, W - 2, H - 2], 4, fill=(*dark, 255))           # lower-half shade
-    d.rounded_rectangle([1, 1, W - 2, 3], 2, fill=(*light, 255))                   # top highlight
-    d.rounded_rectangle([12, 3, W - 11, H - 3], 2, fill=(*WIN, 255))               # dark cabin/glass
-    d.rounded_rectangle([18, 4, W - 16, H - 4], 1, fill=(*light, 255))             # light roof centre
-    for sx in (W - 12, 17): d.rectangle([sx, 3, sx, H - 3], fill=(*dark, 255))     # window pillars
-    d.rectangle([W - 4, 3, W - 2, 5], fill=(255, 250, 210, 255)); d.rectangle([W - 4, H - 6, W - 2, H - 4], fill=(255, 250, 210, 255))  # headlights (front=right)
-    d.rectangle([2, 3, 3, 5], fill=(220, 70, 60, 255)); d.rectangle([2, H - 6, 3, H - 4], fill=(220, 70, 60, 255))  # tail lights
+    # body silhouette: rounded rear (left), tapered nose (right)
+    sil = [(4, 1), (W - 8, 1), (W - 3, 3), (W - 1, 6), (W - 1, H - 7), (W - 3, H - 4),
+           (W - 8, H - 2), (4, H - 2), (1, H - 5), (1, 4)]
+    d.polygon(sil, fill=(*body, 255))
+    d.line(sil + [sil[0]], fill=(*out, 255), width=1)
+    # darker bottom half for a touch of depth
+    d.polygon([(2, H // 2 + 1), (W - 2, H // 2 + 1), (W - 2, H - 6), (W - 7, H - 3), (4, H - 3), (1, H - 5)], fill=(*dark, 255))
+    d.line([(5, 1), (W - 9, 1)], fill=(*light, 255))                              # roofline highlight
+    # cabin: dark glass with a light roof panel and pillars
+    d.rounded_rectangle([9, 3, W - 11, H - 3], 2, fill=(*WIN, 255))               # windshield + rear glass + sides
+    d.rounded_rectangle([13, 4, W - 14, H - 4], 1, fill=(*light, 255))            # roof panel
+    d.rectangle([12, 3, 13, H - 3], fill=(*dark, 255)); d.rectangle([W - 13, 3, W - 12, H - 3], fill=(*dark, 255))  # B-pillars
+    d.line([(W - 11, 4), (W - 8, 6)], fill=(*WIN, 255)); d.line([(W - 11, H - 4), (W - 8, H - 6)], fill=(*WIN, 255))  # raked windshield
+    # bumper line + lights
+    d.rectangle([W - 2, 5, W - 1, 7], fill=(*hl, 255)); d.rectangle([W - 2, H - 8, W - 1, H - 6], fill=(*hl, 255))    # headlights (front)
+    d.rectangle([1, 5, 2, 7], fill=(*tl, 255)); d.rectangle([1, H - 8, 2, H - 6], fill=(*tl, 255))                    # tail lights (rear)
     if facing < 0: im = im.transpose(Image.FLIP_LEFT_RIGHT)
     return im
 
