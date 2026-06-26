@@ -1,7 +1,7 @@
 /* 8-BIT PARTY — TANK DUEL, 2–4 players (Battle City / Atari Combat style).
  * A fresh mirror-symmetric battlefield every round. Drive a tank (4 directions),
- * fire your cannon: shells DESTROY brick, BOUNCE once off steel/border, fly OVER
- * water and THROUGH bushes. One hit and you're scrap — LAST TANK ROLLING WINS.
+ * fire your cannon: shells DESTROY brick, are STOPPED by steel/the border, fly
+ * OVER water and THROUGH bushes. One hit and you're scrap — LAST TANK ROLLING WINS.
  * 2P = diagonal corners · 3P = three random corners · 4P = all four (reshuffled).
  * Move with your cluster keys, FIRE with your action key:
  * P1 WASD/Space · P2 Arrows/Enter · P3 IJKL/O · P4 TFGH/R */
@@ -179,7 +179,7 @@
   function fire(p) {
     if (!p.alive || phase !== "play" || p.fireCool > 0 || p.shell) return;
     const d = DIRV[p.dir]; p.fireCool = FIRE_COOL;
-    p.shell = { x: p.x + d[0] * (p.r + 6), y: p.y + d[1] * (p.r + 6), vx: d[0] * SHELL_SPD, vy: d[1] * SHELL_SPD, owner: p, life: 0, bounces: 1, dead: false };
+    p.shell = { x: p.x + d[0] * (p.r + 6), y: p.y + d[1] * (p.r + 6), vx: d[0] * SHELL_SPD, vy: d[1] * SHELL_SPD, owner: p, life: 0, dead: false };
     shells.push(p.shell);
   }
   window.addEventListener("keydown", e => {
@@ -204,10 +204,9 @@
     for (let k = 0; k < SUB && !s.dead; k++) {
       s.life += ddt; s.x += s.vx * ddt; s.y += s.vy * ddt;
       const v = tileAt(s.x, s.y);
-      if (v === 2 || s.x < 0 || s.x > MAPW || s.y < OY || s.y > OY + MAPH) {   // steel / border → bounce once
+      if (v === 2 || s.x < 0 || s.x > MAPW || s.y < OY || s.y > OY + MAPH) {   // steel / border → absorbed (no bounce)
         s.x -= s.vx * ddt; s.y -= s.vy * ddt;
-        if (s.bounces-- <= 0) { s.dead = true; spark(s.x, s.y, 4, "#cfe0ff"); break; }
-        s.vx = -s.vx; s.vy = -s.vy; spark(s.x, s.y, 5, "#cfe0ff");
+        s.dead = true; spark(s.x, s.y, 5, "#cfe0ff"); break;
       } else if (v === 1) {                                                    // brick → destroy
         const cx = Math.floor(s.x / CS), cy = Math.floor((s.y - OY) / CS);
         if (cx >= 0 && cx < COLS && cy >= 0 && cy < ROWS) grid[cy][cx] = 0;
@@ -289,7 +288,8 @@
     }
 
     window.__tk = { phase, count, alive: tanks.map(p => p.alive), winner: winner ? winner.tag : null,
-      shells: shells.length, dirs: tanks.map(p => p.dir), pos: tanks.map(p => [Math.round(p.x), Math.round(p.y)]) };
+      shells: shells.length, sv: shells.map(s => [Math.round(s.vx), Math.round(s.vy)]),
+      dirs: tanks.map(p => p.dir), pos: tanks.map(p => [Math.round(p.x), Math.round(p.y)]) };
     window.__tkhook = {
       tp: (i, x, y) => { if (tanks[i]) { tanks[i].x = x; tanks[i].y = y; } },
       setdir: (i, d) => { if (tanks[i]) tanks[i].dir = d; },
