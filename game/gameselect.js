@@ -1,4 +1,4 @@
-/* 8-BIT PARTY — Game select hub. 6x2 grid of 12 live minigames, each playable by
+/* 8-BIT PARTY — Game select hub. 7x2 grid of 13 live minigames, each playable by
  * 2-4 players. P1 moves the shared cursor (WASD) and confirms (Space / F); the
  * player strip shows everyone in the party. Backspace returns to character select. */
 (() => {
@@ -47,6 +47,8 @@
   const trCarPal = base => ({ C: base, L: lighten(base, 1.18), d: lighten(base, 0.70), o: lighten(base, 0.45), W: TR.win, h: TR.hl, t: TR.tl });
   const trCar = buildSprite(TR.car, trCarPal("#e6d074")), trCarL = flip(trCar), trCar2 = buildSprite(TR.car, trCarPal("#aab6e0"));
   const trCoin = buildSprite(TR.coin, TR.coinPal);
+  const SHP = D.ship;
+  const shBoat = buildSprite(SHP.ship, Object.assign({}, SHP.pal, { S: "#ff5d5d", l: lighten("#ff5d5d", 1.22), s: lighten("#ff5d5d", 0.74), F: "#ff5d5d" }));
   let _podIcon = null;
   function podIcon() {                                  // shuttle hull + pilot head
     if (_podIcon) return _podIcon;
@@ -96,10 +98,11 @@
     { name: "SLIME VOLLEY", file: "volley.html", accent: "#5bd1e0", icon: "volley" },
     { name: "RED LIGHT", file: "rlgl.html", accent: "#ff8a8a", icon: "rlgl" },
     { name: "TRAFFIC RUN", file: "traffic.html", accent: "#e6d074", icon: "traffic" },
+    { name: "SHIP DASH", file: "ship.html", accent: "#4bb3e6", icon: "ship" },
   ];
 
-  // ---- grid (6x2 holds the growing roster; empty slots show COMING SOON) ----
-  const COLS = 6, ROWS = 2, CW = 148, CH = 150, GX = 10, GY = 18;
+  // ---- grid (7x2 holds the growing roster; empty slots show COMING SOON) ----
+  const COLS = 7, ROWS = 2, CW = 125, CH = 150, GX = 10, GY = 18;
   const GW = COLS * CW + (COLS - 1) * GX, GX0 = Math.round((W - GW) / 2), GY0 = 150;
   function cell(i) { const c = i % COLS, r = (i / COLS) | 0;
     return { x: GX0 + c * (CW + GX), y: GY0 + r * (CH + GY), w: CW, h: CH }; }
@@ -264,11 +267,24 @@
     ctx.restore();
     ctx.strokeStyle = "#e6d074"; ctx.lineWidth = 3; ctx.strokeRect(ix, iy, iw, ih);
   }
+  function iconShip(r) {
+    const ix = r.x + 12, iy = r.y + 12, iw = r.w - 24, ih = r.h - 56;
+    ctx.save(); ctx.beginPath(); ctx.rect(ix, iy, iw, ih); ctx.clip();
+    ctx.fillStyle = SHP.skyB; ctx.fillRect(ix, iy, iw, ih * 0.32);              // sky
+    ctx.fillStyle = "#ffe278"; ctx.beginPath(); ctx.arc(ix + 14, iy + 13, 7, 0, 7); ctx.fill();   // sun
+    ctx.fillStyle = SHP.sea; ctx.fillRect(ix, iy + ih * 0.32, iw, ih * 0.68);   // sea
+    ctx.strokeStyle = SHP.seaL; ctx.lineWidth = 2;
+    for (let k = 0; k < 3; k++) { const yy = iy + ih * 0.5 + k * ih * 0.16; ctx.beginPath(); for (let x = ix; x <= ix + iw; x += 4) ctx.lineTo(x, yy + 3 * Math.sin(x * 0.18 + k)); ctx.stroke(); }
+    for (let j = 0, yy = iy; yy < iy + ih; yy += 8, j++) for (let i2 = 0, xx = ix + iw - 14; xx < ix + iw - 2; xx += 8, i2++) { ctx.fillStyle = (i2 + j) % 2 ? "#28282e" : "#f4f4ee"; ctx.fillRect(xx, yy, 8, 8); }   // finish
+    fitDraw(shBoat, ix + 4, iy + ih * 0.26, 50, 46);
+    ctx.restore();
+    ctx.strokeStyle = "#4bb3e6"; ctx.lineWidth = 3; ctx.strokeRect(ix, iy, iw, ih);
+  }
   function tile(i, t) {
     const r = cell(i), g = GAMES[i];
     if (g) {
       ctx.fillStyle = "#272138"; rr(r.x, r.y, r.w, r.h, 12); ctx.fill();
-      const ic = { football: iconFootball, flappy: iconFlappy, graveyard: iconGraveyard, runner: iconRunner, crown: iconCrown, tileblitz: iconTileBlitz, hotpotato: iconHotPotato, space: iconSpace, tank: iconTank, volley: iconVolley, rlgl: iconRLGL, traffic: iconTraffic }[g.icon] || iconGraveyard;
+      const ic = { football: iconFootball, flappy: iconFlappy, graveyard: iconGraveyard, runner: iconRunner, crown: iconCrown, tileblitz: iconTileBlitz, hotpotato: iconHotPotato, space: iconSpace, tank: iconTank, volley: iconVolley, rlgl: iconRLGL, traffic: iconTraffic, ship: iconShip }[g.icon] || iconGraveyard;
       ic(r);
       ctx.fillStyle = "#15121f"; rr(r.x + 8, r.y + r.h - 34, r.w - 16, 24, 7); ctx.fill();
       const ns = Math.min(2, (r.w - 18) / tW(g.name, 1));      // auto-fit long names to the narrower tiles

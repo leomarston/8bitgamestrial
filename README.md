@@ -10,11 +10,12 @@ Just open **`game/index.html`** in any browser (no server needed — the sprite
 data is inlined).
 
 **Flow:** character select → **game select** → the chosen minigame.
-After the fighters lock in, a **CHOOSE A GAME** hub appears (a full 6×2 grid).
-**Player 1** drives the cursor (`WASD` + `Space`) and picks a minigame — all **12**
+After the fighters lock in, a **CHOOSE A GAME** hub appears (a 7×2 grid).
+**Player 1** drives the cursor (`WASD` + `Space`) and picks a minigame — all **13**
 are live: **Football, Flappy, Graveyard, Runner, Crown Grab, Tile Blitz, Hot
-Potato, Meteor Derby, Tank Duel, Slime Volley, Red Light Green Light** and
-**Traffic Run**. `Backspace` goes back a step.
+Potato, Meteor Derby, Tank Duel, Slime Volley, Red Light Green Light, Traffic Run**
+and **Ship Dash**; the last slot is a COMING SOON placeholder. `Backspace` goes
+back a step.
 
 ### Controls
 
@@ -254,6 +255,21 @@ Controls: **move** with your cluster (**P1 `WASD`**, **P2 arrows**, **P3 `IJKL`*
 **P4 `TFGH`**), **DASH** with **`Space` / `Enter` / `O` / `R`**;
 `Enter`/`R` = rematch, `Backspace` = menu.
 
+## Minigame: SHIP DASH (2–4 players)
+
+`game/ship.html` — a dead-simple **button-masher boat race**. Each player owns a
+**sea lane** and the **only control is one button**: every press is an oar stroke
+that surges your boat right; stop pressing and you coast to a stop, so the faster
+you **mash**, the faster you row. **First boat across the FINISH on the right
+wins.** Holding the key does nothing — you have to actually hammer it.
+
+One key each: **P1 `Space`**, **P2 `Enter`**, **P3 `O`**, **P4 `R`** — each lane
+shows its own key and a live progress bar, so it's instantly clear for **2, 3, or
+4 players**. Boats carry a **player-coloured sail** (and the player's fighter
+aboard) over a wave-and-foam sea with buoy lane dividers and a checkered finish.
+`Enter` / your key = rematch, `Backspace` = menu. Art lives in `art/ship.py`
+(recolourable boat exported to `data.js`); the sea/sky/finish are baked once.
+
 ## Music & sound
 
 `game/music.js` (loaded by every page) handles background music:
@@ -274,8 +290,9 @@ game/            the playable screens
   index.html     character select
   game.js        MK-style select logic (cursors, lock-in, mirror) -> game select
   gameselect.html  the "choose a game" hub
-  gameselect.js  6x2 minigame grid (P1 picks; all 12 games live)
+  gameselect.js  7x2 minigame grid (P1 picks; all 13 games live)
   traffic.html / traffic_game.js    TRAFFIC RUN (Frogger coin dash, dash button)
+  ship.html / ship_game.js          SHIP DASH (one-button mash boat race)
   crown.html / crown_game.js        CROWN GRAB (carry the crown, dash to steal)
   crown_map1.png / crown_map2.png   the two CROWN GRAB stage backgrounds
   tileblitz.html / tileblitz_game.js  TILE BLITZ (paint the most tiles)

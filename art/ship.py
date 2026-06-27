@@ -203,8 +203,37 @@ def assets_sheet():
         lb = pf.text(lab, 2, (235, 238, 248)); sheet.alpha_composite(lb, (j * cw + (cw - lb.width) // 2, 2))
     sheet.convert("RGB").save(os.path.join(OUT, "ship_assets.png")); print("wrote ship_assets.png", sheet.size)
 
+def ship_export():
+    """Recolourable boat template (role char-grid). Hull/mast/deck are fixed wood;
+    the SAIL + FLAG recolour per player in JS. Mirrors traffic_export()."""
+    roles = {"hull": ("H", (101, 0, 1)), "hullD": ("h", (102, 0, 1)), "hullL": ("L", (103, 0, 1)),
+             "deck": ("D", (104, 0, 1)), "sail": ("S", (105, 0, 1)), "sailL": ("l", (106, 0, 1)),
+             "sailD": ("s", (107, 0, 1)), "mast": ("M", (108, 0, 1)), "flag": ("F", (109, 0, 1)),
+             "out": ("o", (110, 0, 1))}
+    c = {k: (v[1][0], v[1][1], v[1][2], 255) for k, v in roles.items()}
+    inv = {v[1]: v[0] for v in roles.values()}
+    pxl = _ship(c, None).load(); im = _ship(c, None)
+    rows = []
+    for y in range(im.height):
+        row = ""
+        for x in range(im.width):
+            r, g, b, a = im.load()[x, y]
+            row += "." if a < 128 else inv.get((r, g, b), ".")
+        rows.append(row)
+    return {
+        "ship": rows, "shipW": SHIP_W, "shipH": SHIP_H,
+        "fx": 8, "fy": 24, "fscale": 0.5,                       # sailor anchor (feet) in boat-local px
+        "pal": {  # fixed (wood) roles
+            "H": "#%02x%02x%02x" % WOOD, "h": "#%02x%02x%02x" % WOOD_D, "L": "#%02x%02x%02x" % WOOD_L,
+            "D": "#%02x%02x%02x" % DECK, "M": "#%02x%02x%02x" % MAST, "o": "#%02x%02x%02x" % OUTLN,
+        },
+        "sea": "#%02x%02x%02x" % SEA, "seaD": "#%02x%02x%02x" % SEA_D, "seaL": "#%02x%02x%02x" % SEA_L,
+        "foam": "#%02x%02x%02x" % FOAM, "skyT": "#%02x%02x%02x" % SKY_T, "skyB": "#%02x%02x%02x" % SKY_B,
+    }
+
 if __name__ == "__main__":
     assets_sheet()
     scene(4).convert("RGB").save(os.path.join(OUT, "ship_scene4.png")); print("wrote ship_scene4.png")
+    scene(3).convert("RGB").save(os.path.join(OUT, "ship_scene3.png")); print("wrote ship_scene3.png")
     scene(2).convert("RGB").save(os.path.join(OUT, "ship_scene2.png")); print("wrote ship_scene2.png")
     print("done")
