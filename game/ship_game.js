@@ -203,6 +203,7 @@
       tc(players.map((p, i) => p.tag + "=" + KEYLABEL[i]).join("   "), W / 2, 414, 2, DIM);
     }
     if (phase === "over" && winner) {
+      if (window.Tournament) Tournament.finish(winner ? winner.tag : null);
       ctx.fillStyle = "rgba(11,22,38,.85)"; ctx.fillRect(0, 0, W, H);
       tc(winner.tag + " WINS!", W / 2, 140, 6, GOLD);
       drawSprite(winner.spr, W / 2, 430, 200 / winner.spr.h, 1);

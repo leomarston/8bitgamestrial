@@ -10,12 +10,12 @@ Just open **`game/index.html`** in any browser (no server needed — the sprite
 data is inlined).
 
 **Flow:** character select → **game select** → the chosen minigame.
-After the fighters lock in, a **CHOOSE A GAME** hub appears (a 7×2 grid).
-**Player 1** drives the cursor (`WASD` + `Space`) and picks a minigame — all **13**
-are live: **Football, Flappy, Graveyard, Runner, Crown Grab, Tile Blitz, Hot
-Potato, Meteor Derby, Tank Duel, Slime Volley, Red Light Green Light, Traffic Run**
-and **Ship Dash**; the last slot previews the **8-BIT CUP** tournament (trophy
-icon, marked COMING SOON until its game logic lands). `Backspace` goes back a step.
+After the fighters lock in, a **CHOOSE A GAME** hub appears (a full 7×2 grid).
+**Player 1** drives the cursor (`WASD` + `Space`) and picks one of **13 minigames** —
+**Football, Flappy, Graveyard, Runner, Crown Grab, Tile Blitz, Hot Potato, Meteor
+Derby, Tank Duel, Slime Volley, Red Light Green Light, Traffic Run** and **Ship
+Dash** — or the **8-BIT CUP** tournament in the 14th slot. `Backspace` goes back a
+step.
 
 ### Controls
 
@@ -270,6 +270,27 @@ aboard) over a wave-and-foam sea with buoy lane dividers and a checkered finish.
 `Enter` / your key = rematch, `Backspace` = menu. Art lives in `art/ship.py`
 (recolourable boat exported to `data.js`); the sea/sky/finish are baked once.
 
+## The 8-BIT CUP (tournament)
+
+`game/tournament.html` — the 14th hub tile. Pick the **gold cup** and the party
+plays **random minigames back-to-back**; each round's winner earns a point and a
+**standings board** shows between rounds (every player's portrait, `X/5` and five
+star pips, sorted by wins, with the **next random game** announced). **First to 5
+wins lifts the cup** — a champion screen with confetti. Draws (e.g. everyone
+wiped out) score no point and just roll another game.
+
+How it hangs together:
+- `game/tournament.js` is the controller: on each visit it applies the round you
+  just returned from, redraws the board, picks the next random game (never an
+  immediate repeat) and launches it.
+- `game/cuphook.js` (loaded by every minigame) makes a game *cup-aware*: while a
+  cup is running it reports the winner and bounces back to the standings; when no
+  cup is running it does nothing, so games still play and rematch normally.
+  Quitting a round with `Backspace` ends the tournament cleanly.
+- Trophy / pip / board art lives in `art/cup.py` (exported to `data.js`).
+
+`Backspace` quits the cup; on the champion screen `Enter` starts a fresh cup.
+
 ## Start countdown
 
 Every minigame opens with the same **“3 · 2 · 1 · GO!”** countdown, drawn over a
@@ -301,9 +322,12 @@ game/            the playable screens
   index.html     character select
   game.js        MK-style select logic (cursors, lock-in, mirror) -> game select
   gameselect.html  the "choose a game" hub
-  gameselect.js  7x2 minigame grid (P1 picks; all 13 games live)
+  gameselect.js  7x2 minigame grid (P1 picks; 13 games + the cup)
   traffic.html / traffic_game.js    TRAFFIC RUN (Frogger coin dash, dash button)
   ship.html / ship_game.js          SHIP DASH (one-button mash boat race)
+  tournament.html / tournament.js   8-BIT CUP (random games, first to 5 wins)
+  cuphook.js     makes each minigame report its winner back to the cup
+  countdown.js   shared 3-2-1-GO start countdown (F1 light beeps)
   crown.html / crown_game.js        CROWN GRAB (carry the crown, dash to steal)
   crown_map1.png / crown_map2.png   the two CROWN GRAB stage backgrounds
   tileblitz.html / tileblitz_game.js  TILE BLITZ (paint the most tiles)

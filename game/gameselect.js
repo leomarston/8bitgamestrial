@@ -100,7 +100,7 @@
     { name: "RED LIGHT", file: "rlgl.html", accent: "#ff8a8a", icon: "rlgl" },
     { name: "TRAFFIC RUN", file: "traffic.html", accent: "#e6d074", icon: "traffic" },
     { name: "SHIP DASH", file: "ship.html", accent: "#4bb3e6", icon: "ship" },
-    { name: "8-BIT CUP", file: "tournament.html", accent: "#ffd54a", icon: "cup", soon: true },
+    { name: "8-BIT CUP", file: "tournament.html", accent: "#ffd54a", icon: "cup" },
   ];
 
   // ---- grid (7x2 holds the growing roster; empty slots show COMING SOON) ----
@@ -118,7 +118,13 @@
     if (e.code === "Backspace") { location.href = "index.html"; return; }
     if (e.code === "Space" || e.code === "KeyF") {
       const g = GAMES[idx];
-      if (g && !g.soon) location.href = g.file; else lockMsg = 1.1;
+      if (g) {
+        try {
+          if (g.icon === "cup") localStorage.setItem("cup", JSON.stringify({ active: true, fresh: true }));   // start a fresh tournament
+          else { const c = JSON.parse(localStorage.getItem("cup") || "{}"); c.active = false; localStorage.setItem("cup", JSON.stringify(c)); }   // normal game -> not a cup round
+        } catch (e2) {}
+        location.href = g.file;
+      } else lockMsg = 1.1;
       return;
     }
     const m = MOVE[e.code]; if (!m) return;

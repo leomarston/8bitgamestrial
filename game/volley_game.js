@@ -245,6 +245,7 @@
       tc("MOVE = YOUR KEYS    JUMP = " + ["W", "UP", "I", "T"].slice(0, count).join(" / "), W / 2, 330, 1, DIM);
     }
     if (phase === "over") {
+      if (window.Tournament) Tournament.finish(winner ? winner.tag : null);
       ctx.fillStyle = "rgba(11,10,20,.84)"; ctx.fillRect(0, 0, W, H);
       if (winner) { tc(winner.tag + " WINS!", W / 2, 130, 6, GOLD);
         drawSprite(winner.spr, W / 2, 400, 200 / winner.spr.h, 1); tc(winner.name + " — LAST ONE STANDING", W / 2, 420, 3, winner.color);

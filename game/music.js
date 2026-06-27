@@ -7,7 +7,7 @@
  * next countdown's GO starts it again. */
 (() => {
   const page = (location.pathname.split("/").pop() || "index.html").toLowerCase();
-  const isMenu = page === "" || page === "index.html" || page === "gameselect.html";
+  const isMenu = page === "" || page === "index.html" || page === "gameselect.html" || page === "tournament.html";
   const TRACKS = ["sfx/music1.mp3", "sfx/music2.mp3", "sfx/music3.mp3", "sfx/music4.mp3"];
 
   const audio = new Audio();

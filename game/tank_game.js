@@ -279,6 +279,7 @@
       tc("MOVE = YOUR KEYS    FIRE = " + ["SPACE", "ENTER", "O", "R"].slice(0, count).join(" / "), W / 2, H / 2 + 70, 1, DIM);
     }
     if (phase === "over") {
+      if (window.Tournament) Tournament.finish(winner ? winner.tag : null);
       ctx.fillStyle = "rgba(11,10,20,.85)"; ctx.fillRect(0, 0, W, H);
       if (winner) { tc(winner.tag + " WINS!", W / 2, 120, 6, GOLD);
         const s = winner.spr[0], scl = 150 / s.h; ctx.drawImage(s.canvas, W / 2 - s.w * scl / 2, 210, s.w * scl, 150);

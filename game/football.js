@@ -209,6 +209,7 @@
     if (phase === "ready") tc(Countdown.label(timer), CXc, CYc - 90, 7, GOLD);
     if (phase === "kickoff" && msg) tc(msg, CXc, CYc - 90, 4, GOLD);
     if (phase === "win") {
+      if (window.Tournament) Tournament.finish(winner ? winner.tag : null);
       ctx.fillStyle = "rgba(8,14,9,.84)"; ctx.fillRect(0, 0, W, H);
       if (winner) {
         tc(winner.name + " WINS!", W / 2, 120, 6, GOLD);

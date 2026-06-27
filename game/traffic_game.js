@@ -209,6 +209,7 @@
       tc("MOVE = YOUR KEYS    DASH = " + ["SPACE", "ENTER", "O", "R"].slice(0, count).join(" / ") + "    FIRST TO 15 WINS", W / 2, 388, 1, DIM);
     }
     if (phase === "over") {
+      if (window.Tournament) Tournament.finish(winner ? winner.tag : null);
       ctx.fillStyle = "rgba(11,10,20,.85)"; ctx.fillRect(0, 0, W, H);
       tc(winner.tag + " WINS!", W / 2, 150, 6, GOLD); drawSprite(winner.spr, W / 2, 420, 200 / winner.spr.h, 1);
       tc(winner.name + " - " + winner.score + " POINTS", W / 2, 440, 3, winner.color);

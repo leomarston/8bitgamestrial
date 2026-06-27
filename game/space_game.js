@@ -156,6 +156,7 @@
       tc(count + " PODS  -  3 HITS AND YOU'RE SPACE DUST  -  LAST POD WINS", W / 2, H / 2 + 46, 2, "#cfe6ff");
     }
     if (phase === "over") {
+      if (window.Tournament) Tournament.finish(winner ? winner.tag : null);
       ctx.fillStyle = "rgba(8,8,22,.82)"; ctx.fillRect(0, 0, W, H);
       if (winner) { tc(winner.tag + " WINS!", W / 2, 140, 6, GOLD); ctx.drawImage(POD[winner.name][0], W / 2 - SW * 5 / 2, 220, SW * 5, SH * 5); tc(winner.name, W / 2, 470, 3, winner.color); }
       else tc("ALL PODS LOST!", W / 2, 260, 5, GOLD);

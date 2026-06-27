@@ -193,6 +193,7 @@
       tc("HOLD YOUR KEYS TO RUN  -  FIRST TO THE FINISH WINS", W / 2, 350, 1, DIM);
     }
     if (phase === "over") {
+      if (window.Tournament) Tournament.finish(winner ? winner.tag : null);
       ctx.fillStyle = "rgba(11,10,20,.85)"; ctx.fillRect(0, 0, W, H);
       if (winner) {
         const crossed = !!winner.finished;                       // truly reached the line vs. only furthest when time ran out

@@ -234,6 +234,7 @@
       tc("THE SCREEN MOVES - DON'T FALL BEHIND - HOLD FORWARD, JUMP THE GAPS", CW / 2, CH / 2 + 36, 2, "#cfe0ff");
     }
     if (phase === "over") {
+      if (window.Tournament) Tournament.finish(winner ? winner.tag : null);
       ctx.fillStyle = "rgba(10,15,31,.86)"; ctx.fillRect(0, 0, CW, CH);
       if (winner) { tc(winner.tag + " SURVIVES!", CW / 2, 150, 6, GOLD);
         const s = fight[winner.name], scl = 150 / s.h; ctx.drawImage(s.canvas, CW / 2 - s.w * scl / 2, 230, s.w * scl, 150);

@@ -222,6 +222,7 @@
       tc(count + " PLAYERS  -  GRAB THE CROWN, HOLD IT LONGEST", W / 2, H / 2 + 44, 2, "#cfe6ff");
     }
     if (phase === "over") {
+      if (window.Tournament) Tournament.finish(winner ? winner.tag : null);
       ctx.fillStyle = "rgba(11,10,20,.85)"; ctx.fillRect(0, 0, W, H);
       if (winner) {
         tc(winner.tag + " IS THE KING!", W / 2, 110, 6, GOLD);

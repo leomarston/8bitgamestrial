@@ -183,6 +183,7 @@
       tc(count + " PLAYERS  -  PAINT THE FLOOR, MOST TILES WINS", W / 2, H / 2 + 44, 2, "#cfe6ff");
     }
     if (phase === "over") {
+      if (window.Tournament) Tournament.finish(winner ? winner.tag : null);
       ctx.fillStyle = "rgba(11,10,20,.85)"; ctx.fillRect(0, 0, W, H);
       if (winner) { tc(winner.tag + " PAINTS THE TOWN!", W / 2, 110, 5, GOLD); const s = fight[winner.name], scl = 180 / s.h; ctx.drawImage(s.canvas, W / 2 - s.w * scl / 2, 190, s.w * scl, 180); }
       else tc("DEAD HEAT!", W / 2, 200, 6, GOLD);

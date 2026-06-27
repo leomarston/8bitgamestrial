@@ -182,6 +182,7 @@
       tc(count + " PLAYERS", W / 2, H / 2 - 40, 2, DIM);
     }
     if (phase === "over") {
+      if (window.Tournament) Tournament.finish(winner ? winner.tag : null);
       ctx.fillStyle = "rgba(8,14,24,.86)"; ctx.fillRect(0, 0, W, H);
       if (winner) {
         tc(winner.name + " WINS!", W / 2, 110, 6, GOLD);
