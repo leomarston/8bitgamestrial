@@ -18,12 +18,18 @@
   const pick = () => { const opts = TRACKS.filter(t => t !== curTrack); curTrack = opts[Math.floor(Math.random() * opts.length)] || TRACKS[0]; return curTrack; };   // never re-roll the same track back-to-back
 
   if (isMenu) {
+    // The tournament standings screen has its OWN looping track; the regular menus
+    // (title + game select) share the main menu track. Each keeps a separate resume
+    // key so the two never seek into each other when you cross between them.
+    const isCup = page === "tournament.html";
+    const menuSrc = isCup ? "sfx/tournament.mp3" : "sfx/menu.mp3";
+    const resumeKey = isCup ? "cupMusicT" : "menuMusicT";
     let resume = 0;
-    try { resume = parseFloat(sessionStorage.getItem("menuMusicT")) || 0; } catch (e) {}
-    audio.src = "sfx/menu.mp3";
+    try { resume = parseFloat(sessionStorage.getItem(resumeKey)) || 0; } catch (e) {}
+    audio.src = menuSrc;
     const start = () => { if (resume) { try { audio.currentTime = Math.min(resume, (audio.duration || 1e9) - 0.05); } catch (e) {} } audio.play().catch(() => {}); };
     if (audio.readyState >= 1) start(); else audio.addEventListener("loadedmetadata", start, { once: true });
-    const save = () => { try { sessionStorage.setItem("menuMusicT", audio.currentTime || 0); } catch (e) {} };
+    const save = () => { try { sessionStorage.setItem(resumeKey, audio.currentTime || 0); } catch (e) {} };
     addEventListener("pagehide", save);
     addEventListener("visibilitychange", () => { if (document.hidden) save(); });
     const kick = () => audio.play().catch(() => {});
