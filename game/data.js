@@ -2172,5 +2172,55 @@ window.GAME_DATA = {
 "q": "#ffaaaa",
 "r": "#284e32"
 }
+},
+"traffic": {
+"car": [
+"......................................",
+"....oLLLLLLLLLLLLLLLLLLLLLLLLLoo......",
+"...oCCCCCCCCCCCCCCCCCCCCCCCCCCCCoo....",
+"..oCCCCCCCWWddWWWWWWWWWWWddCCCCCCCoo..",
+".oCCCCCCCWWWddLLLLLLLLLLWddWCCCCCCCCo.",
+".ttCCCCCCWWWddLLLLLLLLLLLddWWWCCCCCChh",
+".ttCCCCCCWWWddLLLLLLLLLLLddWCCWCCCCChh",
+".ttCCCCCCWWWddLLLLLLLLLLLddWCCCCCCCChh",
+".ttCCCCCCWWWddLLLLLLLLLLLddWCCCCCCCChh",
+".ttddddddWWWddLLLLLLLLLLLddWddddddddhh",
+".ttddddddWWWddLLLLLLLLLLLddWddWdddddhh",
+".ddddddddWWWddLLLLLLLLLLLddWWWdddddCo.",
+"..oddddddWWWddLLLLLLLLLLWddWddddddoo..",
+"...oddddddWWddWWWWWWWWWWWdddddddoo....",
+"....oooooooooooooooooooooooooooo......",
+"......................................"
+],
+"carW": 38,
+"carH": 16,
+"coin": [
+".....RRRRRR.....",
+"....RRGGGGRR....",
+"..RRGGkkkkGGRR..",
+"..RGssGGGGkkGR..",
+".RGssssGGGGGkGR.",
+"RRGssssGGGGGkGRR",
+"RGkGssGGGGGGGkGR",
+"RGkGGGGGGGGGGkGR",
+"RGkGGGGGGGGGGkGR",
+"RGkGGGGGGGGGGkGR",
+"RRGkGGGGGGGGkGRR",
+".RGkGGGGGGGGkGR.",
+"..RGkkGGGGkkGR..",
+"..RRGGkkkkGGRR..",
+"....RRGGGGRR....",
+".....RRRRRR....."
+],
+"coinPal": {
+".": null,
+"R": "#785410",
+"G": "#f4c848",
+"k": "#d09620",
+"s": "#fff4c8"
+},
+"win": "#2e303e",
+"hl": "#fff8c8",
+"tl": "#e0483c"
 }
 };

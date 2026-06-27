@@ -1,4 +1,4 @@
-/* 8-BIT PARTY — Game select hub. 4x2 grid of 8 live minigames, each playable by
+/* 8-BIT PARTY — Game select hub. 6x2 grid of 12 live minigames, each playable by
  * 2-4 players. P1 moves the shared cursor (WASD) and confirms (Space / F); the
  * player strip shows everyone in the party. Backspace returns to character select. */
 (() => {
@@ -42,6 +42,11 @@
   function buildTank(hex) { const b = hex.replace("#", ""); const shade = "#" + [0, 2, 4].map(i => Math.round(parseInt(b.substr(i, 2), 16) * 0.62).toString(16).padStart(2, "0")).join(""); return buildSprite(D.tank.tank, Object.assign({}, TKP, { C: hex, o: shade })); }
   const tkTank = buildTank("#ff5d5d");
   const rlCatch = buildSprite(D.rlgl.catcherFront, D.rlgl.palette), rlLampR = buildSprite(D.rlgl.lampRed, D.rlgl.palette);
+  function lighten(hex, f) { const b = hex.replace("#", ""); return "#" + [0, 2, 4].map(i => Math.max(0, Math.min(255, Math.round(parseInt(b.substr(i, 2), 16) * f))).toString(16).padStart(2, "0")).join(""); }
+  const TR = D.traffic;
+  const trCarPal = base => ({ C: base, L: lighten(base, 1.18), d: lighten(base, 0.70), o: lighten(base, 0.45), W: TR.win, h: TR.hl, t: TR.tl });
+  const trCar = buildSprite(TR.car, trCarPal("#e6d074")), trCarL = flip(trCar), trCar2 = buildSprite(TR.car, trCarPal("#aab6e0"));
+  const trCoin = buildSprite(TR.coin, TR.coinPal);
   let _podIcon = null;
   function podIcon() {                                  // shuttle hull + pilot head
     if (_podIcon) return _podIcon;
@@ -90,6 +95,7 @@
     { name: "TANK DUEL", file: "tank.html", accent: "#c0c6d2", icon: "tank" },
     { name: "SLIME VOLLEY", file: "volley.html", accent: "#5bd1e0", icon: "volley" },
     { name: "RED LIGHT", file: "rlgl.html", accent: "#ff8a8a", icon: "rlgl" },
+    { name: "TRAFFIC RUN", file: "traffic.html", accent: "#e6d074", icon: "traffic" },
   ];
 
   // ---- grid (6x2 holds the growing roster; empty slots show COMING SOON) ----
@@ -243,11 +249,26 @@
     ctx.restore();
     ctx.strokeStyle = "#ff8a8a"; ctx.lineWidth = 3; ctx.strokeRect(ix, iy, iw, ih);
   }
+  function iconTraffic(r) {
+    const ix = r.x + 12, iy = r.y + 12, iw = r.w - 24, ih = r.h - 56;
+    ctx.save(); ctx.beginPath(); ctx.rect(ix, iy, iw, ih); ctx.clip();
+    ctx.fillStyle = "#606068"; ctx.fillRect(ix, iy, iw, 14);                 // stone wall band
+    ctx.fillStyle = "#3a3a40"; ctx.fillRect(ix, iy + 14, iw, ih - 28);       // asphalt
+    ctx.fillStyle = "#b6b6bc";                                               // dashed lane lines
+    for (let ly = iy + 14 + 18; ly < iy + ih - 16; ly += 18) for (let x = ix; x < ix + iw; x += 16) ctx.fillRect(x, ly - 1, 8, 2);
+    ctx.fillStyle = "#4a9646"; ctx.fillRect(ix, iy + ih - 14, iw, 14);       // grass start strip
+    fitDraw(trCar, ix + 6, iy + 20, 46, 20);
+    fitDraw(flip(trCar2), ix + iw - 52, iy + 48, 46, 20);
+    fitDraw(trCoin, ix + iw - 34, iy + 22, 20, 20);
+    fitDraw(spr[p1name], ix + iw / 2 - 14, iy + ih - 46, 28, 36);
+    ctx.restore();
+    ctx.strokeStyle = "#e6d074"; ctx.lineWidth = 3; ctx.strokeRect(ix, iy, iw, ih);
+  }
   function tile(i, t) {
     const r = cell(i), g = GAMES[i];
     if (g) {
       ctx.fillStyle = "#272138"; rr(r.x, r.y, r.w, r.h, 12); ctx.fill();
-      const ic = { football: iconFootball, flappy: iconFlappy, graveyard: iconGraveyard, runner: iconRunner, crown: iconCrown, tileblitz: iconTileBlitz, hotpotato: iconHotPotato, space: iconSpace, tank: iconTank, volley: iconVolley, rlgl: iconRLGL }[g.icon] || iconGraveyard;
+      const ic = { football: iconFootball, flappy: iconFlappy, graveyard: iconGraveyard, runner: iconRunner, crown: iconCrown, tileblitz: iconTileBlitz, hotpotato: iconHotPotato, space: iconSpace, tank: iconTank, volley: iconVolley, rlgl: iconRLGL, traffic: iconTraffic }[g.icon] || iconGraveyard;
       ic(r);
       ctx.fillStyle = "#15121f"; rr(r.x + 8, r.y + r.h - 34, r.w - 16, 24, 7); ctx.fill();
       const ns = Math.min(2, (r.w - 18) / tW(g.name, 1));      // auto-fit long names to the narrower tiles

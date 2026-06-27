@@ -10,11 +10,11 @@ Just open **`game/index.html`** in any browser (no server needed — the sprite
 data is inlined).
 
 **Flow:** character select → **game select** → the chosen minigame.
-After the fighters lock in, a **CHOOSE A GAME** hub appears (a 6×2 grid). **Player
-1** drives the cursor (`WASD` + `Space`) and picks a minigame — all **11** are
-live: **Football, Flappy, Graveyard, Runner, Crown Grab, Tile Blitz, Hot Potato,
-Meteor Derby, Tank Duel, Slime Volley** and **Red Light Green Light**; the last
-slot is a COMING SOON placeholder. `Backspace` goes back a step.
+After the fighters lock in, a **CHOOSE A GAME** hub appears (a full 6×2 grid).
+**Player 1** drives the cursor (`WASD` + `Space`) and picks a minigame — all **12**
+are live: **Football, Flappy, Graveyard, Runner, Crown Grab, Tile Blitz, Hot
+Potato, Meteor Derby, Tank Duel, Slime Volley, Red Light Green Light** and
+**Traffic Run**. `Backspace` goes back a step.
 
 ### Controls
 
@@ -231,6 +231,27 @@ Controls: **GO** by holding any of your keys (**P1 `WASD`/`Space`**, **P2
 arrows/`Enter`**, **P3 `IJKL`/`O`**, **P4 `TFGH`/`R`**); `Enter`/`R` = rematch,
 `Backspace` = menu.
 
+## Minigame: TRAFFIC RUN (2–4 players)
+
+`game/traffic.html` — a **Frogger-style coin dash** for **2–4 players**. Everyone
+starts on the **grass strip at the bottom** and crosses **eight lanes of traffic**
+to grab coins. **The further UP a coin is, the more it's worth** (2 near the road's
+edge, up to 10 at the top), so the big payouts mean braving the busiest lanes.
+**Get run over and you're flung back to the grass** (with a short invincibility
+flash) — **no points lost**, you just start the crossing again. **First to 15
+total points wins.**
+
+Each player has a **DASH** on their action key — a quick burst in the direction
+you're moving, perfect for threading a gap between two cars or diving for a coin.
+Cars run both ways (alternating lanes), wrap around the screen, and vary in speed;
+coins respawn at a fresh random lane the moment one is grabbed. Stone-wall
+scoreboard up top shows each player's live total. Car/coin art lives in
+`art/traffic.py` (exported to `data.js`); the road, wall and grass are baked once.
+
+Controls: **move** with your cluster (**P1 `WASD`**, **P2 arrows**, **P3 `IJKL`**,
+**P4 `TFGH`**), **DASH** with **`Space` / `Enter` / `O` / `R`**;
+`Enter`/`R` = rematch, `Backspace` = menu.
+
 ## Music & sound
 
 `game/music.js` (loaded by every page) handles background music:
@@ -249,7 +270,8 @@ game/            the playable screens
   index.html     character select
   game.js        MK-style select logic (cursors, lock-in, mirror) -> game select
   gameselect.html  the "choose a game" hub
-  gameselect.js  4x2 minigame grid (P1 picks; all 8 games live)
+  gameselect.js  6x2 minigame grid (P1 picks; all 12 games live)
+  traffic.html / traffic_game.js    TRAFFIC RUN (Frogger coin dash, dash button)
   crown.html / crown_game.js        CROWN GRAB (carry the crown, dash to steal)
   crown_map1.png / crown_map2.png   the two CROWN GRAB stage backgrounds
   tileblitz.html / tileblitz_game.js  TILE BLITZ (paint the most tiles)

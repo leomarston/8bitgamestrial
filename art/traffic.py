@@ -26,32 +26,33 @@ CARS = {
 WIN = (46, 48, 62)        # window glass
 WHEEL = (28, 28, 34)
 
-def draw_car(base, facing=1):
-    """Top-down car (drawn from scratch): compact, tapered nose, distinct cabin —
-    proportioned to fit inside one lane and read as a real car, not a stretched bar.
-    Drawn facing RIGHT (front = right)."""
-    body = base; light = lit(base, 1.18); dark = lit(base, 0.70); out = lit(base, 0.45)
-    hl = (255, 248, 200); tl = (224, 72, 60)
-    W, H = 38, 16
+CAR_W, CAR_H = 38, 16
+def _car(c, facing=1):
+    """Render the car using a role->RGBA dict c (body/light/dark/out/win/hl/tl).
+    Same shape used both for the coloured mockup and the recolourable export."""
+    W, H = CAR_W, CAR_H
     im = Image.new("RGBA", (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
-    # body silhouette: rounded rear (left), tapered nose (right)
     sil = [(4, 1), (W - 8, 1), (W - 3, 3), (W - 1, 6), (W - 1, H - 7), (W - 3, H - 4),
            (W - 8, H - 2), (4, H - 2), (1, H - 5), (1, 4)]
-    d.polygon(sil, fill=(*body, 255))
-    d.line(sil + [sil[0]], fill=(*out, 255), width=1)
-    # darker bottom half for a touch of depth
-    d.polygon([(2, H // 2 + 1), (W - 2, H // 2 + 1), (W - 2, H - 6), (W - 7, H - 3), (4, H - 3), (1, H - 5)], fill=(*dark, 255))
-    d.line([(5, 1), (W - 9, 1)], fill=(*light, 255))                              # roofline highlight
-    # cabin: dark glass with a light roof panel and pillars
-    d.rounded_rectangle([9, 3, W - 11, H - 3], 2, fill=(*WIN, 255))               # windshield + rear glass + sides
-    d.rounded_rectangle([13, 4, W - 14, H - 4], 1, fill=(*light, 255))            # roof panel
-    d.rectangle([12, 3, 13, H - 3], fill=(*dark, 255)); d.rectangle([W - 13, 3, W - 12, H - 3], fill=(*dark, 255))  # B-pillars
-    d.line([(W - 11, 4), (W - 8, 6)], fill=(*WIN, 255)); d.line([(W - 11, H - 4), (W - 8, H - 6)], fill=(*WIN, 255))  # raked windshield
-    # bumper line + lights
-    d.rectangle([W - 2, 5, W - 1, 7], fill=(*hl, 255)); d.rectangle([W - 2, H - 8, W - 1, H - 6], fill=(*hl, 255))    # headlights (front)
-    d.rectangle([1, 5, 2, 7], fill=(*tl, 255)); d.rectangle([1, H - 8, 2, H - 6], fill=(*tl, 255))                    # tail lights (rear)
+    d.polygon(sil, fill=c["body"])
+    d.line(sil + [sil[0]], fill=c["out"], width=1)
+    d.polygon([(2, H // 2 + 1), (W - 2, H // 2 + 1), (W - 2, H - 6), (W - 7, H - 3), (4, H - 3), (1, H - 5)], fill=c["dark"])
+    d.line([(5, 1), (W - 9, 1)], fill=c["light"])
+    d.rounded_rectangle([9, 3, W - 11, H - 3], 2, fill=c["win"])
+    d.rounded_rectangle([13, 4, W - 14, H - 4], 1, fill=c["light"])
+    d.rectangle([12, 3, 13, H - 3], fill=c["dark"]); d.rectangle([W - 13, 3, W - 12, H - 3], fill=c["dark"])
+    d.line([(W - 11, 4), (W - 8, 6)], fill=c["win"]); d.line([(W - 11, H - 4), (W - 8, H - 6)], fill=c["win"])
+    d.rectangle([W - 2, 5, W - 1, 7], fill=c["hl"]); d.rectangle([W - 2, H - 8, W - 1, H - 6], fill=c["hl"])
+    d.rectangle([1, 5, 2, 7], fill=c["tl"]); d.rectangle([1, H - 8, 2, H - 6], fill=c["tl"])
     if facing < 0: im = im.transpose(Image.FLIP_LEFT_RIGHT)
     return im
+
+def _car_colors(base):
+    return dict(body=(*base, 255), light=(*lit(base, 1.18), 255), dark=(*lit(base, 0.70), 255),
+                out=(*lit(base, 0.45), 255), win=(*WIN, 255), hl=(255, 248, 200, 255), tl=(224, 72, 60, 255))
+
+def draw_car(base, facing=1):
+    return _car(_car_colors(base), facing)
 
 # ---- coin with a value number (small) ----
 def draw_coin(val):
@@ -168,6 +169,38 @@ def assets_sheet():
         sheet.alpha_composite(up, (j * cw + (cw - up.width) // 2, 8 + (maxh - up.height)))
         lb = pf.text(lab, 1, (235, 232, 245)); sheet.alpha_composite(lb, (j * cw + (cw - lb.width) // 2, sheet.height - 14))
     sheet.convert("RGB").save(os.path.join(OUT, "traffic_assets.png")); print("wrote traffic_assets.png", sheet.size)
+
+def draw_coin_disc():
+    W = 16
+    im = Image.new("RGBA", (W, W), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
+    d.ellipse([0, 0, W - 1, W - 1], fill=(120, 84, 16, 255))
+    d.ellipse([1, 1, W - 2, W - 2], fill=(244, 200, 72, 255))
+    d.ellipse([2, 2, W - 3, W - 3], outline=(208, 150, 32, 255), width=1)
+    d.ellipse([3, 3, 6, 6], fill=(255, 244, 200, 255))
+    return im
+
+def traffic_export():
+    """Recolourable car template (role char-grid) + coin disc grid for the browser game."""
+    rolemap = {"body": ("C", (101, 0, 1)), "light": ("L", (102, 0, 1)), "dark": ("d", (103, 0, 1)),
+               "out": ("o", (104, 0, 1)), "win": ("W", (105, 0, 1)), "hl": ("h", (106, 0, 1)), "tl": ("t", (107, 0, 1))}
+    c = {k: (v[1][0], v[1][1], v[1][2], 255) for k, v in rolemap.items()}
+    inv = {v[1]: v[0] for v in rolemap.values()}
+    def conv(im, look):
+        out = []; pxl = im.load()
+        for y in range(im.height):
+            row = ""
+            for x in range(im.width):
+                r, g, b, a = pxl[x, y]
+                row += "." if a < 128 else look.get((r, g, b), ".")
+            out.append(row)
+        return out
+    car_rows = conv(_car(c, 1), inv)
+    coin_rows = conv(draw_coin_disc(), {(120, 84, 16): "R", (244, 200, 72): "G", (208, 150, 32): "k", (255, 244, 200): "s"})
+    return {
+        "car": car_rows, "carW": CAR_W, "carH": CAR_H,
+        "coin": coin_rows, "coinPal": {".": None, "R": "#785410", "G": "#f4c848", "k": "#d09620", "s": "#fff4c8"},
+        "win": "#%02x%02x%02x" % WIN, "hl": "#fff8c8", "tl": "#e0483c",
+    }
 
 if __name__ == "__main__":
     assets_sheet()
