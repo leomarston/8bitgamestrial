@@ -194,15 +194,19 @@
     }
     if (phase === "over") {
       ctx.fillStyle = "rgba(11,10,20,.85)"; ctx.fillRect(0, 0, W, H);
-      if (winner) { tc(winner.tag + " WINS!", W / 2, 150, 6, GOLD); drawSprite(winner.spr, W / 2, 420, 200 / winner.spr.h, 1); tc(winner.name + " REACHED THE FINISH", W / 2, 440, 3, winner.color); }
-      else tc("NOBODY FINISHED!", W / 2, 250, 5, GOLD);
+      if (winner) {
+        const crossed = !!winner.finished;                       // truly reached the line vs. only furthest when time ran out
+        tc(crossed ? winner.tag + " WINS!" : "TIME'S UP!", W / 2, 150, 6, GOLD);
+        drawSprite(winner.spr, W / 2, 420, 200 / winner.spr.h, 1);
+        tc(crossed ? winner.name + " REACHED THE FINISH" : winner.name + " WAS FURTHEST AHEAD", W / 2, 440, 3, winner.color);
+      } else tc("NOBODY FINISHED!", W / 2, 250, 5, GOLD);
       tc("ENTER = REMATCH     BACKSPACE = MENU", W / 2, 530, 2, DIM);
     }
 
-    window.__rl = { phase, light: light.state, count, x: players.map(p => Math.round(p.x)), finished: players.map(p => p.finished), winner: winner ? winner.tag : null, t: +t0.toFixed(2) };
+    window.__rl = { phase, light: light.state, count, x: players.map(p => Math.round(p.x)), finished: players.map(p => p.finished), winner: winner ? winner.tag : null, byFinish: winner ? !!winner.finished : null, t: +t0.toFixed(2) };
     window.__rlhook = { startX: START_X, finishX: FINISH_X, vmax: VMAX,
       forceLight: (s, dur) => { light.state = s; light.t = dur == null ? 2.0 : dur; },
-      x: () => players.map(p => Math.round(p.x)), tp: (i, x) => { if (players[i]) players[i].x = x; }, lightState: () => light.state };
+      x: () => players.map(p => Math.round(p.x)), tp: (i, x) => { if (players[i]) players[i].x = x; }, lightState: () => light.state, setT: v => { t0 = v; } };
     requestAnimationFrame(t => frame(now, t));
   }
   bakeCourt();
