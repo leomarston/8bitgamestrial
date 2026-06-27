@@ -52,7 +52,7 @@
   const laneY = L => ROAD_TOP + (L + 0.5) * laneH;
   const CAR_SC = (laneH - 8) / T.carH, CW = Math.round(T.carW * CAR_SC), CHt = Math.round(T.carH * CAR_SC);
   const PSC = 1.6, PR = 14, COIN_SC = 2, CR = (T.coin.length * COIN_SC) / 2;
-  const PSPD = 165, DASH_SPEED = 470, DASH_TIME = 0.16, DASH_COOL = 0.6, WIN_SCORE = 15;
+  const PSPD = 330, DASH_SPEED = 940, DASH_TIME = 0.16, DASH_COOL = 0.6, WIN_SCORE = 15;
 
   // ---------- state ----------
   let players, cars, coins, blood, phase, ready, winner, t0;
@@ -69,8 +69,8 @@
     }
     cars = [];
     for (let L = 0; L < LANES; L++) {
-      const dir = L % 2 ? 1 : -1, base = (92 + L * 9) * 2, n = (L % 3 === 0) ? 2 : 1;
-      for (let k = 0; k < n; k++) cars.push({ L, y: laneY(L), x: rnd(-CW, W), dir, spd: base + rnd(-24, 36), col: (Math.random() * CAR_BASE.length) | 0 });
+      const dir = L % 2 ? 1 : -1, base = (92 + L * 9) * 4, n = (L % 3 === 0) ? 2 : 1;
+      for (let k = 0; k < n; k++) cars.push({ L, y: laneY(L), x: rnd(-CW, W), dir, spd: base + rnd(-48, 72), col: (Math.random() * CAR_BASE.length) | 0 });
     }
     coins = []; for (let k = 0; k < Math.max(4, count + 2); k++) coins.push(spawnCoin());
     blood = []; winner = null; t0 = 0; phase = "ready"; ready = 2.2;
