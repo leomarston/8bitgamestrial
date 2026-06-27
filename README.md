@@ -286,14 +286,16 @@ Backspace-to-menu (Backspace is now inert in games).
 `game/tournament.html` — the 14th hub tile. Pick the **gold cup** and the party
 plays **random minigames back-to-back**; each round's winner earns a point and a
 **standings board** shows between rounds (every player's portrait, `X/5` and five
-star pips, sorted by wins, with the **next random game** announced). **First to 5
-wins lifts the cup** — a champion screen with confetti. Draws (e.g. everyone
-wiped out) score no point and just roll another game.
+star pips, sorted by wins). After the winner is celebrated, a **slot-machine
+roulette** spins through the games, decelerates and **lands on the next game**
+(with ticks and a "GET READY!"), then launches it — no buttons, it flows on its
+own. **First to 5 wins lifts the cup** — a champion screen with confetti. Draws
+(e.g. everyone wiped out) score no point and just roll another game.
 
 How it hangs together:
 - `game/tournament.js` is the controller: on each visit it applies the round you
-  just returned from, redraws the board, picks the next random game (never an
-  immediate repeat) and launches it.
+  just returned from, celebrates the star, spins the **next-game roulette** onto a
+  fresh random pick (never an immediate repeat) and launches it.
 - `game/cuphook.js` (loaded by every minigame) makes a game *cup-aware*: while a
   cup is running it reports the winner and bounces back to the standings; when no
   cup is running it does nothing, so games still play and rematch normally.

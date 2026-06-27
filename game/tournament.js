@@ -42,6 +42,7 @@
   }
   function ding() { tone(880, 0, 0.12, 0.22); tone(1318, 0.07, 0.2, 0.22); window.__cupfx.ding++; }                 // a star earned
   function fanfare() { [523, 659, 784, 1046].forEach((f, i) => tone(f, i * 0.13, 0.22, 0.26)); tone(1046, 0.55, 0.6, 0.3); tone(1568, 0.55, 0.6, 0.22); window.__cupfx.fanfare++; }   // champion!
+  function tick() { tone(340, 0, 0.03, 0.12, "square"); }                       // roulette click
   addEventListener("keydown", ac); addEventListener("pointerdown", ac);
 
   // ---- party ----
@@ -53,15 +54,16 @@
 
   // ---- the pool of real minigames (matches the hub, minus the cup) ----
   const POOL = [
-    { name: "FOOTBALL", file: "football.html" }, { name: "FLAPPY", file: "flappy.html" },
-    { name: "GRAVEYARD", file: "graveyard.html" }, { name: "RUNNER", file: "platformer.html" },
-    { name: "CROWN GRAB", file: "crown.html" }, { name: "TILE BLITZ", file: "tileblitz.html" },
-    { name: "HOT POTATO", file: "hotpotato.html" }, { name: "METEOR DERBY", file: "space.html" },
-    { name: "TANK DUEL", file: "tank.html" }, { name: "SLIME VOLLEY", file: "volley.html" },
-    { name: "RED LIGHT", file: "rlgl.html" }, { name: "TRAFFIC RUN", file: "traffic.html" },
-    { name: "SHIP DASH", file: "ship.html" },
+    { name: "FOOTBALL", file: "football.html", accent: "#6bd66b" }, { name: "FLAPPY", file: "flappy.html", accent: "#5db4ff" },
+    { name: "GRAVEYARD", file: "graveyard.html", accent: "#79d36a" }, { name: "RUNNER", file: "platformer.html", accent: "#5cc24c" },
+    { name: "CROWN GRAB", file: "crown.html", accent: "#ffd54a" }, { name: "TILE BLITZ", file: "tileblitz.html", accent: "#ff7ad0" },
+    { name: "HOT POTATO", file: "hotpotato.html", accent: "#ff8e34" }, { name: "METEOR DERBY", file: "space.html", accent: "#7aa7ff" },
+    { name: "TANK DUEL", file: "tank.html", accent: "#c0c6d2" }, { name: "SLIME VOLLEY", file: "volley.html", accent: "#5bd1e0" },
+    { name: "RED LIGHT", file: "rlgl.html", accent: "#ff8a8a" }, { name: "TRAFFIC RUN", file: "traffic.html", accent: "#e6d074" },
+    { name: "SHIP DASH", file: "ship.html", accent: "#4bb3e6" },
   ];
-  const TARGET = 5, AUTO_DELAY = 3.6;   // standings auto-rolls into the next game (no button)
+  const TARGET = 5;
+  const RESULT_DUR = 1.8, SPIN_DUR = 2.6, LAND_HOLD = 1.0;   // celebrate -> spin the roulette -> launch
 
   // ---- cup state: init fresh from the hub, or apply the round we just returned from ----
   function load() { try { return JSON.parse(localStorage.getItem("cup")); } catch (e) { return null; } }
@@ -88,6 +90,11 @@
     const opts = POOL.filter(g => g.file !== cup.lastGame);
     nextGame = (opts.length ? opts : POOL)[Math.floor(Math.random() * (opts.length ? opts.length : POOL.length))];
   }
+  // roulette schedule: spin a couple of loops and land exactly on nextGame
+  const RLEN = POOL.length;
+  const RTARGET = nextGame ? POOL.indexOf(nextGame) : 0;
+  const RSTART = Math.floor(Math.random() * RLEN);
+  const RN = 2 * RLEN + ((RTARGET - RSTART + RLEN) % RLEN);   // total index-steps
 
   // ---- input ----
   let advancing = false;
@@ -149,12 +156,31 @@
         if (k === newIdx && el < 0.55) { ctx.save(); ctx.globalAlpha = Math.max(0, 1 - el / 0.55); const rr = 10 + el * 70; for (let s = 0; s < 6; s++) { const a = s / 6 * 7; ctx.fillStyle = "#fff8d0"; ctx.fillRect((px + Math.cos(a) * rr) | 0, (py + Math.sin(a) * rr) | 0, 3, 3); } ctx.restore(); }
       }
     });
-    ctx.fillStyle = "#15101f"; ctx.fillRect(0, H - 70, W, 70); ctx.fillStyle = GOLD; ctx.fillRect(0, H - 70, W, 3);
-    tc("NEXT GAME:  " + (nextGame ? nextGame.name : "-"), W / 2, H - 58, 3, GOLDL);
-    const prog = Math.max(0, Math.min(1, el / AUTO_DELAY)), bw2 = 420, bx2 = (W - bw2) / 2, by2 = H - 28;   // auto-launch countdown bar
-    ctx.fillStyle = "rgba(255,255,255,.14)"; ctx.fillRect(bx2, by2, bw2, 9);
-    ctx.fillStyle = GOLD; ctx.fillRect(bx2, by2, bw2 * prog, 9);
-    tc("ESC = PAUSE", W / 2, H - 14, 1, DIM);
+  }
+
+  // ---- next-game roulette (slot reel that decelerates onto the chosen game) ----
+  function drawRoulette(posAbs, landed, holdEl) {
+    ctx.fillStyle = "rgba(8,6,16,.78)"; ctx.fillRect(0, 0, W, H);   // dim the board behind
+    tc("NEXT GAME", W / 2, H / 2 - 116, 4, GOLD);
+    const winW = 660, winH = 96, wx = (W - winW) / 2, wy = H / 2 - winH / 2;
+    ctx.fillStyle = "#15101f"; ctx.fillRect(wx, wy, winW, winH);
+    const base = Math.floor(posAbs), frac = posAbs - base, CELL = 360, cx = W / 2;
+    ctx.save(); ctx.beginPath(); ctx.rect(wx + 6, wy, winW - 12, winH); ctx.clip();
+    for (let d = -2; d <= 2; d++) {
+      const g = POOL[((base + d) % RLEN + RLEN) % RLEN];
+      const x = cx + (d - frac) * CELL, dist = Math.abs(d - frac);
+      const a = Math.max(0, 1 - dist * 0.62); if (a <= 0.02) continue;
+      ctx.globalAlpha = a; tc(g.name, x, H / 2 - 7 * 3 / 2, 3, g.accent); ctx.globalAlpha = 1;
+    }
+    ctx.restore();
+    // gold selection frame + markers, flashing on land
+    const flash = landed ? (0.55 + 0.45 * Math.sin(holdEl * 22)) : 1, my = H / 2;
+    ctx.globalAlpha = flash; ctx.strokeStyle = GOLD; ctx.lineWidth = 4; ctx.strokeRect(wx + 2, wy + 2, winW - 4, winH - 4);
+    ctx.fillStyle = GOLD;
+    ctx.beginPath(); ctx.moveTo(wx - 10, my - 13); ctx.lineTo(wx - 10, my + 13); ctx.lineTo(wx + 8, my); ctx.closePath(); ctx.fill();              // ▶ into window
+    ctx.beginPath(); ctx.moveTo(wx + winW + 10, my - 13); ctx.lineTo(wx + winW + 10, my + 13); ctx.lineTo(wx + winW - 8, my); ctx.closePath(); ctx.fill();   // ◀ into window
+    ctx.globalAlpha = 1;
+    if (landed) tc("GET READY!", W / 2, H / 2 + 78, 3, GOLDL);
   }
 
   let confetti = null;
@@ -171,13 +197,27 @@
     tc("ENTER = NEW CUP      ESC = MENU", W / 2, H - 122, 2, DIM);
   }
 
-  // ---- loop ----
-  let t0 = -1, soundDone = false;
+  // ---- loop: champion screen, OR  board(celebrate) -> roulette spin -> land -> launch ----
+  let t0 = -1, soundDone = false, lastFloor = -1, landSound = false;
   function frame(t) {
     if (t0 < 0) t0 = t; const el = (t - t0) / 1000;
     if (!soundDone) { soundDone = true; if (champ >= 0) fanfare(); else if (celebrate) ding(); }
-    if (champ >= 0) drawChampion(el);
-    else { drawStandings(el); if (el >= AUTO_DELAY) startNext(); }   // auto-roll into the next game
+    if (champ >= 0) { drawChampion(el); requestAnimationFrame(frame); return; }
+    drawStandings(el);                                          // board + win celebration stays behind
+    if (el >= RESULT_DUR) {
+      const re = el - RESULT_DUR;
+      if (re < SPIN_DUR) {
+        const x = re / SPIN_DUR, pos = (1 - Math.pow(1 - x, 3)) * RN, fl = Math.floor(pos);   // ease-out: decelerates
+        if (fl !== lastFloor) { lastFloor = fl; tick(); }
+        drawRoulette(RSTART + pos, false, 0);
+        window.__roul = { phase: "spin", target: nextGame ? nextGame.file : null };
+      } else {
+        if (!landSound) { landSound = true; ding(); }
+        drawRoulette(RSTART + RN, true, re - SPIN_DUR);
+        window.__roul = { phase: "land", target: nextGame ? nextGame.file : null };
+        if (re >= SPIN_DUR + LAND_HOLD) startNext();
+      }
+    } else window.__roul = { phase: "result", target: nextGame ? nextGame.file : null };
     requestAnimationFrame(frame);
   }
   window.__cup = { phase: champ >= 0 ? "champion" : "standings", count, wins: cup.wins.slice(0, count), next: nextGame ? nextGame.file : null, lastWinner, lastDraw, celebrate, champion: champ >= 0 ? "P" + (champ + 1) : null };
