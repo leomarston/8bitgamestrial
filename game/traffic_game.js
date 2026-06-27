@@ -98,7 +98,6 @@
   window.addEventListener("keydown", e => {
     audioReady = true;
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(e.code)) e.preventDefault();
-    if (e.code === "Backspace") { location.href = "gameselect.html"; return; }
     if (phase === "over" && (e.code === "Enter" || e.code === "KeyR" || e.code === "Space")) { if (window.GameMusic) window.GameMusic.next(); reset(); return; }
     held[e.code] = true;
     if (e.repeat) return;
@@ -213,7 +212,7 @@
       ctx.fillStyle = "rgba(11,10,20,.85)"; ctx.fillRect(0, 0, W, H);
       tc(winner.tag + " WINS!", W / 2, 150, 6, GOLD); drawSprite(winner.spr, W / 2, 420, 200 / winner.spr.h, 1);
       tc(winner.name + " - " + winner.score + " POINTS", W / 2, 440, 3, winner.color);
-      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "ENTER = REMATCH     BACKSPACE = MENU", W / 2, 530, 2, DIM);
+      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "ENTER = REMATCH     ESC = PAUSE", W / 2, 530, 2, DIM);
     }
 
     window.__tr = { phase, count, scores: players.map(p => p.score), winner: winner ? winner.tag : null,

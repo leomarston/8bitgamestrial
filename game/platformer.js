@@ -107,7 +107,6 @@
   window.addEventListener("keydown", e => {
     audioReady = true;
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(e.code)) e.preventDefault();
-    if (e.code === "Backspace") { location.href = "gameselect.html"; return; }
     if (phase === "over" && (e.code === "Enter" || e.code === "KeyR" || e.code === "Space")) { if (window.GameMusic) window.GameMusic.next(); reset(); return; }
     if (!e.repeat) { for (let i = 0; i < count; i++) if (PMOVE[i].jump.includes(e.code)) { jump(players[i]); break; } }
     held[e.code] = true;
@@ -240,7 +239,7 @@
         const s = fight[winner.name], scl = 150 / s.h; ctx.drawImage(s.canvas, CW / 2 - s.w * scl / 2, 230, s.w * scl, 150);
         tc(winner.name + " WINS", CW / 2, 400, 4, winner.color);
       } else tc("EVERYONE FELL!", CW / 2, 250, 6, GOLD);
-      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "ENTER = REMATCH     BACKSPACE = MENU", CW / 2, 470, 2, DIM);
+      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "ENTER = REMATCH     ESC = PAUSE", CW / 2, 470, 2, DIM);
     }
     window.__rn = { phase, count, alive: players.map(p => p.alive), winner: winner ? winner.tag : null, camx: Math.round(cam), x: players.map(p => Math.round(p.x)), squish: players.map(p => +p.squish.toFixed(2)), seed: SEED };
     window.__rnhook = { tp: (i, x, y) => { if (players[i]) { players[i].x = x; players[i].y = y; players[i].vy = 0; } }, kill: i => { if (players[i]) players[i].alive = false; } };

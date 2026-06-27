@@ -83,7 +83,6 @@
   const goHeld = i => KEYS[i].some(k => held[k]);
   window.addEventListener("keydown", e => {
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(e.code)) e.preventDefault();
-    if (e.code === "Backspace") { location.href = "gameselect.html"; return; }
     if (phase === "over" && (e.code === "Enter" || e.code === "KeyR" || e.code === "Space")) { if (window.GameMusic) window.GameMusic.next(); reset(); return; }
     held[e.code] = true;
   });
@@ -201,7 +200,7 @@
         drawSprite(winner.spr, W / 2, 420, 200 / winner.spr.h, 1);
         tc(crossed ? winner.name + " REACHED THE FINISH" : winner.name + " WAS FURTHEST AHEAD", W / 2, 440, 3, winner.color);
       } else tc("NOBODY FINISHED!", W / 2, 250, 5, GOLD);
-      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "ENTER = REMATCH     BACKSPACE = MENU", W / 2, 530, 2, DIM);
+      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "ENTER = REMATCH     ESC = PAUSE", W / 2, 530, 2, DIM);
     }
 
     window.__rl = { phase, light: light.state, count, x: players.map(p => Math.round(p.x)), finished: players.map(p => p.finished), winner: winner ? winner.tag : null, byFinish: winner ? !!winner.finished : null, t: +t0.toFixed(2) };

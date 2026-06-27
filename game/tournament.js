@@ -34,6 +34,7 @@
   let actx = null; window.__cupfx = { ding: 0, fanfare: 0 };
   function ac() { try { if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } if (actx.state === "suspended") actx.resume().catch(() => {}); return actx; }
   function tone(freq, start, dur, vol, type) {
+    try { if (localStorage.getItem("sfxOff") === "1") return; } catch (e) {}
     const c = ac(); if (!c) return; const t0 = c.currentTime + start;
     const o = c.createOscillator(), g = c.createGain(); o.type = type || "square"; o.frequency.setValueAtTime(freq, t0);
     g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol, t0 + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
@@ -95,7 +96,6 @@
   function quit() { cup.active = false; save(cup); location.href = "gameselect.html"; }
   window.addEventListener("keydown", e => {
     if (["Space", "Enter", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
-    if (e.code === "Backspace") { quit(); return; }
     if (champ >= 0 && ["Enter", "Space", "KeyR"].includes(e.code)) newCup();   // champion: start a fresh cup
     // (between rounds the cup auto-advances — no start button)
   });
@@ -154,7 +154,7 @@
     const prog = Math.max(0, Math.min(1, el / AUTO_DELAY)), bw2 = 420, bx2 = (W - bw2) / 2, by2 = H - 28;   // auto-launch countdown bar
     ctx.fillStyle = "rgba(255,255,255,.14)"; ctx.fillRect(bx2, by2, bw2, 9);
     ctx.fillStyle = GOLD; ctx.fillRect(bx2, by2, bw2 * prog, 9);
-    tc("BACKSPACE = QUIT CUP", W / 2, H - 14, 1, DIM);
+    tc("ESC = PAUSE", W / 2, H - 14, 1, DIM);
   }
 
   let confetti = null;
@@ -168,7 +168,7 @@
     drawSprite(SPR[champ], 360, H - 40, 2.0);
     text("P" + (champ + 1) + "  " + NAMES[champ], 430, H - 64, 4, PCOL[champ]);
     text("WINS THE 8-BIT CUP", 430, H - 30, 2, DIM);
-    tc("ENTER = NEW CUP      BACKSPACE = MENU", W / 2, H - 122, 2, DIM);
+    tc("ENTER = NEW CUP      ESC = MENU", W / 2, H - 122, 2, DIM);
   }
 
   // ---- loop ----

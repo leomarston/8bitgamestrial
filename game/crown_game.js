@@ -84,7 +84,6 @@
   window.addEventListener("keydown", e => {
     audioReady = true;
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(e.code)) e.preventDefault();
-    if (e.code === "Backspace") { location.href = "gameselect.html"; return; }
     if (phase === "over" && (e.code === "Enter" || e.code === "KeyR" || e.code === "Space")) { if (window.GameMusic) window.GameMusic.next(); reset(); return; }
     if (phase === "play" && !e.repeat) { for (let i = 0; i < count; i++) if (CTRL[i].dash.includes(e.code)) { doDash(players[i]); break; } }
     held[e.code] = true;
@@ -231,7 +230,7 @@
       } else tc("A DEAD HEAT!", W / 2, 200, 6, GOLD);
       const order = players.slice().sort((a, b) => b.holdMs - a.holdMs); let y = 430;
       for (const p of order) { tc(p.tag + " " + p.name + "  " + ms(p.holdMs) + "S", W / 2, y, 2, p.color); y += 24; }
-      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "ENTER = REMATCH     BACKSPACE = MENU", W / 2, y + 12, 2, DIM);
+      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "ENTER = REMATCH     ESC = PAUSE", W / 2, y + 12, 2, DIM);
     }
     window.__cg = { phase, map: mapIdx, count, holder: crown.holder ? players.indexOf(crown.holder) : null, hold: players.map(p => Math.round(p.holdMs)), black: players.map(p => +p.black.toFixed(2)), t: +timeLeft.toFixed(1), winner: winner ? winner.tag : null };
     window.__cghook = {

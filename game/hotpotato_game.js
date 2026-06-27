@@ -87,7 +87,6 @@
   window.addEventListener("keydown", e => {
     audioReady = true;
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(e.code)) e.preventDefault();
-    if (e.code === "Backspace") { location.href = "gameselect.html"; return; }
     if (phase === "over" && (e.code === "Enter" || e.code === "KeyR" || e.code === "Space")) { if (window.GameMusic) window.GameMusic.next(); reset(); return; }
     if (phase === "play" && !e.repeat) { for (let i = 0; i < count; i++) if (players[i].alive && CTRL[i].dash.includes(e.code)) { doDash(players[i]); break; } }
     held[e.code] = true;
@@ -208,7 +207,7 @@
     if (phase === "boom") drawBoom();
     for (const s of sparks) { ctx.fillStyle = s.c; ctx.fillRect(s.x | 0, s.y | 0, 3, 3); }
     hud();
-    if (phase === "play") tc("PASS BY TOUCH/DASH  -  DON'T HOLD IT AT ZERO  -  BACKSPACE MENU", W / 2, H - 38, 1, DIM);
+    if (phase === "play") tc("PASS BY TOUCH/DASH  -  DON'T HOLD IT AT ZERO  -  ESC PAUSE", W / 2, H - 38, 1, DIM);
     if (msgT > 0) tc(msg, W / 2, 80, 3, GOLD);
     if (phase === "ready") {
       ctx.fillStyle = "rgba(11,10,20,.55)"; ctx.fillRect(0, 0, W, H);
@@ -221,7 +220,7 @@
       ctx.fillStyle = "rgba(11,10,20,.85)"; ctx.fillRect(0, 0, W, H);
       if (winner) { tc(winner.tag + " SURVIVES!", W / 2, 130, 6, GOLD); const s = fight[winner.name], scl = 200 / s.h; ctx.drawImage(s.canvas, W / 2 - s.w * scl / 2, 210, s.w * scl, 200); tc(winner.name + " WINS", W / 2, 430, 4, winner.color); }
       else tc("EVERYONE BLEW UP!", W / 2, 240, 5, GOLD);
-      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "ENTER = REMATCH      BACKSPACE = MENU", W / 2, 500, 2, DIM);
+      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "ENTER = REMATCH      ESC = PAUSE", W / 2, 500, 2, DIM);
     }
     window.__hp = { phase, count, map: mapIdx, holder: bomb.holder ? players.indexOf(bomb.holder) : null, alive: players.map(p => p.alive), fuse: +fuse.toFixed(2), winner: winner ? winner.tag : null };
     window.__hphook = { tp: (i, x, y) => { if (players[i]) { players[i].x = x; players[i].y = y; } }, dash: i => players[i] && doDash(players[i]), give: i => { bomb.holder = players[i]; }, setFuse: t => { fuse = t; }, pos: () => players.map(p => [Math.round(p.x), Math.round(p.y)]) };

@@ -103,7 +103,6 @@
   function jump(p) { if (p.alive && p.onG && phase === "play") { p.vy = -PJUMP; p.onG = false; } }
   window.addEventListener("keydown", e => {
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(e.code)) e.preventDefault();
-    if (e.code === "Backspace") { location.href = "gameselect.html"; return; }
     if (phase === "over" && (e.code === "Enter" || e.code === "KeyR" || e.code === "Space")) { if (window.GameMusic) window.GameMusic.next(); reset(); return; }
     held[e.code] = true;
     if (e.repeat) return;
@@ -250,7 +249,7 @@
       if (winner) { tc(winner.tag + " WINS!", W / 2, 130, 6, GOLD);
         drawSprite(winner.spr, W / 2, 400, 200 / winner.spr.h, 1); tc(winner.name + " — LAST ONE STANDING", W / 2, 420, 3, winner.color);
       } else tc("DRAW!", W / 2, 240, 6, GOLD);
-      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "ENTER = REMATCH     BACKSPACE = MENU", W / 2, 520, 2, DIM);
+      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "ENTER = REMATCH     ESC = PAUSE", W / 2, 520, 2, DIM);
     }
 
     window.__vb = { phase, count, pts: players.map(p => p.pts), alive: players.map(p => p.alive),

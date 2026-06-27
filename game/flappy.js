@@ -76,7 +76,6 @@
   function doFlap(b) { if (b && b.alive && phase === "play") { b.vy = FLAP; b.flap = 0.18; } }
   window.addEventListener("keydown", e => {
     if (["ArrowUp", "ArrowDown", "Space"].includes(e.code)) e.preventDefault();
-    if (e.code === "Backspace") { e.preventDefault(); location.href = "gameselect.html"; return; }
     if (phase === "over" && (e.code === "Enter" || e.code === "KeyR" || e.code === "Space")) { if (window.GameMusic) window.GameMusic.next(); reset(); return; }
     if (e.repeat) return;
     for (let i = 0; i < count; i++) if (PKEYS[i].includes(e.code)) { doFlap(birds[i]); break; }
@@ -190,7 +189,7 @@
       } else tc("DRAW!", W / 2, 200, 6, GOLD);
       const order = birds.slice().sort((a, b) => b.score - a.score);
       let y = 410; for (const b of order) { tc(b.name + "   " + b.score + " PIPES", W / 2, y, 2, b.color); y += 26; }
-      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "ENTER = REMATCH     BACKSPACE = MENU", W / 2, y + 16, 2, DIM);
+      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "ENTER = REMATCH     ESC = PAUSE", W / 2, y + 16, 2, DIM);
     }
     window.__dbg = { phase, count, scores: birds.map(b => b.score), alive: birds.map(b => b.alive), winner: winner ? winner.name : null };
     window.__fhook = {

@@ -13,6 +13,7 @@
   const audio = new Audio();
   audio.loop = true;
   audio.volume = isMenu ? 0.45 : 0.5;
+  try { if (localStorage.getItem("musicOff") === "1") audio.muted = true; } catch (e) {}
   let curTrack = "", started = false;
   const pick = () => { const opts = TRACKS.filter(t => t !== curTrack); curTrack = opts[Math.floor(Math.random() * opts.length)] || TRACKS[0]; return curTrack; };   // never re-roll the same track back-to-back
 

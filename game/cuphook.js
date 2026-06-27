@@ -7,10 +7,6 @@
   try { cup = JSON.parse(localStorage.getItem("cup")); } catch (e) {}
   const active = !!(cup && cup.active);
 
-  function endCup() { try { const c = JSON.parse(localStorage.getItem("cup")) || {}; c.active = false; localStorage.setItem("cup", JSON.stringify(c)); } catch (e) {} }
-  // Quitting a cup round to the menu (Backspace) must end the tournament, so a
-  // later normal game isn't mistaken for a cup round. Capture so it runs first.
-  addEventListener("keydown", e => { if (e.code === "Backspace" && active) endCup(); }, true);
 
   let done = false;
   window.Tournament = {

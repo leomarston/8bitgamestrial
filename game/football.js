@@ -84,7 +84,6 @@
 
   // ---- input: any of a player's keys flips that paddle ----
   window.addEventListener("keydown", e => {
-    if (e.code === "Backspace") { e.preventDefault(); location.href = "gameselect.html"; return; }
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(e.code)) e.preventDefault();
     if (phase === "win" && (e.code === "KeyR" || e.code === "Enter" || e.code === "Space")) { if (window.GameMusic) window.GameMusic.next(); reset(true); return; }
     if (e.repeat) return;
@@ -216,7 +215,7 @@
         const s = spr[winner.name], sc = 210 / s.h; ctx.drawImage(s.canvas, W / 2 - s.w * sc / 2, 200, s.w * sc, 210);
         tc("LAST WALL STANDING", W / 2, 440, 3, winner.color);
       } else tc("DRAW!", W / 2, 240, 6, GOLD);
-      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "ENTER = REMATCH      BACKSPACE = MENU", W / 2, 520, 2, DIM);
+      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "ENTER = REMATCH      ESC = PAUSE", W / 2, 520, 2, DIM);
     }
     window.__pong = { phase, count, lives: players.slice(0, count).map(p => p.lives), alive: players.slice(0, count).map(p => p.alive), dir: players.slice(0, count).map(p => p.dir), winner: winner ? winner.name : null };
     window.__pghook = {

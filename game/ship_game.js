@@ -86,7 +86,6 @@
   window.addEventListener("keydown", e => {
     audioReady = true;
     if (["Space", "Enter", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
-    if (e.code === "Backspace") { location.href = "gameselect.html"; return; }
     if (phase === "over" && !e.repeat && (KEYS.includes(e.code) || e.code === "Enter" || e.code === "Space")) { if (window.GameMusic) window.GameMusic.next(); reset(); return; }
     if (e.repeat) return;                           // holding the key is NOT a stroke — you must mash
     held[e.code] = true;
@@ -208,7 +207,7 @@
       tc(winner.tag + " WINS!", W / 2, 140, 6, GOLD);
       drawSprite(winner.spr, W / 2, 430, 200 / winner.spr.h, 1);
       tc(winner.name + " ROWED HOME FIRST", W / 2, 450, 3, winner.color);
-      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "MASH / ENTER = REMATCH     BACKSPACE = MENU", W / 2, 540, 2, DIM);
+      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "MASH / ENTER = REMATCH     ESC = PAUSE", W / 2, 540, 2, DIM);
     }
 
     window.__sh = { phase, count, winner: winner ? winner.tag : null,

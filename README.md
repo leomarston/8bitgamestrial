@@ -61,7 +61,7 @@ step.
   **Last player standing wins.** (Two players = classic first-to-3-against.)
 
 Controls (tap to flip your paddle): **P1 `WASD`/`Space`**, **P2 arrows/`Enter`**,
-**P3 `IJKL`/`O`**, **P4 `TGHR`**; `Backspace` = menu, `Enter` = rematch. Player
+**P3 `IJKL`/`O`**, **P4 `TGHR`**; `Esc` = pause, `Enter` = rematch. Player
 count and fighters come from the select screen (defaults if launched directly).
 
 ## Minigame: FLAPPY DUEL (2–4 player)
@@ -78,7 +78,7 @@ count and fighters come from the select screen (defaults if launched directly).
 - Clean 4-bit world: flat sky, simple clouds, green pipes, scrolling ground.
 
 Controls (tap to flap): **P1 `WASD`/`Space`**, **P2 arrows**, **P3 `IJKL`/`O`**,
-**P4 `TGHR`**; `Enter`/`R` = rematch, `Backspace` = menu. Player count + fighters
+**P4 `TGHR`**; `Enter`/`R` = rematch, `Esc` = pause. Player count + fighters
 come from the select screen.
 
 ## Minigame: GRAVEYARD (turn-into-a-zombie tag, 2–4 players)
@@ -97,7 +97,7 @@ zombie groan. (The turn-into-a-zombie twist only changes play at 3–4 players; 
 2 players it's simply last-human-standing.)
 
 Controls: **P1 `WASD`/`Space`**, **P2 arrows/`Enter`**, **P3 `IJKL`/`O`**,
-**P4 `TFGH`/`R`**; `Enter`/`R` = rematch, `Backspace` = menu. Art in
+**P4 `TFGH`/`R`**; `Enter`/`R` = rematch, `Esc` = pause. Art in
 `art/graveyard.py`, sounds in `game/sfx/`.
 
 ## Minigame: RUNNER (auto-scroll platformer, 2–4 players)
@@ -120,7 +120,7 @@ Controls: **P1 `A`/`D`+`W`**, **P2 arrows+`Up`**, **P3 `J`/`L`+`I`**, **P4 `F`/`
   Art lives in `art/blocks.py`.
 
 Controls: **P1 `A`/`D` + `W` (jump)**, **P2 arrows + `Up` (jump)**, `Enter`/`R`
-= rematch, `Backspace` = menu.
+= rematch, `Esc` = pause.
 
 ## Minigame: CROWN GRAB (king of the crown, 2–4 players)
 
@@ -136,7 +136,7 @@ the **Wall** down the middle), and **starting spots are randomised** for fairnes
 Art lives in `art/crown.py`; stages export to `game/crown_map*.png`.
 
 Controls: **P1 `WASD`/`Space`**, **P2 arrows/`Enter`**, **P3 `IJKL`/`O`**,
-**P4 `TFGH`/`R`**; `Enter`/`Space`/`R` = rematch, `Backspace` = menu.
+**P4 `TFGH`/`R`**; `Enter`/`Space`/`R` = rematch, `Esc` = pause.
 
 ## Minigame: TILE BLITZ (paint the floor)
 
@@ -148,7 +148,7 @@ tiles wins**. Live counts + a territory share bar. Art in `art/tilebangers.py`;
 the floor tile is one template recoloured per player; starts are randomised.
 
 Controls: **P1 `WASD`/`Space`**, **P2 arrows/`Enter`**, **P3 `IJKL`/`O`**,
-**P4 `TFGH`/`R`**; `Enter`/`Space`/`R` = rematch, `Backspace` = menu.
+**P4 `TFGH`/`R`**; `Enter`/`Space`/`R` = rematch, `Esc` = pause.
 
 ## Minigame: HOT POTATO (don't hold the bomb)
 
@@ -166,7 +166,7 @@ doorway gaps). Art lives in `art/hotpotato.py`; stages export to
 `game/hotpotato_map{1,2,3}.png`.
 
 Controls: **P1 `WASD`/`Space`**, **P2 arrows/`Enter`**, **P3 `IJKL`/`O`**,
-**P4 `TFGH`/`R`**; `Enter`/`Space`/`R` = rematch, `Backspace` = menu.
+**P4 `TFGH`/`R`**; `Enter`/`Space`/`R` = rematch, `Esc` = pause.
 
 ## Minigame: METEOR DERBY (space dodge)
 
@@ -181,7 +181,7 @@ join, so 4 pods aren't cramped in the lane. Starting sides are **randomised ever
 round**. Art lives in `art/space.py`; the starfield exports to `game/space_bg.png`.
 
 Controls: **P1 `A`/`D`**, **P2 `←`/`→`**, **P3 `J`/`L`**, **P4 `F`/`H`**,
-`Enter`/`Space`/`R` = rematch, `Backspace` = menu.
+`Enter`/`Space`/`R` = rematch, `Esc` = pause.
 
 ## Minigame: TANK DUEL (2–4 players)
 
@@ -198,7 +198,7 @@ maps render to `art/out/tank_map_*.png`); the map is generated live in JS.
 
 Controls: move with your cluster (**P1 `WASD`**, **P2 arrows**, **P3 `IJKL`**,
 **P4 `TFGH`**), **fire** with **`Space` / `Enter` / `O` / `R`**;
-`Enter`/`R` = rematch, `Backspace` = menu.
+`Enter`/`R` = rematch, `Esc` = pause.
 
 ## Minigame: SLIME VOLLEY (2–4 players)
 
@@ -213,7 +213,7 @@ players, a big ball, roomy areas. Court is drawn live; mockup art in `art/volley
 
 Controls: **move** with your cluster L/R (**P1 `A`/`D`**, **P2 `←`/`→`**, **P3
 `J`/`L`**, **P4 `F`/`H`**), **jump** with **`W` / `↑` / `I` / `T`** (your action
-key also jumps); `Enter`/`R` = rematch, `Backspace` = menu.
+key also jumps); `Enter`/`R` = rematch, `Esc` = pause.
 
 ## Minigame: RED LIGHT GREEN LIGHT (2–4 players)
 
@@ -231,7 +231,7 @@ round. Catcher/lamp art in `art/rlgl.py` (exported to `data.js`).
 
 Controls: **GO** by holding any of your keys (**P1 `WASD`/`Space`**, **P2
 arrows/`Enter`**, **P3 `IJKL`/`O`**, **P4 `TFGH`/`R`**); `Enter`/`R` = rematch,
-`Backspace` = menu.
+`Esc` = pause.
 
 ## Minigame: TRAFFIC RUN (2–4 players)
 
@@ -253,7 +253,7 @@ scoreboard up top shows each player's live total. Car/coin art lives in
 
 Controls: **move** with your cluster (**P1 `WASD`**, **P2 arrows**, **P3 `IJKL`**,
 **P4 `TFGH`**), **DASH** with **`Space` / `Enter` / `O` / `R`**;
-`Enter`/`R` = rematch, `Backspace` = menu.
+`Enter`/`R` = rematch, `Esc` = pause.
 
 ## Minigame: SHIP DASH (2–4 players)
 
@@ -267,8 +267,19 @@ One key each: **P1 `Space`**, **P2 `Enter`**, **P3 `O`**, **P4 `R`** — each la
 shows its own key and a live progress bar, so it's instantly clear for **2, 3, or
 4 players**. Boats carry a **player-coloured sail** (and the player's fighter
 aboard) over a wave-and-foam sea with buoy lane dividers and a checkered finish.
-`Enter` / your key = rematch, `Backspace` = menu. Art lives in `art/ship.py`
+`Enter` / your key = rematch, `Esc` = pause. Art lives in `art/ship.py`
 (recolourable boat exported to `data.js`); the sea/sky/finish are baked once.
+
+## Pause menu
+
+Every minigame (and the cup) has an in-game **pause menu** — press **`Esc`** (or
+**`P`**). `game/pause.js` (loaded by every game page) freezes the action by gating
+`requestAnimationFrame`, snapshots the screen and draws an 8-bit panel in the
+game's own pixel font: **CONTINUE / SETTINGS / MAIN MENU** (navigate `↑`/`↓`,
+confirm `Enter`). **SETTINGS** toggles **MUSIC** and **SOUND** (persisted in
+`localStorage`; SFX honour it via an `Audio` mute, music via `musicOff`). **MAIN
+MENU** returns to the hub and ends any running cup. This replaces the old
+Backspace-to-menu (Backspace is now inert in games).
 
 ## The 8-BIT CUP (tournament)
 
@@ -286,10 +297,10 @@ How it hangs together:
 - `game/cuphook.js` (loaded by every minigame) makes a game *cup-aware*: while a
   cup is running it reports the winner and bounces back to the standings; when no
   cup is running it does nothing, so games still play and rematch normally.
-  Quitting a round with `Backspace` ends the tournament cleanly.
+  Quitting a round via the pause menu's MAIN MENU ends the tournament cleanly.
 - Trophy / pip / board art lives in `art/cup.py` (exported to `data.js`).
 
-`Backspace` quits the cup; on the champion screen `Enter` starts a fresh cup.
+`Esc` opens the pause menu (MAIN MENU exits the cup); on the champion screen `Enter` starts a fresh cup.
 
 ## Start countdown
 

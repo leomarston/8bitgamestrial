@@ -17,6 +17,7 @@
     return actx;
   }
   function tone(freq, dur, vol, type) {
+    try { if (localStorage.getItem("sfxOff") === "1") return; } catch (e) {}
     const c = ac(); if (!c) return;
     const t0 = c.currentTime + 0.001;
     const o = c.createOscillator(), g = c.createGain();
