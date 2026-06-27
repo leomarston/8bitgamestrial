@@ -69,7 +69,7 @@
     players = [];
     for (let i = 0; i < count; i++) players.push({ i, name: NAMES[i], color: PCOL[i], tag: "P" + (i + 1), spr: SPR[i], ship: SHIP[i],
       x: START_X, v: 0, bob: Math.random() * 6, lurch: 0, done: false, place: 0 });
-    foams = []; winner = null; phase = "ready"; ready = 2.6;
+    foams = []; winner = null; phase = "ready"; ready = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop();
   }
   reset();
 
@@ -99,7 +99,7 @@
     for (const p of players) p.bob += dt * 2.2;
     for (const f of foams) f.t += dt;
     while (foams.length && foams[0].t > 0.6) foams.shift();
-    if (phase === "ready") { ready -= dt; if (ready <= 0) phase = "play"; return; }
+    if (phase === "ready") { ready -= dt; if (ready <= -0.5) { phase = "play"; if (window.GameMusic) GameMusic.start(); } return; }
     if (phase === "over") return;
 
     let finishedThisFrame = null;
@@ -198,7 +198,7 @@
 
     if (phase === "ready") {
       ctx.fillStyle = "rgba(11,24,40,.45)"; ctx.fillRect(0, SKY_H, W, H - SKY_H);
-      tc(ready > 0.35 ? String(Math.ceil(ready - 0.25)) : "GO!", W / 2, 250, 8, GOLD);
+      tc(Countdown.label(ready), W / 2, 250, 8, GOLD);
       tc("MASH YOUR BUTTON TO ROW  -  FIRST TO THE FINISH WINS", W / 2, 380, 2, "#eef6ff");
       tc(players.map((p, i) => p.tag + "=" + KEYLABEL[i]).join("   "), W / 2, 414, 2, DIM);
     }

@@ -164,7 +164,7 @@
         x: c.x, y: c.y, r: TR, dir, alive: true, fireCool: 0, shell: null, hitT: 0 });
     }
     shells = []; sparks = []; shake = 0;
-    phase = "ready"; ready = 2.4; winner = null; t0 = 0;
+    phase = "ready"; ready = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop(); winner = null; t0 = 0;
   }
 
   // ---------- input ----------
@@ -223,7 +223,7 @@
   function update(dt) {
     if (shake > 0) shake = Math.max(0, shake - dt * 60);
     for (const s of sparks) { s.t -= dt; s.x += s.vx * dt; s.y += s.vy * dt; } sparks = sparks.filter(s => s.t > 0);
-    if (phase === "ready") { ready -= dt; if (ready <= 0) phase = "play"; return; }
+    if (phase === "ready") { ready -= dt; if (ready <= -0.5) { phase = "play"; if (window.GameMusic) GameMusic.start(); } return; }
     if (phase === "over") return;
     t0 += dt;
     for (let i = 0; i < count; i++) {
@@ -274,7 +274,7 @@
 
     if (phase === "ready") {
       ctx.fillStyle = "rgba(11,10,20,.5)"; ctx.fillRect(0, 0, W, H);
-      tc(ready > 0.3 ? String(Math.ceil(ready - 0.2)) : "FIGHT!", W / 2, H / 2 - 36, 7, GOLD);
+      tc(Countdown.label(ready, "FIGHT!"), W / 2, H / 2 - 36, 7, GOLD);
       tc("DESTROY THE OTHER TANKS  -  LAST TANK ROLLING WINS", W / 2, H / 2 + 44, 2, "#cfe0ff");
       tc("MOVE = YOUR KEYS    FIRE = " + ["SPACE", "ENTER", "O", "R"].slice(0, count).join(" / "), W / 2, H / 2 + 70, 1, DIM);
     }

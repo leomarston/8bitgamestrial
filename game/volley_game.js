@@ -88,7 +88,7 @@
     }
     sparks = []; winner = null; msg = ""; msgT = 0; served = false;
     ball = { x: W / 2, y: 90, vx: 0, vy: 0, r: BR, spin: 0 };
-    phase = "ready"; timer = 2.4;
+    phase = "ready"; timer = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop();
   }
   reset();
 
@@ -148,7 +148,7 @@
   function update(dt) {
     for (const s of sparks) { s.t -= dt; s.x += s.vx * dt; s.y += s.vy * dt; s.vy += 600 * dt; } sparks = sparks.filter(s => s.t > 0);
     msgT = Math.max(0, msgT - dt);
-    if (phase === "ready") { timer -= dt; if (timer <= 0) { phase = "play"; serve(); } return; }
+    if (phase === "ready") { timer -= dt; if (timer <= -0.5) { phase = "play"; serve(); if (window.GameMusic) GameMusic.start(); } return; }
     if (phase === "point") { timer -= dt; if (timer <= 0) { phase = "play"; serve(); } return; }
     if (phase === "over") return;
 
@@ -240,7 +240,7 @@
     if (msgT > 0 && phase !== "over") tc(msg, W / 2, 70, 4, GOLD);
     if (phase === "ready") {
       ctx.fillStyle = "rgba(11,10,20,.42)"; ctx.fillRect(0, 0, W, H);
-      tc(timer > 0.3 ? String(Math.ceil(timer - 0.2)) : "GO!", W / 2, 180, 7, GOLD);
+      tc(Countdown.label(timer), W / 2, 180, 7, GOLD);
       tc("KEEP THE BALL OUT OF YOUR HOLE  -  LAST ONE STANDING WINS", W / 2, 300, 2, "#eef6ff");
       tc("MOVE = YOUR KEYS    JUMP = " + ["W", "UP", "I", "T"].slice(0, count).join(" / "), W / 2, 330, 1, DIM);
     }

@@ -116,7 +116,7 @@
     const slots = shuffle([0, 1, 2, 3].slice(0, count));   // randomised corners — no fixed spot
     for (let i = 0; i < count; i++) { const sp = SPAWN[slots[i]]; players.push(ent(NAMES[i], sp[0], sp[1], PCOL[i], "P" + (i + 1))); }
     mon = { x: spawnMon.x, y: spawnMon.y, r: 18, bob: 0, walkT: 0, moving: false, face: 1, avoid: 0 };
-    phase = "ready"; timer = 2.4; winner = null; t0 = 0; msg = ""; msgT = 0;
+    phase = "ready"; timer = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop(); winner = null; t0 = 0; msg = ""; msgT = 0;
   }
   reset();
 
@@ -162,7 +162,7 @@
   function update(dt) {
     mon.bob += dt * 4;
     if (phase === "play" && audioReady) { if (sndZombie.paused) sndZombie.play().catch(() => {}); } else if (!sndZombie.paused) sndZombie.pause();
-    if (phase === "ready") { timer -= dt; if (timer <= 0) phase = "play"; setWalking(false); return; }
+    if (phase === "ready") { timer -= dt; if (timer <= -0.5) { phase = "play"; if (window.GameMusic) GameMusic.start(); } setWalking(false); return; }
     if (phase === "over") { setWalking(false); return; }
     t0 += dt; msgT = Math.max(0, msgT - dt);
     for (const p of players) { p.down = Math.max(0, p.down - dt); p.punch = Math.max(0, p.punch - dt); p.cool = Math.max(0, p.cool - dt); p.lunge = Math.max(0, p.lunge - dt); }
@@ -266,7 +266,7 @@
     if (msgT > 0) tc(msg, W / 2, 70, 3, GOLD);
     if (phase === "ready") {
       ctx.fillStyle = "rgba(11,10,20,.55)"; ctx.fillRect(0, 0, W, H);
-      tc(timer > 0.3 ? String(Math.ceil(timer - 0.2)) : "RUN!", W / 2, H / 2 - 30, 7, GOLD);
+      tc(Countdown.label(timer, "RUN!"), W / 2, H / 2 - 30, 7, GOLD);
       tc(count + " ALIVE - GET CAUGHT = YOU DIE & CONTROL YOUR SOUL - LAST ALIVE WINS", W / 2, H / 2 + 40, 2, "#cfe6ff");
     }
     if (phase === "over") {

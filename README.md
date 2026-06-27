@@ -270,13 +270,24 @@ aboard) over a wave-and-foam sea with buoy lane dividers and a checkered finish.
 `Enter` / your key = rematch, `Backspace` = menu. Art lives in `art/ship.py`
 (recolourable boat exported to `data.js`); the sea/sky/finish are baked once.
 
+## Start countdown
+
+Every minigame opens with the same **“3 · 2 · 1 · GO!”** countdown, drawn over a
+dimmed board. `game/countdown.js` (loaded by every game page) synthesises
+**Formula-1 starting-light beeps** with the Web Audio API — three identical
+red-light beeps for **3 · 2 · 1**, then a higher *lights-out* tone on **GO** — so
+no audio file is needed. Games call `Countdown.label(remaining)` each frame to get
+the on-screen number *and* trigger the beep on each change.
+
 ## Music & sound
 
 `game/music.js` (loaded by every page) handles background music:
 - **Menu** (character select + game select) loops the **menu track**, kept
   seamless across the two menu screens via `sessionStorage`.
-- **Each game** picks a **random track from `music1`–`music4`** when it starts and
-  loops it; starting another game (or a rematch) **re-rolls** a fresh random track.
+- **Each game** preloads a **random track from `music1`–`music4`** but stays
+  **silent through the countdown** — the music kicks in **only at GO**, when play
+  actually begins (`GameMusic.start()`). A rematch re-rolls a fresh track
+  (`GameMusic.next()`), again silent until the next GO.
 
 Per-game SFX (footsteps, zombie, punch, plus a death **splash/splat** played when
 a player is run over in Traffic Run or squished/knocked out in Runner — never on a

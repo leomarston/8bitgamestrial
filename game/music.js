@@ -1,7 +1,10 @@
 /* 8-BIT PARTY — shared background music.
- * Menu pages (character select, game select) loop the menu track, kept seamless
- * across the two menu screens. Game pages pick a RANDOM track (music1-4) on load
- * and loop it; call GameMusic.next() to re-roll a fresh random track (rematch). */
+ * Menu pages (character select + game select) loop the menu track immediately,
+ * kept seamless across the two menu screens via sessionStorage.
+ * GAME pages PRELOAD a random track but stay SILENT through the 3·2·1 countdown —
+ * the game calls GameMusic.start() at GO (when play actually begins). On a rematch
+ * the game calls GameMusic.next() (re-roll a fresh track, still silent) and the
+ * next countdown's GO starts it again. */
 (() => {
   const page = (location.pathname.split("/").pop() || "index.html").toLowerCase();
   const isMenu = page === "" || page === "index.html" || page === "gameselect.html";
@@ -10,35 +13,33 @@
   const audio = new Audio();
   audio.loop = true;
   audio.volume = isMenu ? 0.45 : 0.5;
-  let curTrack = "";
+  let curTrack = "", started = false;
   const pick = () => { const opts = TRACKS.filter(t => t !== curTrack); curTrack = opts[Math.floor(Math.random() * opts.length)] || TRACKS[0]; return curTrack; };   // never re-roll the same track back-to-back
-
-  function load(src, resumeAt) {
-    audio.src = src;
-    const start = () => { if (resumeAt) { try { audio.currentTime = Math.min(resumeAt, (audio.duration || 1e9) - 0.05); } catch (e) {} } audio.play().catch(() => {}); };
-    // play only AFTER we can seek to the resume point, so a menu->menu hop doesn't blip from 0 first
-    if (audio.readyState >= 1) start();
-    else audio.addEventListener("loadedmetadata", start, { once: true });
-  }
 
   if (isMenu) {
     let resume = 0;
     try { resume = parseFloat(sessionStorage.getItem("menuMusicT")) || 0; } catch (e) {}
-    load("sfx/menu.mp3", resume);
+    audio.src = "sfx/menu.mp3";
+    const start = () => { if (resume) { try { audio.currentTime = Math.min(resume, (audio.duration || 1e9) - 0.05); } catch (e) {} } audio.play().catch(() => {}); };
+    if (audio.readyState >= 1) start(); else audio.addEventListener("loadedmetadata", start, { once: true });
     const save = () => { try { sessionStorage.setItem("menuMusicT", audio.currentTime || 0); } catch (e) {} };
     addEventListener("pagehide", save);
     addEventListener("visibilitychange", () => { if (document.hidden) save(); });
+    const kick = () => audio.play().catch(() => {});
+    addEventListener("keydown", kick);
+    addEventListener("pointerdown", kick);
   } else {
-    load(pick());
+    audio.src = pick(); audio.load();                              // preload only — do NOT play until the countdown ends
+    const kick = () => { if (started) audio.play().catch(() => {}); };   // a gesture only (re)starts music once the round is underway
+    addEventListener("keydown", kick);
+    addEventListener("pointerdown", kick);
   }
 
-  // browsers gate autoplay until a gesture — (re)start on the first input
-  const kick = () => audio.play().catch(() => {});
-  addEventListener("keydown", kick);
-  addEventListener("pointerdown", kick);
-
   window.GameMusic = {
-    next() { if (!isMenu) load(pick()); },   // re-roll a random track (rematch / new round)
+    start() { if (!isMenu) { started = true; audio.play().catch(() => {}); } },     // call at GO (play begins)
+    stop()  { if (!isMenu) { started = false; try { audio.pause(); } catch (e) {} } },   // call in reset() so the countdown is silent
+    next()  { if (!isMenu) { started = false; try { audio.pause(); } catch (e) {} audio.src = pick(); audio.load(); } },   // rematch: re-roll, stay silent until start()
+    get started() { return started; },
     src() { return audio.src; },
     audio,
   };

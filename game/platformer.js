@@ -97,7 +97,7 @@
     cam = 0; players = [];
     const xs = shuffle([0, 1, 2, 3].slice(0, count)).map(k => 112 + k * 26);   // randomised start spots
     for (let i = 0; i < count; i++) players.push(mk(NAMES[i], xs[i], PCOL[i], "P" + (i + 1)));
-    phase = "ready"; timer = 2.2; winner = null;
+    phase = "ready"; timer = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop(); winner = null;
   }
   reset();
 
@@ -129,7 +129,7 @@
   }
 
   function update(dt) {
-    if (phase === "ready") { timer -= dt; if (timer <= 0) phase = "play"; return; }
+    if (phase === "ready") { timer -= dt; if (timer <= -0.5) { phase = "play"; if (window.GameMusic) GameMusic.start(); } return; }
     if (phase === "over") return;
     cam += SCROLL * dt;
 
@@ -230,7 +230,7 @@
 
     if (phase === "ready") {
       ctx.fillStyle = "rgba(10,15,31,.5)"; ctx.fillRect(0, 0, CW, CH);
-      tc(timer > 0.3 ? String(Math.ceil(timer - 0.2)) : "RUN!", CW / 2, CH / 2 - 40, 7, GOLD);
+      tc(Countdown.label(timer, "RUN!"), CW / 2, CH / 2 - 40, 7, GOLD);
       tc("THE SCREEN MOVES - DON'T FALL BEHIND - HOLD FORWARD, JUMP THE GAPS", CW / 2, CH / 2 + 36, 2, "#cfe0ff");
     }
     if (phase === "over") {

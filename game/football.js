@@ -60,7 +60,7 @@
   function reset(full) {
     players = [0, 1, 2, 3].map(mkPlayer);
     ball = { x: CXc, y: CYc, vx: 0, vy: 0, r: BR };
-    phase = "kickoff"; timer = 1.3; msg = "GET READY"; winner = null; t0 = 0;
+    phase = "ready"; timer = 3.0; msg = ""; winner = null; t0 = 0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop();
   }
   reset(true);
 
@@ -117,6 +117,7 @@
     // paddles always slide + bounce off corners
     for (let i = 0; i < count; i++) { const p = players[i]; if (!p.alive) continue;
       p.t += p.dir * PADSPD * dt; if (p.t < 0) { p.t = 0; p.dir = 1; } if (p.t > 1) { p.t = 1; p.dir = -1; } }
+    if (phase === "ready") { timer -= dt; if (timer <= -0.5) { launch(); if (window.GameMusic) GameMusic.start(); } return; }
     if (phase === "kickoff") { timer -= dt; if (timer <= 0) launch(); return; }
     if (phase === "win") return;
     t0 += dt;
@@ -205,6 +206,7 @@
     for (let i = 0; i < count; i++) if (players[i].alive) drawPaddle(players[i]);
     if (phase !== "win") drawBall();
     drawHUD();
+    if (phase === "ready") tc(Countdown.label(timer), CXc, CYc - 90, 7, GOLD);
     if (phase === "kickoff" && msg) tc(msg, CXc, CYc - 90, 4, GOLD);
     if (phase === "win") {
       ctx.fillStyle = "rgba(8,14,9,.84)"; ctx.fillRect(0, 0, W, H);

@@ -75,7 +75,7 @@
       for (let k = 0; k < n; k++) cars.push({ L, y: laneY(L), x: rnd(-CW, W), dir, spd: base + rnd(-48, 72), col: (Math.random() * CAR_BASE.length) | 0 });
     }
     coins = []; for (let k = 0; k < Math.max(4, count + 2); k++) coins.push(spawnCoin());
-    blood = []; winner = null; t0 = 0; phase = "ready"; ready = 2.2;
+    blood = []; winner = null; t0 = 0; phase = "ready"; ready = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop();
   }
   reset();
 
@@ -111,7 +111,7 @@
   // ---------- update ----------
   function update(dt) {
     for (const c of coins) c.t += dt;
-    if (phase === "ready") { ready -= dt; if (ready <= 0) phase = "play"; return; }
+    if (phase === "ready") { ready -= dt; if (ready <= -0.5) { phase = "play"; if (window.GameMusic) GameMusic.start(); } return; }
     if (phase === "over") return;
     t0 += dt;
 
@@ -204,7 +204,7 @@
 
     if (phase === "ready") {
       ctx.fillStyle = "rgba(11,10,20,.42)"; ctx.fillRect(0, ROAD_TOP, W, H - ROAD_TOP);
-      tc(ready > 0.3 ? String(Math.ceil(ready - 0.2)) : "GO!", W / 2, 240, 7, GOLD);
+      tc(Countdown.label(ready), W / 2, 240, 7, GOLD);
       tc("CROSS FOR COINS - HIGHER = WORTH MORE - DON'T GET RUN OVER", W / 2, 360, 2, "#eef6ff");
       tc("MOVE = YOUR KEYS    DASH = " + ["SPACE", "ENTER", "O", "R"].slice(0, count).join(" / ") + "    FIRST TO 15 WINS", W / 2, 388, 1, DIM);
     }

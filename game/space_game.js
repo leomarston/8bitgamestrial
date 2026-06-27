@@ -68,7 +68,7 @@
   function reset() {
     const order = shuffle([0, 1, 2, 3].slice(0, count)); players = [];
     for (let i = 0; i < count; i++) players.push(pl(NAMES[i], PCOL[i], "P" + (i + 1), (order[i] + 0.5) / count * W));
-    meteors = []; sparks = []; spawnT = 0.7; t0 = 0; phase = "ready"; ready = 2.4; winner = null;
+    meteors = []; sparks = []; spawnT = 0.7; t0 = 0; phase = "ready"; ready = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop(); winner = null;
   }
   reset();
 
@@ -97,7 +97,7 @@
 
   function update(dt) {
     for (const s of sparks) { s.t -= dt; s.x += s.vx * dt; s.y += s.vy * dt; } sparks = sparks.filter(s => s.t > 0);
-    if (phase === "ready") { ready -= dt; if (ready <= 0) phase = "play"; return; }
+    if (phase === "ready") { ready -= dt; if (ready <= -0.5) { phase = "play"; if (window.GameMusic) GameMusic.start(); } return; }
     if (phase === "over") return;
     t0 += dt;
     const alive = players.filter(p => p.alive);
@@ -152,7 +152,7 @@
     if (phase === "ready") {
       ctx.fillStyle = "rgba(8,8,22,.5)"; ctx.fillRect(0, 0, W, H);
       tc("METEOR DERBY", W / 2, H / 2 - 96, 4, "#cfe0ff");
-      tc(ready > 0.4 ? String(Math.ceil(ready - 0.4)) : "GO!", W / 2, H / 2 - 40, 8, GOLD);
+      tc(Countdown.label(ready), W / 2, H / 2 - 40, 8, GOLD);
       tc(count + " PODS  -  3 HITS AND YOU'RE SPACE DUST  -  LAST POD WINS", W / 2, H / 2 + 46, 2, "#cfe6ff");
     }
     if (phase === "over") {

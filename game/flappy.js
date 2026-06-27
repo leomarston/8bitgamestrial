@@ -68,7 +68,7 @@
     pipes = []; scroll = 0; winner = null;
     let x = W + 140; for (let i = 0; i < 5; i++) { spawnPipe(x); x += SPACING; }
     birds = []; for (let i = 0; i < count; i++) birds.push(mkBird(i));
-    phase = "ready"; timer = 2.2;
+    phase = "ready"; timer = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop();
   }
   reset();
 
@@ -99,7 +99,7 @@
   }
   function update(dt) {
     clouds.forEach(c => { c.x -= 14 * c.s * dt; if (c.x < -60) { c.x = W + 40; c.y = 30 + Math.random() * 180; } });
-    if (phase === "ready") { timer -= dt; if (timer <= 0) phase = "play"; return; }
+    if (phase === "ready") { timer -= dt; if (timer <= -0.5) { phase = "play"; if (window.GameMusic) GameMusic.start(); } return; }
     if (phase === "over") return;
     scroll += SCROLL * dt;
     pipes.forEach(p => p.x -= SCROLL * dt);
@@ -177,7 +177,7 @@
     drawHUD();
 
     if (phase === "ready") {
-      tc(timer > 0.25 ? String(Math.max(1, Math.ceil(timer - 0.2))) : "GO!", W / 2, H / 2 - 110, 7, GOLD);
+      tc(Countdown.label(timer), W / 2, H / 2 - 110, 7, GOLD);
       tc("FLAP TO STAY UP  -  MOST PIPES WINS", W / 2, H / 2 - 150, 2, "#eef6ff");
       tc(count + " PLAYERS", W / 2, H / 2 - 40, 2, DIM);
     }

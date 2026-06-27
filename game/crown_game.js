@@ -75,7 +75,7 @@
     players = [];
     for (let i = 0; i < count; i++) { const p = ent(NAMES[i], PCOL[i], "P" + (i + 1)); const s = map.spawns[order[i]]; p.x = s[0]; p.y = s[1]; p.face = s[0] < W / 2 ? 1 : -1; players.push(p); }
     crown = { holder: null, fx: map.crown[0], fy: map.crown[1], bob: 0 };
-    phase = "ready"; ready = 2.4; timeLeft = MATCH; winner = null; sparks = []; flick = 0;
+    phase = "ready"; ready = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop(); timeLeft = MATCH; winner = null; sparks = []; flick = 0;
   }
   reset();
 
@@ -114,7 +114,7 @@
   function update(dt) {
     crown.bob += dt * 5; flick += dt;
     for (const s of sparks) { s.t -= dt; s.x += s.vx * dt; s.y += s.vy * dt; } sparks = sparks.filter(s => s.t > 0);
-    if (phase === "ready") { ready -= dt; if (ready <= 0) phase = "play"; setWalking(false); return; }
+    if (phase === "ready") { ready -= dt; if (ready <= -0.5) { phase = "play"; if (window.GameMusic) GameMusic.start(); } setWalking(false); return; }
     if (phase === "over") { setWalking(false); return; }
     timeLeft = Math.max(0, timeLeft - dt);
     let anyMoving = false;
@@ -218,7 +218,7 @@
     if (phase === "ready") {
       ctx.fillStyle = "rgba(11,10,20,.55)"; ctx.fillRect(0, 0, W, H);
       tc(map.name, W / 2, H / 2 - 96, 3, CREAM);
-      tc(ready > 0.4 ? String(Math.ceil(ready - 0.4)) : "GO!", W / 2, H / 2 - 40, 8, GOLD);
+      tc(Countdown.label(ready), W / 2, H / 2 - 40, 8, GOLD);
       tc(count + " PLAYERS  -  GRAB THE CROWN, HOLD IT LONGEST", W / 2, H / 2 + 44, 2, "#cfe6ff");
     }
     if (phase === "over") {

@@ -78,7 +78,7 @@
     const order = shuffle([0, 1, 2, 3].slice(0, count)); players = [];
     for (let i = 0; i < count; i++) { const p = ent(NAMES[i], PCOL[i], "P" + (i + 1)); const s = map.spawns[order[i]]; p.x = s[0]; p.y = s[1]; p.face = s[0] < W / 2 ? 1 : -1; players.push(p); }
     bomb = { holder: null }; newBomb();
-    phase = "ready"; ready = 2.4; boomT = 0; loser = winner = null; flick = 0; msg = ""; msgT = 0; sparks = [];
+    phase = "ready"; ready = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop(); boomT = 0; loser = winner = null; flick = 0; msg = ""; msgT = 0; sparks = [];
   }
   reset();
 
@@ -117,7 +117,7 @@
   function update(dt) {
     flick += dt; msgT = Math.max(0, msgT - dt);
     for (const s of sparks) { s.t -= dt; s.x += s.vx * dt; s.y += s.vy * dt; } sparks = sparks.filter(s => s.t > 0);
-    if (phase === "ready") { ready -= dt; if (ready <= 0) phase = "play"; setWalking(false); return; }
+    if (phase === "ready") { ready -= dt; if (ready <= -0.5) { phase = "play"; if (window.GameMusic) GameMusic.start(); } setWalking(false); return; }
     if (phase === "boom") {
       boomT -= dt; setWalking(false);
       if (boomT <= 0) {                                   // resolve: holder is eliminated
@@ -213,7 +213,7 @@
     if (phase === "ready") {
       ctx.fillStyle = "rgba(11,10,20,.55)"; ctx.fillRect(0, 0, W, H);
       tc(map.name, W / 2, H / 2 - 96, 3, CREAM);
-      tc(ready > 0.4 ? String(Math.ceil(ready - 0.4)) : "GO!", W / 2, H / 2 - 40, 8, GOLD);
+      tc(Countdown.label(ready), W / 2, H / 2 - 40, 8, GOLD);
       tc(count + " PLAYERS  -  HOLDING IT AT THE BLAST = OUT  -  LAST ONE WINS", W / 2, H / 2 + 44, 2, "#ffd9b0");
     }
     if (phase === "over") {

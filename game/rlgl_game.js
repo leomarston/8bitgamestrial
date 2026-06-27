@@ -68,7 +68,7 @@
         x: START_X, vx: 0, laneY: LANE_TOP + (laneIdx + 0.5) * laneH, lane: laneIdx, finished: false, finishT: 0, hitFlash: 0, walkT: 0 });
     }
     light = { state: "green", t: 1.2 };
-    sparks = []; winner = null; t0 = 0; phase = "ready"; ready = 2.5;
+    sparks = []; winner = null; t0 = 0; phase = "ready"; ready = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop();
   }
   reset();
 
@@ -94,7 +94,7 @@
   // ---------- update ----------
   function update(dt) {
     for (const s of sparks) { s.t -= dt; s.x += s.vx * dt; s.y += s.vy * dt; s.vy += 400 * dt; } sparks = sparks.filter(s => s.t > 0);
-    if (phase === "ready") { ready -= dt; if (ready <= 0) { phase = "play"; light = { state: "green", t: greenDur() }; } return; }
+    if (phase === "ready") { ready -= dt; if (ready <= -0.5) { phase = "play"; light = { state: "green", t: greenDur() }; if (window.GameMusic) GameMusic.start(); } return; }
     if (phase === "over") return;
     t0 += dt;
 
@@ -188,7 +188,7 @@
 
     if (phase === "ready") {
       ctx.fillStyle = "rgba(11,10,20,.42)"; ctx.fillRect(0, 0, W, H);
-      tc(ready > 0.3 ? String(Math.ceil(ready - 0.2)) : "GO!", W / 2, 200, 7, GOLD);
+      tc(Countdown.label(ready), W / 2, 200, 7, GOLD);
       tc("RUN ON GREEN  -  FREEZE ON RED  -  CAUGHT MOVING = BACK TO START", W / 2, 320, 2, "#eef6ff");
       tc("HOLD YOUR KEYS TO RUN  -  FIRST TO THE FINISH WINS", W / 2, 350, 1, DIM);
     }
