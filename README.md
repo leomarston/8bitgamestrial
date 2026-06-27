@@ -113,8 +113,9 @@ Controls: **P1 `A`/`D`+`W`**, **P2 arrows+`Up`**, **P3 `J`/`L`+`I`**, **P4 `F`/`
 - The level is generated from segments and **loops seamlessly** (effectively
   infinite), and it's **re-randomised every round** (new obstacles/alignment).
 - **Stomp:** land on the other player's head and they get **squished — flattened
-  and frozen for ~1s** (then pop back), while you bounce off. The instant one
-  player is out (fell behind / pit), the other **wins immediately**.
+  and frozen for ~1s** (then pop back) with a wet *splat*, while you bounce off.
+  Falling behind / into a pit plays the same *splat*. The instant one player is
+  out (fell behind / pit), the other **wins immediately**.
   Art lives in `art/blocks.py`.
 
 Controls: **P1 `A`/`D` + `W` (jump)**, **P2 arrows + `Up` (jump)**, `Enter`/`R`
@@ -238,9 +239,9 @@ starts on the **grass strip at the bottom** and crosses **eight lanes of traffic
 to grab coins. **The further UP a coin is, the more it's worth** (1 in the lane
 nearest the grass, up to 6 at the far end), so the big payouts mean braving the
 busiest, far-side lanes.
-**Get run over and you're flung back to the grass** (with a short invincibility
-flash) — **no points lost**, you just start the crossing again. **First to 15
-total points wins.**
+**Get run over and you're flung back to the grass** (with a wet *splat* sound) —
+**no points lost**, you just start the crossing again. **First to 15 total points
+wins.**
 
 Each player has a **DASH** on their action key — a quick burst in the direction
 you're moving, perfect for threading a gap between two cars or diving for a coin.
@@ -261,8 +262,10 @@ Controls: **move** with your cluster (**P1 `WASD`**, **P2 arrows**, **P3 `IJKL`*
 - **Each game** picks a **random track from `music1`–`music4`** when it starts and
   loops it; starting another game (or a rematch) **re-rolls** a fresh random track.
 
-Per-game SFX (footsteps, zombie, punch) live alongside in `game/sfx/`. Audio
-unlocks on the first key/pointer input (browser autoplay policy).
+Per-game SFX (footsteps, zombie, punch, plus a death **splash/splat** played when
+a player is run over in Traffic Run or squished/knocked out in Runner — never on a
+temporary blackout) live alongside in `game/sfx/`. Audio unlocks on the first
+key/pointer input (browser autoplay policy).
 
 ## Repo layout
 

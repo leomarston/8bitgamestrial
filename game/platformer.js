@@ -36,6 +36,8 @@
   const tc = (s, cx, y, sc, c, sp = 1) => text(s, Math.round(cx - tW(s, sc, sp) / 2), y, sc, c, sp);
   const GOLD = "#ffc44a", DIM = "#9fb0d0", INK = "#14111c";
   const PCOL = ["#ff5d5d", "#5db4ff", "#6bd66b", "#ffd54a"];
+  let audioReady = false;
+  function playSplash() { if (!audioReady) return; const a = new Audio("sfx/splash.mp3"); a.volume = 0.6; a.play().catch(() => {}); }   // squished or fell out (not a blackout)
 
   // ---------- count + picks ----------
   let count = 2; try { const c = +localStorage.getItem("partyCount"); if (c >= 2 && c <= 4) count = c; } catch (e) {}
@@ -103,6 +105,7 @@
   const held = {};
   function jump(p) { if (p.alive && phase === "play" && p.squish <= 0 && (p.onG || p.coy > 0)) { p.vy = JUMP; p.onG = false; p.coy = 0; } }
   window.addEventListener("keydown", e => {
+    audioReady = true;
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(e.code)) e.preventDefault();
     if (e.code === "Backspace") { location.href = "gameselect.html"; return; }
     if (phase === "over" && (e.code === "Enter" || e.code === "KeyR" || e.code === "Space")) { if (window.GameMusic) window.GameMusic.next(); reset(); return; }
@@ -143,7 +146,7 @@
       if (Math.abs(p.vx) > 1 && p.onG) p.walkT += dt * 9;
       if (p.x > cam + viewW - PW) p.x = cam + viewW - PW;   // can't leave the front
       // OUT the instant you fall behind the frame or drop into a pit (below ground level)
-      if (p.x + PW < cam + 2 || p.y > 168) p.alive = false;
+      if (p.x + PW < cam + 2 || p.y > 168) { p.alive = false; playSplash(); }
       p.dist = p.x;
     }
     // stomp: a player landing on another's head squishes them (1s, immobile)
@@ -152,7 +155,7 @@
       if (!a.alive || !b.alive || b.squish > 0) continue;
       if (a.vy > 0 && a.x < b.x + PW - 2 && a.x + PW > b.x + 2 &&
           a.y + PH >= b.y && a.y + PH <= b.y + PH * 0.7 && a.y < b.y) {
-        b.squish = 1.0; a.vy = -190; a.y = b.y - PH; a.onG = false;
+        b.squish = 1.0; a.vy = -190; a.y = b.y - PH; a.onG = false; playSplash();
       }
     }
     const alive = players.filter(p => p.alive);

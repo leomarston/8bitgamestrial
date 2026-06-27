@@ -31,6 +31,8 @@
 
   const GOLD = "#ffd54a", DIM = "#cdbfa0", INK = "#1a1620";
   const PCOL = ["#ff5d5d", "#5db4ff", "#6bd66b", "#ffd54a"];
+  let audioReady = false;
+  function playSplash() { if (!audioReady) return; const a = new Audio("sfx/splash.mp3"); a.volume = 0.6; a.play().catch(() => {}); }   // someone got run over
   const ASPH = "#3a3a40", STONE = "#787880", STONE2 = "#606068", MORT = "#3a3a42", GRASS = "#4a9646", GRASS2 = "#34702e", GRASS3 = "#60b054";
 
   // ---------- count + picks ----------
@@ -94,6 +96,7 @@
     const m = Math.hypot(dx, dy) || 1; p.ddx = dx / m; p.ddy = dy / m;
   }
   window.addEventListener("keydown", e => {
+    audioReady = true;
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(e.code)) e.preventDefault();
     if (e.code === "Backspace") { location.href = "gameselect.html"; return; }
     if (phase === "over" && (e.code === "Enter" || e.code === "KeyR" || e.code === "Space")) { if (window.GameMusic) window.GameMusic.next(); reset(); return; }
@@ -103,7 +106,7 @@
   });
   window.addEventListener("keyup", e => { held[e.code] = false; });
 
-  function splat(x, y) { blood.push({ x, y, s: rnd(0.8, 1.4) }); if (blood.length > 14) blood.shift(); }
+  function splat(x, y) { blood.push({ x, y, s: rnd(0.8, 1.4) }); if (blood.length > 14) blood.shift(); playSplash(); }
 
   // ---------- update ----------
   function update(dt) {
