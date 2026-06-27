@@ -287,9 +287,10 @@ Backspace-to-menu (Backspace is now inert in games).
 plays **random minigames back-to-back**; each round's winner earns a point and a
 **standings board** shows between rounds (every player's portrait, `X/5` and five
 star pips, sorted by wins). After the winner is celebrated, a **slot-machine
-roulette** spins through the games, decelerates and **lands on the next game**
+roulette of game icons** spins, decelerates and **lands on the next game**
 (with ticks and a "GET READY!"), then launches it — no buttons, it flows on its
-own. **First to 5 wins lifts the cup** — a champion screen with confetti. Draws
+own. The icons come from `game/gameicons.js` (a recognisable per-game picture
+built from the inlined sprite data). **First to 5 wins lifts the cup** — a champion screen with confetti. Draws
 (e.g. everyone wiped out) score no point and just roll another game.
 
 How it hangs together:

@@ -158,29 +158,33 @@
     });
   }
 
-  // ---- next-game roulette (slot reel that decelerates onto the chosen game) ----
+  // ---- next-game roulette: a slot reel of game ICONS that decelerates onto the pick ----
+  const ICONS = window.GameIcons;
   function drawRoulette(posAbs, landed, holdEl) {
-    ctx.fillStyle = "rgba(8,6,16,.78)"; ctx.fillRect(0, 0, W, H);   // dim the board behind
+    ctx.fillStyle = "rgba(8,6,16,.8)"; ctx.fillRect(0, 0, W, H);   // dim the board behind
     tc("NEXT GAME", W / 2, H / 2 - 116, 4, GOLD);
-    const winW = 660, winH = 96, wx = (W - winW) / 2, wy = H / 2 - winH / 2;
+    const winW = 680, winH = 132, wx = (W - winW) / 2, wy = H / 2 - winH / 2, my = H / 2, cx = W / 2, CELL = 172;
     ctx.fillStyle = "#15101f"; ctx.fillRect(wx, wy, winW, winH);
-    const base = Math.floor(posAbs), frac = posAbs - base, CELL = 360, cx = W / 2;
-    ctx.save(); ctx.beginPath(); ctx.rect(wx + 6, wy, winW - 12, winH); ctx.clip();
+    const base = Math.floor(posAbs), frac = posAbs - base;
+    ctx.save(); ctx.beginPath(); ctx.rect(wx + 6, wy + 4, winW - 12, winH - 8); ctx.clip();
     for (let d = -2; d <= 2; d++) {
-      const g = POOL[((base + d) % RLEN + RLEN) % RLEN];
-      const x = cx + (d - frac) * CELL, dist = Math.abs(d - frac);
-      const a = Math.max(0, 1 - dist * 0.62); if (a <= 0.02) continue;
-      ctx.globalAlpha = a; tc(g.name, x, H / 2 - 7 * 3 / 2, 3, g.accent); ctx.globalAlpha = 1;
+      const g = POOL[((base + d) % RLEN + RLEN) % RLEN], ic = ICONS && ICONS.canvas(g.file);
+      const x = cx + (d - frac) * CELL, dist = Math.abs(d - frac), a = Math.max(0, 1 - dist * 0.5); if (a <= 0.02) continue;
+      const size = Math.max(48, 104 - dist * 26);
+      ctx.globalAlpha = a;
+      if (ic) ctx.drawImage(ic, Math.round(x - size / 2), Math.round(my - size / 2), size, size);
+      else tc(g.name, x, my - 10, 2, g.accent);
+      ctx.globalAlpha = 1;
     }
     ctx.restore();
     // gold selection frame + markers, flashing on land
-    const flash = landed ? (0.55 + 0.45 * Math.sin(holdEl * 22)) : 1, my = H / 2;
+    const flash = landed ? (0.55 + 0.45 * Math.sin(holdEl * 22)) : 1;
     ctx.globalAlpha = flash; ctx.strokeStyle = GOLD; ctx.lineWidth = 4; ctx.strokeRect(wx + 2, wy + 2, winW - 4, winH - 4);
     ctx.fillStyle = GOLD;
-    ctx.beginPath(); ctx.moveTo(wx - 10, my - 13); ctx.lineTo(wx - 10, my + 13); ctx.lineTo(wx + 8, my); ctx.closePath(); ctx.fill();              // ▶ into window
-    ctx.beginPath(); ctx.moveTo(wx + winW + 10, my - 13); ctx.lineTo(wx + winW + 10, my + 13); ctx.lineTo(wx + winW - 8, my); ctx.closePath(); ctx.fill();   // ◀ into window
+    ctx.beginPath(); ctx.moveTo(wx - 10, my - 14); ctx.lineTo(wx - 10, my + 14); ctx.lineTo(wx + 8, my); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(wx + winW + 10, my - 14); ctx.lineTo(wx + winW + 10, my + 14); ctx.lineTo(wx + winW - 8, my); ctx.closePath(); ctx.fill();
     ctx.globalAlpha = 1;
-    if (landed) tc("GET READY!", W / 2, H / 2 + 78, 3, GOLDL);
+    if (landed) tc("GET READY!", W / 2, wy + winH + 22, 3, GOLDL);
   }
 
   let confetti = null;
