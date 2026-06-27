@@ -60,7 +60,7 @@
     { name: "RED LIGHT", file: "rlgl.html" }, { name: "TRAFFIC RUN", file: "traffic.html" },
     { name: "SHIP DASH", file: "ship.html" },
   ];
-  const TARGET = 5;
+  const TARGET = 5, AUTO_DELAY = 3.6;   // standings auto-rolls into the next game (no button)
 
   // ---- cup state: init fresh from the hub, or apply the round we just returned from ----
   function load() { try { return JSON.parse(localStorage.getItem("cup")); } catch (e) { return null; } }
@@ -96,8 +96,8 @@
   window.addEventListener("keydown", e => {
     if (["Space", "Enter", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
     if (e.code === "Backspace") { quit(); return; }
-    if (champ >= 0) { if (["Enter", "Space", "KeyR"].includes(e.code)) newCup(); return; }
-    startNext();
+    if (champ >= 0 && ["Enter", "Space", "KeyR"].includes(e.code)) newCup();   // champion: start a fresh cup
+    // (between rounds the cup auto-advances — no start button)
   });
 
   // ---- rendering ----
@@ -126,9 +126,8 @@
     stageBG();
     drawSprite(trophy, 92, 116, 1.7);
     tc("8-BIT CUP", W / 2, 26, 6, GOLD);
-    const banner = celebrate && el < 2.6;
-    if (banner) tc(NAMES[lastWinner] + " WINS THE ROUND!  +1", W / 2, 84, 2, GOLDL);
-    else if (lastDraw && el < 2.6) tc("ROUND DRAWN  -  NO POINT", W / 2, 84, 2, "#ff9a9a");
+    if (celebrate) tc(NAMES[lastWinner] + " WINS THE ROUND!  +1", W / 2, 84, 2, GOLDL);
+    else if (lastDraw) tc("ROUND DRAWN  -  NO POINT", W / 2, 84, 2, "#ff9a9a");
     else tc("FIRST TO " + TARGET + " WINS", W / 2, 84, 2, DIM);
 
     const order = [...Array(count).keys()].sort((a, b) => cup.wins[b] - cup.wins[a]);
@@ -151,8 +150,11 @@
       }
     });
     ctx.fillStyle = "#15101f"; ctx.fillRect(0, H - 70, W, 70); ctx.fillStyle = GOLD; ctx.fillRect(0, H - 70, W, 3);
-    tc("NEXT GAME:  " + (nextGame ? nextGame.name : "-"), W / 2, H - 50, 3, GOLDL);
-    tc("PRESS ANY KEY = START      BACKSPACE = QUIT CUP", W / 2, H - 18, 2, DIM);
+    tc("NEXT GAME:  " + (nextGame ? nextGame.name : "-"), W / 2, H - 58, 3, GOLDL);
+    const prog = Math.max(0, Math.min(1, el / AUTO_DELAY)), bw2 = 420, bx2 = (W - bw2) / 2, by2 = H - 28;   // auto-launch countdown bar
+    ctx.fillStyle = "rgba(255,255,255,.14)"; ctx.fillRect(bx2, by2, bw2, 9);
+    ctx.fillStyle = GOLD; ctx.fillRect(bx2, by2, bw2 * prog, 9);
+    tc("BACKSPACE = QUIT CUP", W / 2, H - 14, 1, DIM);
   }
 
   let confetti = null;
@@ -174,7 +176,8 @@
   function frame(t) {
     if (t0 < 0) t0 = t; const el = (t - t0) / 1000;
     if (!soundDone) { soundDone = true; if (champ >= 0) fanfare(); else if (celebrate) ding(); }
-    if (champ >= 0) drawChampion(el); else drawStandings(el);
+    if (champ >= 0) drawChampion(el);
+    else { drawStandings(el); if (el >= AUTO_DELAY) startNext(); }   // auto-roll into the next game
     requestAnimationFrame(frame);
   }
   window.__cup = { phase: champ >= 0 ? "champion" : "standings", count, wins: cup.wins.slice(0, count), next: nextGame ? nextGame.file : null, lastWinner, lastDraw, celebrate, champion: champ >= 0 ? "P" + (champ + 1) : null };

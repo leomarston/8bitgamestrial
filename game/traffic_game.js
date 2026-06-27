@@ -74,7 +74,7 @@
       const dir = L % 2 ? 1 : -1, base = (92 + L * 9) * 4, n = (L % 3 === 0) ? 2 : 1;
       for (let k = 0; k < n; k++) cars.push({ L, y: laneY(L), x: rnd(-CW, W), dir, spd: base + rnd(-48, 72), col: (Math.random() * CAR_BASE.length) | 0 });
     }
-    coins = []; for (let k = 0; k < Math.max(4, count + 2); k++) coins.push(spawnCoin());
+    coins = []; for (let k = 0; k < Math.max(3, count); k++) coins.push(spawnCoin());   // fewer coins on screen at once
     blood = []; winner = null; t0 = 0; phase = "ready"; ready = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop();
   }
   reset();
