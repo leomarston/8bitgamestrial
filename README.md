@@ -14,8 +14,8 @@ After the fighters lock in, a **CHOOSE A GAME** hub appears (a 7×2 grid).
 **Player 1** drives the cursor (`WASD` + `Space`) and picks a minigame — all **13**
 are live: **Football, Flappy, Graveyard, Runner, Crown Grab, Tile Blitz, Hot
 Potato, Meteor Derby, Tank Duel, Slime Volley, Red Light Green Light, Traffic Run**
-and **Ship Dash**; the last slot is a COMING SOON placeholder. `Backspace` goes
-back a step.
+and **Ship Dash**; the last slot previews the **8-BIT CUP** tournament (trophy
+icon, marked COMING SOON until its game logic lands). `Backspace` goes back a step.
 
 ### Controls
 

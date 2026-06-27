@@ -49,6 +49,7 @@
   const trCoin = buildSprite(TR.coin, TR.coinPal);
   const SHP = D.ship;
   const shBoat = buildSprite(SHP.ship, Object.assign({}, SHP.pal, { S: "#ff5d5d", l: lighten("#ff5d5d", 1.22), s: lighten("#ff5d5d", 0.74), F: "#ff5d5d" }));
+  const CUPD = D.cup, cupTrophy = buildSprite(CUPD.trophy, CUPD.pal);
   let _podIcon = null;
   function podIcon() {                                  // shuttle hull + pilot head
     if (_podIcon) return _podIcon;
@@ -99,6 +100,7 @@
     { name: "RED LIGHT", file: "rlgl.html", accent: "#ff8a8a", icon: "rlgl" },
     { name: "TRAFFIC RUN", file: "traffic.html", accent: "#e6d074", icon: "traffic" },
     { name: "SHIP DASH", file: "ship.html", accent: "#4bb3e6", icon: "ship" },
+    { name: "8-BIT CUP", file: "tournament.html", accent: "#ffd54a", icon: "cup", soon: true },
   ];
 
   // ---- grid (7x2 holds the growing roster; empty slots show COMING SOON) ----
@@ -116,7 +118,7 @@
     if (e.code === "Backspace") { location.href = "index.html"; return; }
     if (e.code === "Space" || e.code === "KeyF") {
       const g = GAMES[idx];
-      if (g) location.href = g.file; else lockMsg = 1.1;
+      if (g && !g.soon) location.href = g.file; else lockMsg = 1.1;
       return;
     }
     const m = MOVE[e.code]; if (!m) return;
@@ -280,12 +282,29 @@
     ctx.restore();
     ctx.strokeStyle = "#4bb3e6"; ctx.lineWidth = 3; ctx.strokeRect(ix, iy, iw, ih);
   }
+  function iconCup(r) {
+    const ix = r.x + 12, iy = r.y + 12, iw = r.w - 24, ih = r.h - 56;
+    ctx.save(); ctx.beginPath(); ctx.rect(ix, iy, iw, ih); ctx.clip();
+    ctx.fillStyle = "#2a2042"; ctx.fillRect(ix, iy, iw, ih);                         // champions' stage
+    ctx.fillStyle = "rgba(255,220,120,.16)"; ctx.beginPath(); ctx.arc(ix + iw / 2, iy + ih * 0.46, iw * 0.42, 0, 7); ctx.fill();  // spotlight
+    ctx.fillStyle = "#1f1834"; ctx.fillRect(ix, iy + ih - 12, iw, 12);              // floor
+    fitDraw(cupTrophy, ix + 2, iy + 2, iw - 4, ih - 14);                            // the trophy
+    ctx.restore();
+    ctx.strokeStyle = "#ffd54a"; ctx.lineWidth = 3; ctx.strokeRect(ix, iy, iw, ih);
+  }
   function tile(i, t) {
     const r = cell(i), g = GAMES[i];
     if (g) {
       ctx.fillStyle = "#272138"; rr(r.x, r.y, r.w, r.h, 12); ctx.fill();
-      const ic = { football: iconFootball, flappy: iconFlappy, graveyard: iconGraveyard, runner: iconRunner, crown: iconCrown, tileblitz: iconTileBlitz, hotpotato: iconHotPotato, space: iconSpace, tank: iconTank, volley: iconVolley, rlgl: iconRLGL, traffic: iconTraffic, ship: iconShip }[g.icon] || iconGraveyard;
+      const ic = { football: iconFootball, flappy: iconFlappy, graveyard: iconGraveyard, runner: iconRunner, crown: iconCrown, tileblitz: iconTileBlitz, hotpotato: iconHotPotato, space: iconSpace, tank: iconTank, volley: iconVolley, rlgl: iconRLGL, traffic: iconTraffic, ship: iconShip, cup: iconCup }[g.icon] || iconGraveyard;
       ic(r);
+      if (g.soon) {                                             // not playable yet — dim + a COMING SOON ribbon
+        ctx.save(); rr(r.x, r.y, r.w, r.h, 12); ctx.clip();
+        ctx.fillStyle = "rgba(18,14,28,.5)"; ctx.fillRect(r.x, r.y, r.w, r.h);
+        ctx.fillStyle = "#15121f"; rr(r.x + 10, r.y + 12, r.w - 20, 16, 6); ctx.fill();
+        tc("COMING SOON", r.x + r.w / 2, r.y + 16, 1.4 | 0, "#ffd54a");
+        ctx.restore();
+      }
       ctx.fillStyle = "#15121f"; rr(r.x + 8, r.y + r.h - 34, r.w - 16, 24, 7); ctx.fill();
       const ns = Math.min(2, (r.w - 18) / tW(g.name, 1));      // auto-fit long names to the narrower tiles
       tc(g.name, r.x + r.w / 2, r.y + r.h - 24 - 5 * ns, ns, g.accent);
