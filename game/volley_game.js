@@ -88,7 +88,7 @@
     }
     sparks = []; winner = null; msg = ""; msgT = 0; served = false;
     ball = { x: W / 2, y: 90, vx: 0, vy: 0, r: BR, spin: 0 };
-    phase = "ready"; timer = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop();
+    phase = "ready"; timer = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop(); if (window.Results) Results.reset();
   }
   reset();
 
@@ -244,7 +244,7 @@
       tc("MOVE = YOUR KEYS    JUMP = " + ["W", "UP", "I", "T"].slice(0, count).join(" / "), W / 2, 330, 1, DIM);
     }
     if (phase === "over") {
-      if (window.Tournament) Tournament.finish(winner ? winner.tag : null);
+      if (window.Tournament) Tournament.finish(winner ? winner.tag : null); if (window.Results) Results.show(winner ? winner.tag : null);
       ctx.fillStyle = "rgba(11,10,20,.84)"; ctx.fillRect(0, 0, W, H);
       if (winner) { tc(winner.tag + " WINS!", W / 2, 130, 6, GOLD);
         drawSprite(winner.spr, W / 2, 400, 200 / winner.spr.h, 1); tc(winner.name + " — LAST ONE STANDING", W / 2, 420, 3, winner.color);

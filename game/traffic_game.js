@@ -75,7 +75,7 @@
       for (let k = 0; k < n; k++) cars.push({ L, y: laneY(L), x: rnd(-CW, W), dir, spd: base + rnd(-48, 72), col: (Math.random() * CAR_BASE.length) | 0 });
     }
     coins = []; for (let k = 0; k < Math.max(3, count); k++) coins.push(spawnCoin());   // fewer coins on screen at once
-    blood = []; winner = null; t0 = 0; phase = "ready"; ready = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop();
+    blood = []; winner = null; t0 = 0; phase = "ready"; ready = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop(); if (window.Results) Results.reset();
   }
   reset();
 
@@ -208,7 +208,7 @@
       tc("MOVE = YOUR KEYS    DASH = " + ["SPACE", "ENTER", "O", "R"].slice(0, count).join(" / ") + "    FIRST TO 15 WINS", W / 2, 388, 1, DIM);
     }
     if (phase === "over") {
-      if (window.Tournament) Tournament.finish(winner ? winner.tag : null);
+      if (window.Tournament) Tournament.finish(winner ? winner.tag : null); if (window.Results) Results.show(winner ? winner.tag : null);
       ctx.fillStyle = "rgba(11,10,20,.85)"; ctx.fillRect(0, 0, W, H);
       tc(winner.tag + " WINS!", W / 2, 150, 6, GOLD); drawSprite(winner.spr, W / 2, 420, 200 / winner.spr.h, 1);
       tc(winner.name + " - " + winner.score + " POINTS", W / 2, 440, 3, winner.color);

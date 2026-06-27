@@ -69,7 +69,7 @@
     players = [];
     for (let i = 0; i < count; i++) players.push({ i, name: NAMES[i], color: PCOL[i], tag: "P" + (i + 1), spr: SPR[i], ship: SHIP[i],
       x: START_X, v: 0, bob: Math.random() * 6, lurch: 0, done: false, place: 0 });
-    foams = []; winner = null; phase = "ready"; ready = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop();
+    foams = []; winner = null; phase = "ready"; ready = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop(); if (window.Results) Results.reset();
   }
   reset();
 
@@ -202,7 +202,7 @@
       tc(players.map((p, i) => p.tag + "=" + KEYLABEL[i]).join("   "), W / 2, 414, 2, DIM);
     }
     if (phase === "over" && winner) {
-      if (window.Tournament) Tournament.finish(winner ? winner.tag : null);
+      if (window.Tournament) Tournament.finish(winner ? winner.tag : null); if (window.Results) Results.show(winner ? winner.tag : null);
       ctx.fillStyle = "rgba(11,22,38,.85)"; ctx.fillRect(0, 0, W, H);
       tc(winner.tag + " WINS!", W / 2, 140, 6, GOLD);
       drawSprite(winner.spr, W / 2, 430, 200 / winner.spr.h, 1);

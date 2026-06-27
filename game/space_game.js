@@ -68,7 +68,7 @@
   function reset() {
     const order = shuffle([0, 1, 2, 3].slice(0, count)); players = [];
     for (let i = 0; i < count; i++) players.push(pl(NAMES[i], PCOL[i], "P" + (i + 1), (order[i] + 0.5) / count * W));
-    meteors = []; sparks = []; spawnT = 0.7; t0 = 0; phase = "ready"; ready = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop(); winner = null;
+    meteors = []; sparks = []; spawnT = 0.7; t0 = 0; phase = "ready"; ready = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop(); if (window.Results) Results.reset(); winner = null;
   }
   reset();
 
@@ -155,7 +155,7 @@
       tc(count + " PODS  -  3 HITS AND YOU'RE SPACE DUST  -  LAST POD WINS", W / 2, H / 2 + 46, 2, "#cfe6ff");
     }
     if (phase === "over") {
-      if (window.Tournament) Tournament.finish(winner ? winner.tag : null);
+      if (window.Tournament) Tournament.finish(winner ? winner.tag : null); if (window.Results) Results.show(winner ? winner.tag : null);
       ctx.fillStyle = "rgba(8,8,22,.82)"; ctx.fillRect(0, 0, W, H);
       if (winner) { tc(winner.tag + " WINS!", W / 2, 140, 6, GOLD); ctx.drawImage(POD[winner.name][0], W / 2 - SW * 5 / 2, 220, SW * 5, SH * 5); tc(winner.name, W / 2, 470, 3, winner.color); }
       else tc("ALL PODS LOST!", W / 2, 260, 5, GOLD);

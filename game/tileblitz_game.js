@@ -70,7 +70,7 @@
     for (let i = 0; i < count; i++) { const p = ent(NAMES[i], PCOL[i], "P" + (i + 1), i + 1); const s = SPAWNS[order[i]]; p.x = s[0]; p.y = s[1]; p.face = s[0] < W / 2 ? 1 : -1; players.push(p); }
     grid = []; for (let r = 0; r < ROWS; r++) grid.push(Array(COLS).fill(0));
     cnt = Array(count).fill(0);
-    phase = "ready"; ready = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop(); timeLeft = MATCH; winner = null; sparks = []; flick = 0;
+    phase = "ready"; ready = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop(); if (window.Results) Results.reset(); timeLeft = MATCH; winner = null; sparks = []; flick = 0;
     for (const p of players) paintAt(p);
   }
   reset();
@@ -182,7 +182,7 @@
       tc(count + " PLAYERS  -  PAINT THE FLOOR, MOST TILES WINS", W / 2, H / 2 + 44, 2, "#cfe6ff");
     }
     if (phase === "over") {
-      if (window.Tournament) Tournament.finish(winner ? winner.tag : null);
+      if (window.Tournament) Tournament.finish(winner ? winner.tag : null); if (window.Results) Results.show(winner ? winner.tag : null);
       ctx.fillStyle = "rgba(11,10,20,.85)"; ctx.fillRect(0, 0, W, H);
       if (winner) { tc(winner.tag + " PAINTS THE TOWN!", W / 2, 110, 5, GOLD); const s = fight[winner.name], scl = 180 / s.h; ctx.drawImage(s.canvas, W / 2 - s.w * scl / 2, 190, s.w * scl, 180); }
       else tc("DEAD HEAT!", W / 2, 200, 6, GOLD);

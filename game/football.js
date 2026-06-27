@@ -60,7 +60,7 @@
   function reset(full) {
     players = [0, 1, 2, 3].map(mkPlayer);
     ball = { x: CXc, y: CYc, vx: 0, vy: 0, r: BR };
-    phase = "ready"; timer = 3.0; msg = ""; winner = null; t0 = 0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop();
+    phase = "ready"; timer = 3.0; msg = ""; winner = null; t0 = 0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop(); if (window.Results) Results.reset();
   }
   reset(true);
 
@@ -208,7 +208,7 @@
     if (phase === "ready") tc(Countdown.label(timer), CXc, CYc - 90, 7, GOLD);
     if (phase === "kickoff" && msg) tc(msg, CXc, CYc - 90, 4, GOLD);
     if (phase === "win") {
-      if (window.Tournament) Tournament.finish(winner ? winner.tag : null);
+      if (window.Tournament) Tournament.finish(winner ? winner.tag : null); if (window.Results) Results.show(winner ? winner.tag : null);
       ctx.fillStyle = "rgba(8,14,9,.84)"; ctx.fillRect(0, 0, W, H);
       if (winner) {
         tc(winner.name + " WINS!", W / 2, 120, 6, GOLD);

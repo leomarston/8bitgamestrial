@@ -24,7 +24,7 @@
       // can't restart the round, then return to the cup standings.
       const swallow = e => { if (e.code !== "Backspace") { e.stopImmediatePropagation(); e.preventDefault(); } };
       addEventListener("keydown", swallow, true);
-      setTimeout(() => { location.href = "tournament.html"; }, 2300);
+      setTimeout(() => { location.href = "tournament.html"; }, 3600);
     },
   };
 })();

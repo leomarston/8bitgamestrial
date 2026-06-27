@@ -68,7 +68,7 @@
         x: START_X, vx: 0, laneY: LANE_TOP + (laneIdx + 0.5) * laneH, lane: laneIdx, finished: false, finishT: 0, hitFlash: 0, walkT: 0 });
     }
     light = { state: "green", t: 1.2 };
-    sparks = []; winner = null; t0 = 0; phase = "ready"; ready = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop();
+    sparks = []; winner = null; t0 = 0; phase = "ready"; ready = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop(); if (window.Results) Results.reset();
   }
   reset();
 
@@ -192,7 +192,7 @@
       tc("HOLD YOUR KEYS TO RUN  -  FIRST TO THE FINISH WINS", W / 2, 350, 1, DIM);
     }
     if (phase === "over") {
-      if (window.Tournament) Tournament.finish(winner ? winner.tag : null);
+      if (window.Tournament) Tournament.finish(winner ? winner.tag : null); if (window.Results) Results.show(winner ? winner.tag : null);
       ctx.fillStyle = "rgba(11,10,20,.85)"; ctx.fillRect(0, 0, W, H);
       if (winner) {
         const crossed = !!winner.finished;                       // truly reached the line vs. only furthest when time ran out

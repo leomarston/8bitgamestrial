@@ -164,7 +164,7 @@
         x: c.x, y: c.y, r: TR, dir, alive: true, fireCool: 0, shell: null, hitT: 0 });
     }
     shells = []; sparks = []; shake = 0;
-    phase = "ready"; ready = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop(); winner = null; t0 = 0;
+    phase = "ready"; ready = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop(); if (window.Results) Results.reset(); winner = null; t0 = 0;
   }
 
   // ---------- input ----------
@@ -278,7 +278,7 @@
       tc("MOVE = YOUR KEYS    FIRE = " + ["SPACE", "ENTER", "O", "R"].slice(0, count).join(" / "), W / 2, H / 2 + 70, 1, DIM);
     }
     if (phase === "over") {
-      if (window.Tournament) Tournament.finish(winner ? winner.tag : null);
+      if (window.Tournament) Tournament.finish(winner ? winner.tag : null); if (window.Results) Results.show(winner ? winner.tag : null);
       ctx.fillStyle = "rgba(11,10,20,.85)"; ctx.fillRect(0, 0, W, H);
       if (winner) { tc(winner.tag + " WINS!", W / 2, 120, 6, GOLD);
         const s = winner.spr[0], scl = 150 / s.h; ctx.drawImage(s.canvas, W / 2 - s.w * scl / 2, 210, s.w * scl, 150);

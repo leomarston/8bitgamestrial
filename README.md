@@ -329,6 +329,11 @@ a player is run over in Traffic Run or squished/knocked out in Runner — never 
 temporary blackout) live alongside in `game/sfx/`. Audio unlocks on the first
 key/pointer input (browser autoplay policy).
 
+When a round ends, **`game/results.js`** plays a synth result sting — a bright
+**victory jingle** if someone won, or a flat **draw** womp on a tie — alongside the
+on-screen "P# WINS!" / draw message. In the cup the result is then held a beat
+(~3.6s) so it lands before the standings roulette takes over.
+
 ## Repo layout
 
 ```

@@ -75,7 +75,7 @@
     players = [];
     for (let i = 0; i < count; i++) { const p = ent(NAMES[i], PCOL[i], "P" + (i + 1)); const s = map.spawns[order[i]]; p.x = s[0]; p.y = s[1]; p.face = s[0] < W / 2 ? 1 : -1; players.push(p); }
     crown = { holder: null, fx: map.crown[0], fy: map.crown[1], bob: 0 };
-    phase = "ready"; ready = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop(); timeLeft = MATCH; winner = null; sparks = []; flick = 0;
+    phase = "ready"; ready = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop(); if (window.Results) Results.reset(); timeLeft = MATCH; winner = null; sparks = []; flick = 0;
   }
   reset();
 
@@ -221,7 +221,7 @@
       tc(count + " PLAYERS  -  GRAB THE CROWN, HOLD IT LONGEST", W / 2, H / 2 + 44, 2, "#cfe6ff");
     }
     if (phase === "over") {
-      if (window.Tournament) Tournament.finish(winner ? winner.tag : null);
+      if (window.Tournament) Tournament.finish(winner ? winner.tag : null); if (window.Results) Results.show(winner ? winner.tag : null);
       ctx.fillStyle = "rgba(11,10,20,.85)"; ctx.fillRect(0, 0, W, H);
       if (winner) {
         tc(winner.tag + " IS THE KING!", W / 2, 110, 6, GOLD);

@@ -97,7 +97,7 @@
     cam = 0; players = [];
     const xs = shuffle([0, 1, 2, 3].slice(0, count)).map(k => 112 + k * 26);   // randomised start spots
     for (let i = 0; i < count; i++) players.push(mk(NAMES[i], xs[i], PCOL[i], "P" + (i + 1)));
-    phase = "ready"; timer = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop(); winner = null;
+    phase = "ready"; timer = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop(); if (window.Results) Results.reset(); winner = null;
   }
   reset();
 
@@ -233,7 +233,7 @@
       tc("THE SCREEN MOVES - DON'T FALL BEHIND - HOLD FORWARD, JUMP THE GAPS", CW / 2, CH / 2 + 36, 2, "#cfe0ff");
     }
     if (phase === "over") {
-      if (window.Tournament) Tournament.finish(winner ? winner.tag : null);
+      if (window.Tournament) Tournament.finish(winner ? winner.tag : null); if (window.Results) Results.show(winner ? winner.tag : null);
       ctx.fillStyle = "rgba(10,15,31,.86)"; ctx.fillRect(0, 0, CW, CH);
       if (winner) { tc(winner.tag + " SURVIVES!", CW / 2, 150, 6, GOLD);
         const s = fight[winner.name], scl = 150 / s.h; ctx.drawImage(s.canvas, CW / 2 - s.w * scl / 2, 230, s.w * scl, 150);

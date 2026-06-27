@@ -68,7 +68,7 @@
     pipes = []; scroll = 0; winner = null;
     let x = W + 140; for (let i = 0; i < 5; i++) { spawnPipe(x); x += SPACING; }
     birds = []; for (let i = 0; i < count; i++) birds.push(mkBird(i));
-    phase = "ready"; timer = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop();
+    phase = "ready"; timer = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop(); if (window.Results) Results.reset();
   }
   reset();
 
@@ -181,7 +181,7 @@
       tc(count + " PLAYERS", W / 2, H / 2 - 40, 2, DIM);
     }
     if (phase === "over") {
-      if (window.Tournament) Tournament.finish(winner ? winner.tag : null);
+      if (window.Tournament) Tournament.finish(winner ? winner.tag : null); if (window.Results) Results.show(winner ? winner.tag : null);
       ctx.fillStyle = "rgba(8,14,24,.86)"; ctx.fillRect(0, 0, W, H);
       if (winner) {
         tc(winner.name + " WINS!", W / 2, 110, 6, GOLD);
