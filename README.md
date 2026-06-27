@@ -235,8 +235,9 @@ arrows/`Enter`**, **P3 `IJKL`/`O`**, **P4 `TFGH`/`R`**); `Enter`/`R` = rematch,
 
 `game/traffic.html` — a **Frogger-style coin dash** for **2–4 players**. Everyone
 starts on the **grass strip at the bottom** and crosses **eight lanes of traffic**
-to grab coins. **The further UP a coin is, the more it's worth** (2 near the road's
-edge, up to 10 at the top), so the big payouts mean braving the busiest lanes.
+to grab coins. **The further UP a coin is, the more it's worth** (1 in the lane
+nearest the grass, up to 6 at the far end), so the big payouts mean braving the
+busiest, far-side lanes.
 **Get run over and you're flung back to the grass** (with a short invincibility
 flash) — **no points lost**, you just start the crossing again. **First to 15
 total points wins.**

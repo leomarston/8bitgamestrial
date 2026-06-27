@@ -57,7 +57,7 @@
   // ---------- state ----------
   let players, cars, coins, blood, phase, ready, winner, t0;
   function rnd(a, b) { return a + Math.random() * (b - a); }
-  function coinValue(cy) { const frac = (cy - ROAD_TOP) / (ROAD_BOT - ROAD_TOP); return 2 * (1 + Math.min(4, Math.floor((1 - frac) * 5))); }  // 2..10, higher=up
+  function coinValue(cy) { const frac = (cy - ROAD_TOP) / (ROAD_BOT - ROAD_TOP); return Math.max(1, Math.min(6, Math.round(1 + (1 - frac) * 5))); }  // 1 near the grass .. 6 at the far end
   function spawnCoin() { const L = (Math.random() * LANES) | 0, cy = laneY(L); return { x: rnd(60, W - 60), y: cy, v: coinValue(cy), t: 0 }; }
 
   function reset() {
@@ -218,7 +218,7 @@
       tp: (i, x, y) => { if (players[i]) { players[i].x = x; players[i].y = y; } },
       dash: i => players[i] && doDash(players[i]),
       addCoinAt: (i, v) => { const p = players[i]; coins[0] = { x: p.x, y: p.y, v, t: 0 }; },
-      car0: () => cars[0], roadTop: ROAD_TOP, roadBot: ROAD_BOT, grassY: ROAD_BOT + GRASS_H / 2, laneY: L => laneY(L), CW, CHt,
+      car0: () => cars[0], roadTop: ROAD_TOP, roadBot: ROAD_BOT, grassY: ROAD_BOT + GRASS_H / 2, laneY: L => laneY(L), cv: cy => coinValue(cy), lanes: LANES, CW, CHt,
     };
     requestAnimationFrame(t => frame(now, t));
   }
