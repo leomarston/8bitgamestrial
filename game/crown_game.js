@@ -231,7 +231,7 @@
       } else tc("A DEAD HEAT!", W / 2, 200, 6, GOLD);
       const order = players.slice().sort((a, b) => b.holdMs - a.holdMs); let y = 430;
       for (const p of order) { tc(p.tag + " " + p.name + "  " + ms(p.holdMs) + "S", W / 2, y, 2, p.color); y += 24; }
-      tc("ENTER = REMATCH     BACKSPACE = MENU", W / 2, y + 12, 2, DIM);
+      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "ENTER = REMATCH     BACKSPACE = MENU", W / 2, y + 12, 2, DIM);
     }
     window.__cg = { phase, map: mapIdx, count, holder: crown.holder ? players.indexOf(crown.holder) : null, hold: players.map(p => Math.round(p.holdMs)), black: players.map(p => +p.black.toFixed(2)), t: +timeLeft.toFixed(1), winner: winner ? winner.tag : null };
     window.__cghook = {

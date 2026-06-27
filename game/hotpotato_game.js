@@ -221,7 +221,7 @@
       ctx.fillStyle = "rgba(11,10,20,.85)"; ctx.fillRect(0, 0, W, H);
       if (winner) { tc(winner.tag + " SURVIVES!", W / 2, 130, 6, GOLD); const s = fight[winner.name], scl = 200 / s.h; ctx.drawImage(s.canvas, W / 2 - s.w * scl / 2, 210, s.w * scl, 200); tc(winner.name + " WINS", W / 2, 430, 4, winner.color); }
       else tc("EVERYONE BLEW UP!", W / 2, 240, 5, GOLD);
-      tc("ENTER = REMATCH      BACKSPACE = MENU", W / 2, 500, 2, DIM);
+      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "ENTER = REMATCH      BACKSPACE = MENU", W / 2, 500, 2, DIM);
     }
     window.__hp = { phase, count, map: mapIdx, holder: bomb.holder ? players.indexOf(bomb.holder) : null, alive: players.map(p => p.alive), fuse: +fuse.toFixed(2), winner: winner ? winner.tag : null };
     window.__hphook = { tp: (i, x, y) => { if (players[i]) { players[i].x = x; players[i].y = y; } }, dash: i => players[i] && doDash(players[i]), give: i => { bomb.holder = players[i]; }, setFuse: t => { fuse = t; }, pos: () => players.map(p => [Math.round(p.x), Math.round(p.y)]) };

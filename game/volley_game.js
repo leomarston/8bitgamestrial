@@ -250,7 +250,7 @@
       if (winner) { tc(winner.tag + " WINS!", W / 2, 130, 6, GOLD);
         drawSprite(winner.spr, W / 2, 400, 200 / winner.spr.h, 1); tc(winner.name + " — LAST ONE STANDING", W / 2, 420, 3, winner.color);
       } else tc("DRAW!", W / 2, 240, 6, GOLD);
-      tc("ENTER = REMATCH     BACKSPACE = MENU", W / 2, 520, 2, DIM);
+      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "ENTER = REMATCH     BACKSPACE = MENU", W / 2, 520, 2, DIM);
     }
 
     window.__vb = { phase, count, pts: players.map(p => p.pts), alive: players.map(p => p.alive),

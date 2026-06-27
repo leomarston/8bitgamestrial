@@ -216,7 +216,7 @@
         const s = spr[winner.name], sc = 210 / s.h; ctx.drawImage(s.canvas, W / 2 - s.w * sc / 2, 200, s.w * sc, 210);
         tc("LAST WALL STANDING", W / 2, 440, 3, winner.color);
       } else tc("DRAW!", W / 2, 240, 6, GOLD);
-      tc("ENTER = REMATCH      BACKSPACE = MENU", W / 2, 520, 2, DIM);
+      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "ENTER = REMATCH      BACKSPACE = MENU", W / 2, 520, 2, DIM);
     }
     window.__pong = { phase, count, lives: players.slice(0, count).map(p => p.lives), alive: players.slice(0, count).map(p => p.alive), dir: players.slice(0, count).map(p => p.dir), winner: winner ? winner.name : null };
     window.__pghook = {

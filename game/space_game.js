@@ -160,7 +160,7 @@
       ctx.fillStyle = "rgba(8,8,22,.82)"; ctx.fillRect(0, 0, W, H);
       if (winner) { tc(winner.tag + " WINS!", W / 2, 140, 6, GOLD); ctx.drawImage(POD[winner.name][0], W / 2 - SW * 5 / 2, 220, SW * 5, SH * 5); tc(winner.name, W / 2, 470, 3, winner.color); }
       else tc("ALL PODS LOST!", W / 2, 260, 5, GOLD);
-      tc("ENTER / SPACE = REMATCH     BACKSPACE = MENU", W / 2, 520, 2, DIM);
+      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "ENTER / SPACE = REMATCH     BACKSPACE = MENU", W / 2, 520, 2, DIM);
     }
     window.__sp = { phase, count, hp: players.map(p => p.hp), alive: players.map(p => p.alive), x: players.map(p => Math.round(p.x)), gapMin: minGap(), winner: winner ? winner.tag : null, met: meteors.length };
     window.__sphook = { setx: a => { for (let i = 0; i < a.length && i < count; i++) players[i].x = wrapx(a[i]); }, hit: i => damage(players[i]), pos: () => players.map(p => Math.round(p.x)), podMin: () => POD_MIN, alive: () => players.filter(p => p.alive).length };

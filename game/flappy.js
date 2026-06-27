@@ -190,7 +190,7 @@
       } else tc("DRAW!", W / 2, 200, 6, GOLD);
       const order = birds.slice().sort((a, b) => b.score - a.score);
       let y = 410; for (const b of order) { tc(b.name + "   " + b.score + " PIPES", W / 2, y, 2, b.color); y += 26; }
-      tc("ENTER = REMATCH     BACKSPACE = MENU", W / 2, y + 16, 2, DIM);
+      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "ENTER = REMATCH     BACKSPACE = MENU", W / 2, y + 16, 2, DIM);
     }
     window.__dbg = { phase, count, scores: birds.map(b => b.score), alive: birds.map(b => b.alive), winner: winner ? winner.name : null };
     window.__fhook = {

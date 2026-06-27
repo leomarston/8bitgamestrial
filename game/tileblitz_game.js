@@ -189,7 +189,7 @@
       else tc("DEAD HEAT!", W / 2, 200, 6, GOLD);
       const order = players.map((p, i) => [p, cnt[i]]).sort((a, b) => b[1] - a[1]); let y = 390;
       for (const [p, c] of order) { tc(p.tag + " " + p.name + "  " + c + " TILES", W / 2, y, 2, p.color); y += 24; }
-      tc("ENTER = REMATCH     BACKSPACE = MENU", W / 2, y + 12, 2, DIM);
+      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "ENTER = REMATCH     BACKSPACE = MENU", W / 2, y + 12, 2, DIM);
     }
     window.__tb = { phase, count, c: cnt.slice(), black: players.map(p => +p.black.toFixed(2)), t: +timeLeft.toFixed(1), winner: winner ? winner.tag : null };
     window.__tbhook = { tp: (i, x, y) => { if (players[i]) { players[i].x = x; players[i].y = y; } }, dash: i => players[i] && doDash(players[i]), pos: () => players.map(p => [Math.round(p.x), Math.round(p.y)]), end: () => { timeLeft = 0; }, grid: () => grid };

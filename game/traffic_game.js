@@ -213,7 +213,7 @@
       ctx.fillStyle = "rgba(11,10,20,.85)"; ctx.fillRect(0, 0, W, H);
       tc(winner.tag + " WINS!", W / 2, 150, 6, GOLD); drawSprite(winner.spr, W / 2, 420, 200 / winner.spr.h, 1);
       tc(winner.name + " - " + winner.score + " POINTS", W / 2, 440, 3, winner.color);
-      tc("ENTER = REMATCH     BACKSPACE = MENU", W / 2, 530, 2, DIM);
+      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "ENTER = REMATCH     BACKSPACE = MENU", W / 2, 530, 2, DIM);
     }
 
     window.__tr = { phase, count, scores: players.map(p => p.score), winner: winner ? winner.tag : null,
