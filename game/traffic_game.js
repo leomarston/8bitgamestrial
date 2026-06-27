@@ -65,12 +65,12 @@
     for (let i = 0; i < count; i++) {
       const hx = (W / (count + 1)) * (i + 1);
       players.push({ i, name: NAMES[i], color: PCOL[i], tag: "P" + (i + 1), spr: SPR[i], homeX: hx,
-        x: hx, y: ROAD_BOT + GRASS_H / 2, vx: 0, vy: 0, face: 1, score: 0, dash: 0, dashCool: 0, inv: 1.0, walkT: 0 });
+        x: hx, y: ROAD_BOT + GRASS_H / 2, vx: 0, vy: 0, face: 1, score: 0, dash: 0, dashCool: 0, ddx: 0, ddy: 0, walkT: 0 });
     }
     cars = [];
     for (let L = 0; L < LANES; L++) {
-      const dir = L % 2 ? 1 : -1, base = 92 + L * 9, n = (L % 3 === 0) ? 2 : 1;
-      for (let k = 0; k < n; k++) cars.push({ L, y: laneY(L), x: rnd(-CW, W), dir, spd: base + rnd(-12, 18), col: (Math.random() * CAR_BASE.length) | 0 });
+      const dir = L % 2 ? 1 : -1, base = (92 + L * 9) * 2, n = (L % 3 === 0) ? 2 : 1;
+      for (let k = 0; k < n; k++) cars.push({ L, y: laneY(L), x: rnd(-CW, W), dir, spd: base + rnd(-24, 36), col: (Math.random() * CAR_BASE.length) | 0 });
     }
     coins = []; for (let k = 0; k < Math.max(4, count + 2); k++) coins.push(spawnCoin());
     blood = []; winner = null; t0 = 0; phase = "ready"; ready = 2.2;
@@ -85,7 +85,14 @@
     { u: "KeyT", dn: "KeyG", l: "KeyF", r: "KeyH", dash: "KeyR" },
   ];
   const held = {};
-  function doDash(p) { if (p.dash <= 0 && p.dashCool <= 0 && phase === "play") { p.dash = DASH_TIME; p.dashCool = DASH_COOL; } }
+  function doDash(p) {
+    if (p.dash > 0 || p.dashCool > 0 || phase !== "play") return;
+    p.dash = DASH_TIME; p.dashCool = DASH_COOL;
+    const k = KEYS[p.i];                                       // dash in the direction held right now
+    let dx = (held[k.r] ? 1 : 0) - (held[k.l] ? 1 : 0), dy = (held[k.dn] ? 1 : 0) - (held[k.u] ? 1 : 0);
+    if (!dx && !dy) { dx = p.face; dy = 0; }                   // nothing held -> dash the way you face
+    const m = Math.hypot(dx, dy) || 1; p.ddx = dx / m; p.ddy = dy / m;
+  }
   window.addEventListener("keydown", e => {
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(e.code)) e.preventDefault();
     if (e.code === "Backspace") { location.href = "gameselect.html"; return; }
@@ -113,23 +120,23 @@
     // players
     for (let i = 0; i < count; i++) {
       const p = players[i], k = KEYS[i];
-      p.dash = Math.max(0, p.dash - dt); p.dashCool = Math.max(0, p.dashCool - dt); p.inv = Math.max(0, p.inv - dt);
+      p.dash = Math.max(0, p.dash - dt); p.dashCool = Math.max(0, p.dashCool - dt);
       let dx = (held[k.r] ? 1 : 0) - (held[k.l] ? 1 : 0), dy = (held[k.dn] ? 1 : 0) - (held[k.u] ? 1 : 0);
       if (dx) p.face = dx > 0 ? 1 : -1;
-      if (p.dash > 0) {                                   // dash burst in facing / current dir
-        const m = Math.hypot(dx, dy) || 1; p.x += (dx || p.face) / (dx || dy ? m : 1) * DASH_SPEED * dt; p.y += dy / (dx || dy ? m : 1) * DASH_SPEED * dt;
+      if (p.dash > 0) {                                   // dash burst along the captured held direction
+        p.x += p.ddx * DASH_SPEED * dt; p.y += p.ddy * DASH_SPEED * dt;
       } else if (dx || dy) {
         const m = Math.hypot(dx, dy); p.x += dx / m * PSPD * dt; p.y += dy / m * PSPD * dt; p.walkT += dt * 12;
       }
       p.x = Math.max(PR, Math.min(W - PR, p.x));
       p.y = Math.max(ROAD_TOP + PR, Math.min(ROAD_BOT + GRASS_H / 2, p.y));
       const onGrass = p.y > ROAD_BOT;
-      // car collisions (only on the road, when not invulnerable)
-      if (!onGrass && p.inv <= 0) {
+      // car collisions (only on the road — no death cooldown; the grass is always safe)
+      if (!onGrass) {
         for (const c of cars) {
           const l = c.x, r = c.x + CW, t = c.y - CHt / 2, b = c.y + CHt / 2;
           const nx = Math.max(l, Math.min(p.x, r)), ny = Math.max(t, Math.min(p.y, b));
-          if ((p.x - nx) ** 2 + (p.y - ny) ** 2 < PR * PR) { splat(p.x, p.y); p.x = p.homeX; p.y = ROAD_BOT + GRASS_H / 2; p.vx = p.vy = 0; p.inv = 1.2; break; }
+          if ((p.x - nx) ** 2 + (p.y - ny) ** 2 < PR * PR) { splat(p.x, p.y); p.x = p.homeX; p.y = ROAD_BOT + GRASS_H / 2; p.vx = p.vy = 0; break; }
         }
       }
       // coin pickup
@@ -187,8 +194,7 @@
     // players (sorted by y so lower draws in front)
     for (const p of players.slice().sort((a, b) => a.y - b.y)) {
       ctx.fillStyle = "rgba(8,10,20,.28)"; ctx.beginPath(); ctx.ellipse(p.x, p.y + PR * 0.7, PR * 0.9, 4, 0, 0, 7); ctx.fill();
-      if (p.inv > 0 && (p.inv * 10 | 0) % 2) ctx.globalAlpha = 0.5;
-      drawSprite(p.spr, p.x, p.y + PR + 4, PSC, null); ctx.globalAlpha = 1;
+      drawSprite(p.spr, p.x, p.y + PR + 4, PSC, null);
       const tx = (p.x - 9) | 0, ty = (p.y - PR - 22) | 0; ctx.fillStyle = p.color; ctx.fillRect(tx, ty, 20, 7); text(p.tag, tx + 3, ty + 1, 1, INK);
     }
     drawScoreboard();
@@ -207,7 +213,7 @@
     }
 
     window.__tr = { phase, count, scores: players.map(p => p.score), winner: winner ? winner.tag : null,
-      pos: players.map(p => [Math.round(p.x), Math.round(p.y)]), inv: players.map(p => +p.inv.toFixed(2)), coins: coins.map(c => [Math.round(c.x), Math.round(c.y), c.v]) };
+      pos: players.map(p => [Math.round(p.x), Math.round(p.y)]), dash: players.map(p => [+p.ddx.toFixed(2), +p.ddy.toFixed(2), +p.dash.toFixed(2)]), coins: coins.map(c => [Math.round(c.x), Math.round(c.y), c.v]) };
     window.__trhook = {
       tp: (i, x, y) => { if (players[i]) { players[i].x = x; players[i].y = y; } },
       dash: i => players[i] && doDash(players[i]),
