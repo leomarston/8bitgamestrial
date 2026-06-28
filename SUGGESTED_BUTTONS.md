@@ -1,4 +1,4 @@
-# 8-BIT PARTY — Phone Controller Layouts
+# 8-BIT PARTY — Suggested Buttons (Phone Controller)
 
 **Scenario:** the game runs on the **big screen** (TV / monitor). Every player
 holds their **phone as a gamepad** — the phone only shows the control buttons and
