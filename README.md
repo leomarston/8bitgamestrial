@@ -9,7 +9,11 @@ This pass delivers the **Mortal-Kombat-style character select screen** with
 Just open **`game/index.html`** in any browser (no server needed — the sprite
 data is inlined).
 
-**Flow:** character select → **game select** → the chosen minigame.
+**Flow:** **main menu** → character select → **game select** → the chosen minigame.
+The landing page is a Party-Panic-style **main menu** (`index.html`): a bouncy
+colourful wordmark and three chunky buttons — **PLAY** (→ character select),
+**SETTINGS** (music on/off · sound on/off · fullscreen), and **QUIT** (inert for
+now). Navigate with `↑`/`↓` and `Enter`, or use the mouse.
 After the fighters lock in, a **CHOOSE A GAME** hub appears (a full 7×2 grid).
 **Player 1** drives the cursor (`WASD` + `Space`) and picks one of **13 minigames** —
 **Football, Flappy, Graveyard, Runner, Crown Grab, Tile Blitz, Hot Potato, Meteor
@@ -317,8 +321,8 @@ the on-screen number *and* trigger the beep on each change.
 ## Music & sound
 
 `game/music.js` (loaded by every page) handles background music:
-- **Menu** (character select + game select) loops the **menu track**, kept
-  seamless across the two menu screens via `sessionStorage`.
+- **Menu** (main menu + character select + game select) loops the **menu track**,
+  kept seamless across the menu screens via `sessionStorage`.
 - **Each game** preloads a **random track from `music1`–`music4`** but stays
   **silent through the countdown** — the music kicks in **only at GO**, when play
   actually begins (`GameMusic.start()`). A rematch re-rolls a fresh track
@@ -338,7 +342,9 @@ on-screen "P# WINS!" / draw message. In the cup the result is then held a beat
 
 ```
 game/            the playable screens
-  index.html     character select
+  index.html     main menu (PLAY / SETTINGS / QUIT)
+  menu.js        main-menu screen
+  fighters.html  character select
   game.js        MK-style select logic (cursors, lock-in, mirror) -> game select
   gameselect.html  the "choose a game" hub
   gameselect.js  7x2 minigame grid (P1 picks; 13 games + the cup)

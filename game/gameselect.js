@@ -115,7 +115,7 @@
   const MOVE = { KeyW: [0, -1], KeyS: [0, 1], KeyA: [-1, 0], KeyD: [1, 0] };
   window.addEventListener("keydown", e => {
     if (["Space"].includes(e.code)) e.preventDefault();
-    if (e.code === "Backspace") { location.href = "index.html"; return; }
+    if (e.code === "Backspace") { location.href = "fighters.html"; return; }
     if (e.code === "Space" || e.code === "KeyF") {
       const g = GAMES[idx];
       if (g) {

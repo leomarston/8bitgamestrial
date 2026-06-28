@@ -57,6 +57,7 @@
 
   // ---- input ----
   window.addEventListener("keydown", e => {
+    if (e.code === "Escape") { e.preventDefault(); location.href = "index.html"; return; }   // back to main menu
     if (e.code === "Backspace") { e.preventDefault(); players.forEach(p => p.locked = false); return; }
     if (["Digit2", "Digit3", "Digit4", "Numpad2", "Numpad3", "Numpad4"].includes(e.code)) {
       if (!act().every(p => p.locked)) { count = +e.code.slice(-1); players.forEach(p => p.locked = false); }
@@ -141,6 +142,7 @@
     let lab = "PLAYERS:  "; tc(lab, W / 2 - 70, 62, 2, DIM);
     for (let n = 2; n <= 4; n++) { const bx = W / 2 - 6 + (n - 2) * 34; ctx.fillStyle = n === count ? GOLD : "#3a3352"; rr(bx, 58, 26, 20, 5); ctx.fill(); tc(String(n), bx + 13, 62, 2, n === count ? "#15121f" : DIM); }
     tc("(PRESS 2 / 3 / 4)", W / 2 + 130, 64, 1, DIM);
+    tc("ESC = MAIN MENU", W / 2, H - 16, 1, DIM);
 
     for (let i = 0; i < D.roster.length; i++) drawCell(i);
     // cursors: nest by order when several share a cell
