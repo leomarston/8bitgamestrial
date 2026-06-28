@@ -64,6 +64,7 @@
   ];
   const TARGET = 5;
   const RESULT_DUR = 1.8, SPIN_DUR = 2.6, LAND_HOLD = 1.0;   // celebrate -> spin the roulette -> launch
+  const CHAMP_RETURN = 10;                                    // champion shown, then auto-return to the game menu
 
   // ---- cup state: init fresh from the hub, or apply the round we just returned from ----
   function load() { try { return JSON.parse(localStorage.getItem("cup")); } catch (e) { return null; } }
@@ -71,7 +72,7 @@
   let cup = load() || {};
   let lastDraw = false, lastWinner = -1;
   if (cup.fresh || !cup.wins) {
-    cup = { active: true, count, wins: [0, 0, 0, 0], target: TARGET, lastGame: null, pendingResult: false };
+    cup = { active: true, count, wins: [0, 0, 0, 0], target: TARGET, lastGame: null, played: [], pendingResult: false };
   } else if (cup.pendingResult) {
     lastWinner = (typeof cup.lastWinner === "number") ? cup.lastWinner : -1;
     if (lastWinner >= 0 && lastWinner < count) cup.wins[lastWinner]++; else lastDraw = true;
@@ -84,11 +85,15 @@
   const champ = top >= TARGET ? cup.wins.slice(0, count).indexOf(top) : -1;
   const celebrate = champ < 0 && lastWinner >= 0;         // a star was just earned
 
-  // pick the next game (avoid an immediate repeat)
-  let nextGame = null;
+  // pick the next game: never repeat one already played THIS CUP until every game has
+  // had a turn; once the whole pool is exhausted we start a fresh cycle (just avoiding
+  // an immediate back-to-back repeat across the cycle boundary).
+  let nextGame = null, cycleReset = false;
   if (champ < 0) {
-    const opts = POOL.filter(g => g.file !== cup.lastGame);
-    nextGame = (opts.length ? opts : POOL)[Math.floor(Math.random() * (opts.length ? opts.length : POOL.length))];
+    const played = Array.isArray(cup.played) ? cup.played : [];
+    let opts = POOL.filter(g => played.indexOf(g.file) < 0);
+    if (!opts.length) { cycleReset = true; opts = POOL.filter(g => g.file !== cup.lastGame); if (!opts.length) opts = POOL.slice(); }
+    nextGame = opts[Math.floor(Math.random() * opts.length)];
   }
   // roulette schedule: spin a couple of loops and land exactly on nextGame
   const RLEN = POOL.length;
@@ -98,7 +103,13 @@
 
   // ---- input ----
   let advancing = false;
-  function startNext() { if (advancing || !nextGame) return; advancing = true; cup.lastGame = nextGame.file; cup.pendingResult = false; cup.fresh = false; save(cup); location.href = nextGame.file; }
+  function startNext() {
+    if (advancing || !nextGame) return; advancing = true;
+    cup.lastGame = nextGame.file;
+    cup.played = cycleReset ? [] : (Array.isArray(cup.played) ? cup.played : []);   // wrap to a fresh cycle once all are played
+    if (cup.played.indexOf(nextGame.file) < 0) cup.played.push(nextGame.file);
+    cup.pendingResult = false; cup.fresh = false; save(cup); location.href = nextGame.file;
+  }
   function newCup() { save({ active: true, fresh: true }); location.reload(); }
   function quit() { cup.active = false; save(cup); location.href = "gameselect.html"; }
   window.addEventListener("keydown", e => {
@@ -108,15 +119,30 @@
   });
 
   // ---- rendering ----
-  function star(cx, cy, r, fill, outline) {
-    ctx.beginPath();
-    for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r, x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
-    ctx.closePath(); if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (outline) { ctx.strokeStyle = outline; ctx.lineWidth = 1.5; ctx.stroke(); }
-  }
+  // hand-drawn 4-bit star sprite (gold body 'X' + light sheen 'h'), built once and
+  // tinted gold when earned / grey when not — so the leaderboard pips are pixel art.
+  const STAR_ROWS = [
+    ".......X.......",
+    "......XXX......",
+    "......XXX......",
+    ".....hXXXX.....",
+    "hhXXXXXXXXXXXXX",
+    ".hXXXXXXXXXXXX.",
+    "..XXXXXXXXXXX..",
+    "...XXXXXXXXX...",
+    "...XXXXXXXXX...",
+    "..XXXX...XXXX..",
+    ".XXXX.....XXXX.",
+    ".XXX.......XXX.",
+    "XXX.........XXX",
+  ];
+  const starLit = build(STAR_ROWS, { ".": null, "X": "#ffce3a", "h": "#fff0a8" });
+  const starDim = build(STAR_ROWS, { ".": null, "X": "#3a3650", "h": "#4a4666" });
   function pip(cx, cy, filled, scale) {
     scale = scale || 1;
-    if (filled) { star(cx, cy, 12 * scale, GOLD, CU.out); star(cx, cy - scale, 4.5 * scale, "#fff8e0"); }
-    else { ctx.fillStyle = "rgba(40,36,54,.9)"; ctx.beginPath(); ctx.arc(cx, cy, 12, 0, 7); ctx.fill(); ctx.strokeStyle = "#5a5570"; ctx.lineWidth = 2; ctx.stroke(); star(cx, cy, 7, "#3e3a52"); }
+    const s = filled ? starLit : starDim, sc = 2.0 * scale;            // native 15x13 -> ~30x26
+    const w = Math.round(s.w * sc), h = Math.round(s.h * sc);
+    ctx.drawImage(s.canvas, Math.round(cx - w / 2), Math.round(cy - h / 2), w, h);
   }
   function drawSprite(s, cx, feetY, scl) { const w = Math.round(s.w * scl), h = Math.round(s.h * scl); ctx.drawImage(s.canvas, Math.round(cx - w / 2), Math.round(feetY - h), w, h); }
   const easeOutBack = p => { const c1 = 1.7, c3 = c1 + 1; return 1 + c3 * Math.pow(p - 1, 3) + c1 * Math.pow(p - 1, 2); };
@@ -188,17 +214,33 @@
   }
 
   let confetti = null;
+  const REVEAL = 2.2;                                   // first: behold the cup, THEN the winner hoists it
   function drawChampion(el) {
-    stageBG({ x: W / 2, y: 230, r: 230 });
-    if (!confetti) { confetti = []; for (let i = 0; i < 90; i++) confetti.push({ x: Math.random() * W, y: Math.random() * H, vy: 40 + Math.random() * 80, c: PCOL[(Math.random() * 4) | 0], ph: Math.random() * 7 }); }
+    stageBG({ x: W / 2, y: 210, r: 250 });
+    if (!confetti) { confetti = []; for (let i = 0; i < 100; i++) confetti.push({ x: Math.random() * W, y: Math.random() * H, vy: 40 + Math.random() * 90, c: PCOL[(Math.random() * 4) | 0], ph: Math.random() * 7 }); }
     for (const f of confetti) { f.y += f.vy * 0.016; f.x += Math.sin(el * 3 + f.ph) * 0.6; if (f.y > H) { f.y = -6; f.x = Math.random() * W; } ctx.fillStyle = f.c; ctx.fillRect(f.x | 0, f.y | 0, 5, 7); }
-    tc("CHAMPION!", W / 2, 36, 6, GOLD);
-    const pop = el < 0.7 ? Math.max(0.15, easeOutBack(el / 0.7)) : 1;                   // trophy springs in
-    drawSprite(trophy, W / 2, 360, 4.4 * pop);
-    drawSprite(SPR[champ], 360, H - 40, 2.0);
-    text("P" + (champ + 1) + "  " + NAMES[champ], 430, H - 64, 4, PCOL[champ]);
-    text("WINS THE 8-BIT CUP", 430, H - 30, 2, DIM);
-    tc("ENTER = NEW CUP      ESC = MENU", W / 2, H - 122, 2, DIM);
+    tc("CHAMPION!", W / 2, 34, 6, GOLD);
+
+    const feetRest = H - 96, chScale = 280 / SPR[champ].h, chH = SPR[champ].h * chScale;
+    const fromY = 392, fromS = 280 / trophy.h;           // cup-reveal pose
+    const toY = (feetRest - chH) - 4, toS = 110 / trophy.h;   // hoisted just above the winner's head
+
+    if (el < REVEAL) {
+      const pop = el < 0.7 ? Math.max(0.12, easeOutBack(el / 0.7)) : 1, fy = Math.sin(el * 2.2) * 6;
+      drawSprite(trophy, W / 2, fromY + fy, fromS * pop);
+      tc("THE 8-BIT CUP IS WON!", W / 2, 436, 3, GOLDL);
+    } else {
+      const te = el - REVEAL, slide = Math.min(1, te / 0.5), k = Math.min(1, te / 0.5);
+      const hop = Math.abs(Math.sin(te * 4)) * 12 * slide;          // victory hops once landed
+      const feetY = feetRest + (1 - slide) * 150;                   // winner rises into place
+      ctx.globalAlpha = slide; drawSprite(SPR[champ], W / 2, feetY - hop, chScale); ctx.globalAlpha = 1;
+      const ty = fromY + (toY - fromY) * k, ts = fromS + (toS - fromS) * k;   // cup glides into raised hands
+      drawSprite(trophy, W / 2, ty - hop, ts);
+      tc("P" + (champ + 1) + "  " + NAMES[champ], W / 2, 514, 4, PCOL[champ]);
+      tc("WINS THE 8-BIT CUP", W / 2, 548, 2, GOLDL);
+    }
+    const left = Math.max(0, Math.ceil(CHAMP_RETURN - el));
+    tc("ENTER = NEW CUP     -     MENU IN " + left + "S", W / 2, H - 16, 2, DIM);
   }
 
   // ---- loop: champion screen, OR  board(celebrate) -> roulette spin -> land -> launch ----
@@ -206,7 +248,7 @@
   function frame(t) {
     if (t0 < 0) t0 = t; const el = (t - t0) / 1000;
     if (!soundDone) { soundDone = true; if (champ >= 0) fanfare(); else if (celebrate) ding(); }
-    if (champ >= 0) { drawChampion(el); requestAnimationFrame(frame); return; }
+    if (champ >= 0) { drawChampion(el); if (el >= CHAMP_RETURN && !advancing) { advancing = true; quit(); } requestAnimationFrame(frame); return; }
     drawStandings(el);                                          // board + win celebration stays behind
     if (el >= RESULT_DUR) {
       const re = el - RESULT_DUR;
