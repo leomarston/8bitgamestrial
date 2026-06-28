@@ -1,6 +1,8 @@
 /* 8-BIT PARTY — CROWN GRAB (King-of-the-Crown), 2–4 players. Grab the crown and
- * carry it on your head; DASH into anyone to black them out 1s and (if they held
- * it) STEAL the crown. Live millisecond hold timers; most cumulative hold when the
+ * carry it on your head; just TOUCHING the crown-bearer takes it. DASH into anyone
+ * to also black them out 1s (a knockout that steals the crown too). A short grace
+ * window after each grab stops the crown ping-ponging between overlapping players.
+ * Live millisecond hold timers; most cumulative hold when the
  * 30s clock ends WINS. Random arena each round.
  * P1 WASD/Space · P2 Arrows/Enter · P3 IJKL/O · P4 TFGH/R */
 (() => {
@@ -64,7 +66,7 @@
   let mapsLoaded = 0; MAPS.forEach(m => { m.img.onload = () => mapsLoaded++; });
 
   // ---------- entities ----------
-  const PSC = 2.4, R = 14, PSPD = 196, DASH_TIME = 0.16, DASH_COOL = 0.55, DASH_SPEED = 500, BLACKOUT = 1.0, GRAB = 12, MATCH = 30;
+  const PSC = 2.4, R = 14, PSPD = 196, DASH_TIME = 0.16, DASH_COOL = 0.55, DASH_SPEED = 500, BLACKOUT = 1.0, GRAB = 12, MATCH = 30, STEAL_GRACE = 0.55;
   function ent(name, color, tag) { return { name, color, tag, x: 0, y: 0, face: 1, holdMs: 0, dash: 0, dashDir: [1, 0], dashCool: 0, black: 0, walkT: 0, moving: false, r: R }; }
   function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
   let players, crown, map, mapIdx, phase, ready, timeLeft, winner, sparks, flick;
@@ -74,7 +76,7 @@
     const order = shuffle([0, 1, 2, 3].slice(0, count));   // randomised spawn slots — fair
     players = [];
     for (let i = 0; i < count; i++) { const p = ent(NAMES[i], PCOL[i], "P" + (i + 1)); const s = map.spawns[order[i]]; p.x = s[0]; p.y = s[1]; p.face = s[0] < W / 2 ? 1 : -1; players.push(p); }
-    crown = { holder: null, fx: map.crown[0], fy: map.crown[1], bob: 0 };
+    crown = { holder: null, fx: map.crown[0], fy: map.crown[1], bob: 0, stealCD: 0 };
     phase = "ready"; ready = 3.0; if (window.Countdown) Countdown.reset(); if (window.GameMusic) GameMusic.stop(); if (window.Results) Results.reset(); timeLeft = MATCH; winner = null; sparks = []; flick = 0;
   }
   reset();
@@ -136,7 +138,7 @@
         if (vic === att || vic.black > 0) continue;
         if ((att.x - vic.x) ** 2 + (att.y - vic.y) ** 2 < (att.r + vic.r + 6) ** 2) {
           vic.black = BLACKOUT; att.dash = 0; att.dashCool = Math.min(att.dashCool, 0.25);
-          const stole = vic === startHolder; if (stole) crown.holder = att;
+          const stole = vic === startHolder; if (stole) { crown.holder = att; crown.stealCD = STEAL_GRACE; }
           moveEnt(vic, att.dashDir[0] * 20, att.dashDir[1] * 20);
           const mx = (att.x + vic.x) / 2, my = (att.y + vic.y) / 2;
           for (let k = 0; k < 10; k++) { const a = k / 10 * 7, sp = 80 + (k % 3) * 60; sparks.push({ x: mx, y: my, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, t: 0.4, c: stole ? GOLD : "#fff" }); }
@@ -146,8 +148,27 @@
       }
     }
 
+    // contact steal: simply TOUCHING the crown-bearer takes the crown — no dash needed.
+    // A brief grace window after each grab keeps it from flickering between two players
+    // who are overlapping, and shoves the ex-bearer off so they don't instantly bump back.
+    crown.stealCD = Math.max(0, crown.stealCD - dt);
+    if (crown.holder && crown.stealCD <= 0) {
+      const hold = crown.holder;
+      for (const p of players) {
+        if (p === hold || p.black > 0 || p.dash > 0) continue;   // dash hits are handled above (they also knock out)
+        const dx = p.x - hold.x, dy = p.y - hold.y;
+        if (dx * dx + dy * dy < (p.r + hold.r) ** 2) {
+          crown.holder = p; crown.stealCD = STEAL_GRACE;
+          const d = Math.hypot(dx, dy) || 1; moveEnt(hold, -dx / d * 16, -dy / d * 16);   // push the ex-bearer away
+          for (let k = 0; k < 8; k++) { const a = k / 8 * 7, sp = 70 + (k % 3) * 50; sparks.push({ x: (p.x + hold.x) / 2, y: (p.y + hold.y) / 2, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, t: 0.35, c: GOLD }); }
+          playHit(); msg = p.tag + " TOOK THE CROWN!"; msgT = 1.0;
+          break;
+        }
+      }
+    }
+
     // free crown pickup (only ever free before the first grab)
-    if (crown.holder === null) for (const p of players) if (p.black <= 0 && (p.x - crown.fx) ** 2 + (p.y - crown.fy) ** 2 < (p.r + GRAB) ** 2) { crown.holder = p; msg = p.tag + " GRABBED THE CROWN!"; msgT = 1.0; break; }
+    if (crown.holder === null) for (const p of players) if (p.black <= 0 && (p.x - crown.fx) ** 2 + (p.y - crown.fy) ** 2 < (p.r + GRAB) ** 2) { crown.holder = p; crown.stealCD = STEAL_GRACE; msg = p.tag + " GRABBED THE CROWN!"; msgT = 1.0; break; }
     if (crown.holder) crown.holder.holdMs += dt * 1000;
     msgT = Math.max(0, msgT - dt);
 
@@ -212,7 +233,7 @@
     players.map((p, i) => ({ y: p.y, f: () => drawPlayer(p) })).sort((a, b) => a.y - b.y).forEach(e => e.f());
     for (const s of sparks) { ctx.fillStyle = s.c; ctx.fillRect(s.x | 0, s.y | 0, 3, 3); }
     hud();
-    if (phase === "play") tc("DASH TO STEAL  -  HOLD THE CROWN LONGEST", W / 2, H - 36, 1, DIM);
+    if (phase === "play") tc("TOUCH TO STEAL  -  DASH TO KNOCK OUT  -  HOLD LONGEST", W / 2, H - 36, 1, DIM);
     if (msgT > 0) tc(msg, W / 2, 80, 3, GOLD);
     if (phase === "ready") {
       ctx.fillStyle = "rgba(11,10,20,.55)"; ctx.fillRect(0, 0, W, H);
