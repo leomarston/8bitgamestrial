@@ -41,10 +41,8 @@
   // ---- settings helpers (persist to the same keys the games + pause menu read) ----
   const musicOn = () => { try { return localStorage.getItem("musicOff") !== "1"; } catch (e) { return true; } };
   const soundOn = () => { try { return localStorage.getItem("sfxOff") !== "1"; } catch (e) { return true; } };
-  const fsOn = () => !!document.fullscreenElement;
   function setMusic(on) { try { localStorage.setItem("musicOff", on ? "0" : "1"); } catch (e) {} if (window.GameMusic && GameMusic.audio) GameMusic.audio.muted = !on; }
   function setSound(on) { try { localStorage.setItem("sfxOff", on ? "0" : "1"); } catch (e) {} }
-  function toggleFS() { try { if (document.fullscreenElement) document.exitFullscreen(); else (document.documentElement.requestFullscreen || (() => {})).call(document.documentElement); } catch (e) {} }
 
   // ---- menu model ----
   const ITEMS = [
@@ -52,13 +50,13 @@
     { key: "settings", label: "SETTINGS", accent: "#5db4ff" },
     { key: "quit", label: "QUIT", accent: "#ff5d5d", disabled: true },
   ];
-  const SET = [{ key: "music" }, { key: "sound" }, { key: "fullscreen" }, { key: "back" }];
+  const SET = [{ key: "music" }, { key: "sound" }, { key: "back" }];
   let sel = 0, inSettings = false, ssel = 0, shake = 0, tease = 0;
 
   // ---- layout (pure, so input + draw agree) ----
   const BW = 384, BH = 64, BGAP = 22, BTOP = 226;
   const itemRect = i => ({ x: (W - BW) / 2, y: BTOP + i * (BH + BGAP), w: BW, h: BH });
-  const SPX = (W - 560) / 2, SPY = 138, SPW = 560, SPH = 372;
+  const SPX = (W - 560) / 2, SPY = 156, SPW = 560, SPH = 330;
   const setRowRect = i => ({ x: SPX + 28, y: SPY + 96 + i * 62, w: SPW - 56, h: 50 });
   const hit = (r, x, y) => x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h;
 
@@ -72,7 +70,6 @@
       const s = SET[ssel];
       if (s.key === "music") { setMusic(!musicOn()); blip(); }
       else if (s.key === "sound") { const next = !soundOn(); setSound(next); if (next) blip(); }   // blip only when turning ON
-      else if (s.key === "fullscreen") { toggleFS(); blip(); }
       else { okSfx(); inSettings = false; }
     }
   }
@@ -165,7 +162,7 @@
     ctx.fillStyle = PANEL2; rr(SPX, SPY, SPW, SPH, 16); ctx.fill();
     ctx.strokeStyle = GOLD; ctx.lineWidth = 4; rr(SPX + 2, SPY + 2, SPW - 4, SPH - 4, 14); ctx.stroke();
     tc("SETTINGS", W / 2, SPY + 26, 5, GOLD);
-    const LAB = { music: "MUSIC", sound: "SOUND", fullscreen: "FULLSCREEN", back: "BACK" };
+    const LAB = { music: "MUSIC", sound: "SOUND", back: "BACK" };
     for (let i = 0; i < SET.length; i++) {
       const s = SET[i], r = setRowRect(i), seld = i === ssel;
       ctx.fillStyle = seld ? "#322a4c" : "#241e36"; rr(r.x, r.y, r.w, r.h, 10); ctx.fill();
@@ -173,7 +170,7 @@
       if (s.key === "back") { tc("BACK", r.x + r.w / 2, r.y + (r.h - 14) / 2, 2, seld ? GOLDL : LIGHT); }
       else {
         text(LAB[s.key], r.x + 18, r.y + (r.h - 14) / 2, 2, seld ? GOLDL : LIGHT);
-        pill(r.x + r.w - 56, r.y + r.h / 2, s.key === "music" ? musicOn() : s.key === "sound" ? soundOn() : fsOn());
+        pill(r.x + r.w - 56, r.y + r.h / 2, s.key === "music" ? musicOn() : soundOn());
       }
     }
     tc("UP / DOWN MOVE     ENTER TOGGLE     ESC BACK", W / 2, SPY + SPH - 30, 1.6 | 0, DIM);
@@ -196,7 +193,7 @@
     if (tease > 0) { ctx.globalAlpha = Math.min(1, tease); tc("YOU CAN'T LEAVE THE PARTY!", W / 2, itemRect(2).y + BH + 22, 2, NO); ctx.globalAlpha = 1; }
     if (inSettings) drawSettings(t);
 
-    window.__menu = { sel, inSettings, ssel, music: musicOn(), sound: soundOn(), fs: fsOn() };
+    window.__menu = { sel, inSettings, ssel, music: musicOn(), sound: soundOn() };
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
