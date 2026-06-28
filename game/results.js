@@ -5,7 +5,10 @@
  * to re-arm. (SOUND off is honoured via the muted Audio wrapper in pause.js.) */
 (() => {
   let done = false; window.__results = { played: 0 };
-  function play() { const a = new Audio("sfx/resultannounce.mp3"); a.volume = 0.7; a.play().catch(() => {}); window.__results.played++; }
+  function play() {
+    if (window.GameMusic) window.GameMusic.stop();   // duck the background track so the result sting plays clear
+    const a = new Audio("sfx/resultannounce.mp3"); a.volume = 0.7; a.play().catch(() => {}); window.__results.played++;
+  }
   window.Results = {
     reset() { done = false; },
     show() { if (done) return; done = true; play(); },   // same announce whether someone won or it's a draw
