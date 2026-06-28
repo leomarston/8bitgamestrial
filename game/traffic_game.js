@@ -205,14 +205,13 @@
       ctx.fillStyle = "rgba(11,10,20,.42)"; ctx.fillRect(0, ROAD_TOP, W, H - ROAD_TOP);
       tc(Countdown.label(ready), W / 2, 240, 7, GOLD);
       tc("CROSS FOR COINS - HIGHER = WORTH MORE - DON'T GET RUN OVER", W / 2, 360, 2, "#eef6ff");
-      tc("MOVE = YOUR KEYS    DASH = " + ["SPACE", "ENTER", "O", "R"].slice(0, count).join(" / ") + "    FIRST TO 15 WINS", W / 2, 388, 1, DIM);
+      tc("FIRST TO 15 WINS", W / 2, 388, 2, GOLD);
     }
     if (phase === "over") {
       if (window.Tournament) Tournament.finish(winner ? winner.tag : null); if (window.Results) Results.show(winner ? winner.tag : null);
       ctx.fillStyle = "rgba(11,10,20,.85)"; ctx.fillRect(0, 0, W, H);
       tc(winner.tag + " WINS!", W / 2, 150, 6, GOLD); drawSprite(winner.spr, W / 2, 420, 200 / winner.spr.h, 1);
       tc(winner.name + " - " + winner.score + " POINTS", W / 2, 440, 3, winner.color);
-      tc((window.Tournament && Tournament.active) ? "" : "ENTER = REMATCH     ESC = PAUSE", W / 2, 530, 2, DIM);
     }
 
     window.__tr = { phase, count, scores: players.map(p => p.score), winner: winner ? winner.tag : null,

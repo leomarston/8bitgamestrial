@@ -240,7 +240,7 @@
       tc("WINS THE 8-BIT CUP", W / 2, 548, 2, GOLDL);
     }
     const left = Math.max(0, Math.ceil(CHAMP_RETURN - el));
-    tc("ENTER = NEW CUP     -     MENU IN " + left + "S", W / 2, H - 16, 2, DIM);
+    tc("RETURNING TO MENU IN " + left + "S", W / 2, H - 16, 2, DIM);
   }
 
   // ---- loop: champion screen, OR  board(celebrate) -> roulette spin -> land -> launch ----

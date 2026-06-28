@@ -174,7 +174,7 @@
     players.map(p => ({ y: p.y, f: () => drawPlayer(p) })).sort((a, b) => a.y - b.y).forEach(e => e.f());
     for (const s of sparks) { ctx.fillStyle = s.c; ctx.fillRect(s.x | 0, s.y | 0, 3, 3); }
     hud();
-    if (phase === "play") tc("PAINT THE MOST  -  DASH TO STUN  -  ESC PAUSE", W / 2, H - 34, 1, DIM);
+    if (phase === "play") tc("PAINT THE MOST  -  DASH TO STUN", W / 2, H - 34, 1, DIM);
     if (phase === "ready") {
       ctx.fillStyle = "rgba(11,10,20,.55)"; ctx.fillRect(0, 0, W, H);
       tc("TILE BLITZ", W / 2, H / 2 - 96, 4, CREAM);
@@ -188,7 +188,6 @@
       else tc("DEAD HEAT!", W / 2, 200, 6, GOLD);
       const order = players.map((p, i) => [p, cnt[i]]).sort((a, b) => b[1] - a[1]); let y = 390;
       for (const [p, c] of order) { tc(p.tag + " " + p.name + "  " + c + " TILES", W / 2, y, 2, p.color); y += 24; }
-      tc((window.Tournament && Tournament.active) ? "" : "ENTER = REMATCH     ESC = PAUSE", W / 2, y + 12, 2, DIM);
     }
     window.__tb = { phase, count, c: cnt.slice(), black: players.map(p => +p.black.toFixed(2)), t: +timeLeft.toFixed(1), winner: winner ? winner.tag : null };
     window.__tbhook = { tp: (i, x, y) => { if (players[i]) { players[i].x = x; players[i].y = y; } }, dash: i => players[i] && doDash(players[i]), pos: () => players.map(p => [Math.round(p.x), Math.round(p.y)]), end: () => { timeLeft = 0; }, grid: () => grid };

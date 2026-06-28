@@ -347,7 +347,7 @@
       text(names[i], tx, y + 38, 2, "#f4f4ee");
       if (i) { ctx.fillStyle = "#332b48"; ctx.fillRect(cx, y + 14, 2, 60); }  // divider
     }
-    tc("P1 CHOOSES  -  MOVE  WASD      PICK  SPACE      BACK  BACKSPACE", W / 2, y + 80, 1.6 | 0, DIM);
+    tc("P1 CHOOSES", W / 2, y + 80, 1.6 | 0, DIM);
   }
 
   function frame(t) {

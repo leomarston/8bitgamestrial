@@ -189,7 +189,7 @@
       ctx.fillStyle = "rgba(11,10,20,.42)"; ctx.fillRect(0, 0, W, H);
       tc(Countdown.label(ready), W / 2, 200, 7, GOLD);
       tc("RUN ON GREEN  -  FREEZE ON RED  -  CAUGHT MOVING = BACK TO START", W / 2, 320, 2, "#eef6ff");
-      tc("HOLD YOUR KEYS TO RUN  -  FIRST TO THE FINISH WINS", W / 2, 350, 1, DIM);
+      tc("FIRST TO THE FINISH WINS", W / 2, 350, 1, DIM);
     }
     if (phase === "over") {
       if (window.Tournament) Tournament.finish(winner ? winner.tag : null); if (window.Results) Results.show(winner ? winner.tag : null);
@@ -200,7 +200,6 @@
         drawSprite(winner.spr, W / 2, 420, 200 / winner.spr.h, 1);
         tc(crossed ? winner.name + " REACHED THE FINISH" : winner.name + " WAS FURTHEST AHEAD", W / 2, 440, 3, winner.color);
       } else tc("NOBODY FINISHED!", W / 2, 250, 5, GOLD);
-      tc((window.Tournament && Tournament.active) ? "" : "ENTER = REMATCH     ESC = PAUSE", W / 2, 530, 2, DIM);
     }
 
     window.__rl = { phase, light: light.state, count, x: players.map(p => Math.round(p.x)), finished: players.map(p => p.finished), winner: winner ? winner.tag : null, byFinish: winner ? !!winner.finished : null, t: +t0.toFixed(2) };

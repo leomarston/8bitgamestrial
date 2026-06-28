@@ -50,7 +50,6 @@
 
   // ---------- geometry ----------
   const SKY_H = 96, START_X = 150, FIN_X = W - 150;
-  const KEYLABEL = ["SPACE", "ENTER", "O", "R"];
   const KEYS = ["Space", "Enter", "KeyO", "KeyR"];
   // mash tuning: each press is a velocity impulse; speed decays so you must keep mashing
   const STROKE = 19, DECAY = 2.3, VMAX = 170;
@@ -172,10 +171,8 @@
   }
   function laneHUD(p) {
     const y0 = SKY_H + p.i * laneH;
-    // P# tag + the player's ONE key
+    // P# tag
     const tagW = 30; ctx.fillStyle = p.color; ctx.fillRect(6, y0 + 6, tagW, 16); text(p.tag, 10, y0 + 10, 2, INK);
-    ctx.fillStyle = "rgba(10,24,40,.55)"; const kl = KEYLABEL[p.i], kw = tW(kl, 1) + 8;
-    ctx.fillRect(6, y0 + 24, kw, 11); text(kl, 10, y0 + 26, 1, "#fff");
     // slim progress track for this lane
     const px0 = 44, px1 = W - 70, frac = Math.max(0, Math.min(1, (p.x - START_X) / (FIN_X - START_X)));
     ctx.fillStyle = "rgba(10,24,40,.4)"; ctx.fillRect(px0, y0 + 7, px1 - px0, 6);
@@ -198,8 +195,7 @@
     if (phase === "ready") {
       ctx.fillStyle = "rgba(11,24,40,.45)"; ctx.fillRect(0, SKY_H, W, H - SKY_H);
       tc(Countdown.label(ready), W / 2, 250, 8, GOLD);
-      tc("MASH YOUR BUTTON TO ROW  -  FIRST TO THE FINISH WINS", W / 2, 380, 2, "#eef6ff");
-      tc(players.map((p, i) => p.tag + "=" + KEYLABEL[i]).join("   "), W / 2, 414, 2, DIM);
+      tc("FIRST TO THE FINISH WINS", W / 2, 388, 2, "#eef6ff");
     }
     if (phase === "over" && winner) {
       if (window.Tournament) Tournament.finish(winner ? winner.tag : null); if (window.Results) Results.show(winner ? winner.tag : null);
@@ -207,7 +203,6 @@
       tc(winner.tag + " WINS!", W / 2, 140, 6, GOLD);
       drawSprite(winner.spr, W / 2, 430, 200 / winner.spr.h, 1);
       tc(winner.name + " ROWED HOME FIRST", W / 2, 450, 3, winner.color);
-      tc((window.Tournament && Tournament.active) ? "" : "MASH / ENTER = REMATCH     ESC = PAUSE", W / 2, 540, 2, DIM);
     }
 
     window.__sh = { phase, count, winner: winner ? winner.tag : null,

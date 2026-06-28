@@ -173,7 +173,6 @@
         pill(r.x + r.w - 56, r.y + r.h / 2, s.key === "music" ? musicOn() : soundOn());
       }
     }
-    tc("UP / DOWN MOVE     ENTER TOGGLE     ESC BACK", W / 2, SPY + SPH - 30, 1.6 | 0, DIM);
   }
 
   // ---- floating confetti ----
@@ -189,7 +188,6 @@
 
     drawTitle(t);
     for (let i = 0; i < ITEMS.length; i++) drawButton(i, t);
-    tc("UP / DOWN  SELECT      ENTER / CLICK  CONFIRM", W / 2, BTOP + ITEMS.length * (BH + BGAP) + 6, 2, DIM);
     if (tease > 0) { ctx.globalAlpha = Math.min(1, tease); tc("YOU CAN'T LEAVE THE PARTY!", W / 2, itemRect(2).y + BH + 22, 2, NO); ctx.globalAlpha = 1; }
     if (inSettings) drawSettings(t);
 

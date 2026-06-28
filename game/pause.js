@@ -55,7 +55,6 @@
       const vals = [getOff("musicOff") ? "OFF" : "ON", getOff("sfxOff") ? "OFF" : "ON", ""];
       SET.forEach((lab, i) => { const y = py + 126 + i * 54; if (i === sel) { ctx.fillStyle = GOLD; ctx.fillRect(px + 30, y - 9, pw - 60, 42); } const c = i === sel ? INK : CREAM; text(lab, px + 52, y, 3, c); if (vals[i]) text(vals[i], px + pw - 52 - tW(vals[i], 3), y, 3, i === sel ? INK : GOLD); });
     }
-    tc("UP / DOWN  -  ENTER  -  ESC", W / 2, py + ph - 28, 1, DIM);
   }
 
   function pump() { if (!paused) return; draw(); realRAF(pump); }   // keep the menu on top of any in-flight game frame

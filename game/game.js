@@ -102,7 +102,6 @@
     text(p.tag, x + 12, y + 10, 2, p.color);
     text(p.locked ? "LOCKED" : "PICKING", x + 12, y + 28, 1, p.locked ? GOLD : DIM);
     ts(ch.name, x + 12, y + 44, 2.4 | 0, ch.accent);
-    text(p.ctl, x + 12, y + h - 16, 1, DIM);
   }
 
   function frame(t) {
@@ -125,8 +124,7 @@
         x += cw + gap;
       }
       const left = Math.max(0, Math.ceil((START_DELAY - (t - readyAt)) / 1000));
-      tc("CHOOSING GAME IN " + left + "...", W / 2, H - 54, 2, GOLD);
-      tc("BACKSPACE = RESELECT", W / 2, H - 28, 2, DIM);
+      tc("CHOOSING GAME IN " + left + "...", W / 2, H - 40, 2, GOLD);
       if (t - readyAt > START_DELAY) {
         const picks = {}; players.forEach((p, i) => picks["p" + (i + 1)] = D.roster[p.idx].name);
         localStorage.setItem("partyCount", String(count));
@@ -141,8 +139,6 @@
     // player-count selector
     let lab = "PLAYERS:  "; tc(lab, W / 2 - 70, 62, 2, DIM);
     for (let n = 2; n <= 4; n++) { const bx = W / 2 - 6 + (n - 2) * 34; ctx.fillStyle = n === count ? GOLD : "#3a3352"; rr(bx, 58, 26, 20, 5); ctx.fill(); tc(String(n), bx + 13, 62, 2, n === count ? "#15121f" : DIM); }
-    tc("(PRESS 2 / 3 / 4)", W / 2 + 130, 64, 1, DIM);
-    tc("ESC = MAIN MENU", W / 2, H - 16, 1, DIM);
 
     for (let i = 0; i < D.roster.length; i++) drawCell(i);
     // cursors: nest by order when several share a cell

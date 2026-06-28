@@ -241,7 +241,6 @@
       ctx.fillStyle = "rgba(11,10,20,.42)"; ctx.fillRect(0, 0, W, H);
       tc(Countdown.label(timer), W / 2, 180, 7, GOLD);
       tc("KEEP THE BALL OUT OF YOUR HOLE  -  LAST ONE STANDING WINS", W / 2, 300, 2, "#eef6ff");
-      tc("MOVE = YOUR KEYS    JUMP = " + ["W", "UP", "I", "T"].slice(0, count).join(" / "), W / 2, 330, 1, DIM);
     }
     if (phase === "over") {
       if (window.Tournament) Tournament.finish(winner ? winner.tag : null); if (window.Results) Results.show(winner ? winner.tag : null);
@@ -249,7 +248,6 @@
       if (winner) { tc(winner.tag + " WINS!", W / 2, 130, 6, GOLD);
         drawSprite(winner.spr, W / 2, 400, 200 / winner.spr.h, 1); tc(winner.name + " — LAST ONE STANDING", W / 2, 420, 3, winner.color);
       } else tc("DRAW!", W / 2, 240, 6, GOLD);
-      tc((window.Tournament && Tournament.active) ? "" : "ENTER = REMATCH     ESC = PAUSE", W / 2, 520, 2, DIM);
     }
 
     window.__vb = { phase, count, pts: players.map(p => p.pts), alive: players.map(p => p.alive),

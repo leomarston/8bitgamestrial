@@ -275,7 +275,6 @@
       ctx.fillStyle = "rgba(11,10,20,.5)"; ctx.fillRect(0, 0, W, H);
       tc(Countdown.label(ready, "FIGHT!"), W / 2, H / 2 - 36, 7, GOLD);
       tc("DESTROY THE OTHER TANKS  -  LAST TANK ROLLING WINS", W / 2, H / 2 + 44, 2, "#cfe0ff");
-      tc("MOVE = YOUR KEYS    FIRE = " + ["SPACE", "ENTER", "O", "R"].slice(0, count).join(" / "), W / 2, H / 2 + 70, 1, DIM);
     }
     if (phase === "over") {
       if (window.Tournament) Tournament.finish(winner ? winner.tag : null); if (window.Results) Results.show(winner ? winner.tag : null);
@@ -284,7 +283,6 @@
         const s = winner.spr[0], scl = 150 / s.h; ctx.drawImage(s.canvas, W / 2 - s.w * scl / 2, 210, s.w * scl, 150);
         tc(winner.name + " — LAST TANK ROLLING", W / 2, 396, 3, winner.color);
       } else tc("MUTUAL DESTRUCTION!", W / 2, 220, 5, GOLD);
-      tc((window.Tournament && Tournament.active) ? "" : "ENTER = REMATCH     ESC = PAUSE", W / 2, 520, 2, DIM);
     }
 
     window.__tk = { phase, count, alive: tanks.map(p => p.alive), winner: winner ? winner.tag : null,
