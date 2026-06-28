@@ -284,7 +284,7 @@
         const s = winner.spr[0], scl = 150 / s.h; ctx.drawImage(s.canvas, W / 2 - s.w * scl / 2, 210, s.w * scl, 150);
         tc(winner.name + " — LAST TANK ROLLING", W / 2, 396, 3, winner.color);
       } else tc("MUTUAL DESTRUCTION!", W / 2, 220, 5, GOLD);
-      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "ENTER = REMATCH     ESC = PAUSE", W / 2, 520, 2, DIM);
+      tc((window.Tournament && Tournament.active) ? "" : "ENTER = REMATCH     ESC = PAUSE", W / 2, 520, 2, DIM);
     }
 
     window.__tk = { phase, count, alive: tanks.map(p => p.alive), winner: winner ? winner.tag : null,

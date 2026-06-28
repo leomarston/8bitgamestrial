@@ -1,7 +1,7 @@
 /* 8-BIT PARTY — SLIME VOLLEY, 2–4 players. Beach court split into one colored
  * HOLE per player, divided by nets. Bump the big ball with move + jump; keep it
  * out of YOUR hole and knock it over a net into someone else's. Each fall in your
- * hole costs a point — start at 2, hit 0 and you're OUT (your hole seals up).
+ * hole costs a point — start at 3, hit 0 and you're OUT (your hole seals up).
  * Last player standing wins. Serve is thrown at a random angle each rally.
  * Move L/R + JUMP: P1 A/D/W · P2 ←/→/↑ · P3 J/L/I · P4 F/H/T  (action also jumps) */
 (() => {
@@ -84,7 +84,7 @@
     for (let i = 0; i < count; i++) {
       const [zl, zr] = zoneBounds(i);
       players.push({ i, name: NAMES[i], color: PCOL[i], tag: "P" + (i + 1), spr: SPR[i], sprf: SPRF[i],
-        x: (zl + zr) / 2, y: FLOOR_TOP - PR, vx: 0, vy: 0, onG: true, pts: 2, alive: true, face: i < count / 2 ? 1 : -1 });
+        x: (zl + zr) / 2, y: FLOOR_TOP - PR, vx: 0, vy: 0, onG: true, pts: 3, alive: true, face: i < count / 2 ? 1 : -1 });
     }
     sparks = []; winner = null; msg = ""; msgT = 0; served = false;
     ball = { x: W / 2, y: 90, vx: 0, vy: 0, r: BR, spin: 0 };
@@ -249,7 +249,7 @@
       if (winner) { tc(winner.tag + " WINS!", W / 2, 130, 6, GOLD);
         drawSprite(winner.spr, W / 2, 400, 200 / winner.spr.h, 1); tc(winner.name + " — LAST ONE STANDING", W / 2, 420, 3, winner.color);
       } else tc("DRAW!", W / 2, 240, 6, GOLD);
-      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "ENTER = REMATCH     ESC = PAUSE", W / 2, 520, 2, DIM);
+      tc((window.Tournament && Tournament.active) ? "" : "ENTER = REMATCH     ESC = PAUSE", W / 2, 520, 2, DIM);
     }
 
     window.__vb = { phase, count, pts: players.map(p => p.pts), alive: players.map(p => p.alive),

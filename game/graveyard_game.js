@@ -273,7 +273,7 @@
       ctx.fillStyle = "rgba(11,10,20,.85)"; ctx.fillRect(0, 0, W, H);
       if (winner) { tc(winner.tag + " SURVIVES!", W / 2, 120, 6, GOLD); const s = fight[winner.name], scl = 200 / s.h; ctx.drawImage(s.canvas, W / 2 - s.w * scl / 2, 200, s.w * scl, 200); tc(winner.name + " WINS", W / 2, 420, 4, winner.color); }
       else { tc("THE DEAD WIN!", W / 2, 200, 5, GOLD); tc("EVERY SOUL ESCAPED", W / 2, 270, 3, ZC); }
-      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "ENTER = REMATCH     ESC = PAUSE", W / 2, 520, 2, DIM);
+      tc((window.Tournament && Tournament.active) ? "" : "ENTER = REMATCH     ESC = PAUSE", W / 2, 520, 2, DIM);
     }
     window.__gv = { phase, count, winner: winner ? winner.tag : null, states: players.map(p => p.state) };
     window.__hook = { tp: (i, x, y) => { if (players[i]) { players[i].x = x; players[i].y = y; } }, punch: i => players[i] && (players[i].state === "human" ? doPunch(players[i]) : doLunge(players[i])), setMon: (x, y) => { mon.x = x; mon.y = y; }, mon: () => ({ x: Math.round(mon.x), y: Math.round(mon.y) }), states: () => players.map(p => p.state) };

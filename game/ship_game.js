@@ -207,7 +207,7 @@
       tc(winner.tag + " WINS!", W / 2, 140, 6, GOLD);
       drawSprite(winner.spr, W / 2, 430, 200 / winner.spr.h, 1);
       tc(winner.name + " ROWED HOME FIRST", W / 2, 450, 3, winner.color);
-      tc((window.Tournament && Tournament.active) ? "RETURNING TO THE 8-BIT CUP" : "MASH / ENTER = REMATCH     ESC = PAUSE", W / 2, 540, 2, DIM);
+      tc((window.Tournament && Tournament.active) ? "" : "MASH / ENTER = REMATCH     ESC = PAUSE", W / 2, 540, 2, DIM);
     }
 
     window.__sh = { phase, count, winner: winner ? winner.tag : null,
